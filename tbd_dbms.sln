@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33516.290
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "tbd_dbms", "tbd_dbms.csproj", "{1D328E5A-2939-4AB1-8DFF-9714460BF501}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|x86 = Debug|x86
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{1D328E5A-2939-4AB1-8DFF-9714460BF501}.Debug|x86.ActiveCfg = Debug|x86
+		{1D328E5A-2939-4AB1-8DFF-9714460BF501}.Debug|x86.Build.0 = Debug|x86
+		{1D328E5A-2939-4AB1-8DFF-9714460BF501}.Release|x86.ActiveCfg = Release|x86
+		{1D328E5A-2939-4AB1-8DFF-9714460BF501}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5767A1C4-30B6-4FC8-BC95-D35DE593280C}
+	EndGlobalSection
+EndGlobal

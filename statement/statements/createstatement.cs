@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace tbd.statements
+namespace MiniSQL.Library.Models
 {
     public enum CreateType
     {

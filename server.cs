@@ -2,16 +2,20 @@ using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using MiniSQL.Library;
 
-class Server {
-    public static void Main() {
+class Server
+{
+    public static void Main()
+    {
         // Create a TCP listener on port 1234
         TcpListener listener = new TcpListener(IPAddress.Any, 1234);
         listener.Start();
 
         Console.WriteLine("Server started");
 
-        while (true) {
+        while (true)
+        {
             // Wait for a client to connect
             TcpClient client = listener.AcceptTcpClient();
             Console.WriteLine("Client connected");
@@ -21,7 +25,8 @@ class Server {
         }
     }
 
-    static void HandleClient(TcpClient client) {
+    static void HandleClient(TcpClient client)
+    {
         // Get the network stream for reading and writing
         NetworkStream stream = client.GetStream();
 
@@ -31,8 +36,11 @@ class Server {
         string data = Encoding.ASCII.GetString(buffer, 0, bytesRead);
         Console.WriteLine("Received: " + data);
 
+        // Parse the SQL statement
+        Parser parser = new Parser(data);
+        string response = parser.Parse();
+
         // Write a response to the client
-        string response = "Hello, client!";
         byte[] responseData = Encoding.ASCII.GetBytes(response);
         stream.Write(responseData, 0, responseData.Length);
 

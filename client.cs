@@ -13,7 +13,7 @@ class Program
         TcpClient client = new TcpClient();
         client.Connect(IPAddress.Parse("127.0.0.1"), 1234);
         // send SQL statement to server
-        string sqlStatement = "SELECT * FROM myTable";
+        string sqlStatement = "CREATE TABLE myTable (id INT PRIMARY KEY, name VARCHAR(50))";
         byte[] data = Encoding.ASCII.GetBytes(sqlStatement);
         NetworkStream stream = client.GetStream();
         stream.Write(data, 0, data.Length);

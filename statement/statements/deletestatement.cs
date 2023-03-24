@@ -1,4 +1,4 @@
-namespace tbd.statements
+namespace MiniSQL.Library.Models
 {
     public class DeleteStatement : IStatement
     {

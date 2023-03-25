@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using MiniSQL.Library.Models;
 
 namespace MiniSQL.Parser
 {
@@ -123,7 +124,7 @@ namespace MiniSQL.Parser
         }
 
         // top-level parsing method
-        public void Parse()
+        public string Parse()
         {
             // parse SQL statements until end of input
             while (_currentToken.Type != TokenType.EndOfFile)
@@ -135,10 +136,12 @@ namespace MiniSQL.Parser
                     if (_currentToken.Type == TokenType.Database)
                     {
                         ParseCreateDatabaseStatement();
+                        return "Database created successfully";
                     }
                     else if (_currentToken.Type == TokenType.Table)
                     {
                         ParseCreateTableStatement();
+                        return "Table created successfully";
                     }
                     else
                     {
@@ -150,6 +153,8 @@ namespace MiniSQL.Parser
                     throw new Exception($"Syntax error: Expected 'create' but found {_currentToken.Type}");
                 }
             }
+            return "Parsing completed";
         }
     }
 }
+

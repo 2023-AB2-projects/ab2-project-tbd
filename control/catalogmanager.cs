@@ -45,6 +45,19 @@ public class CatalogManager
         SaveMetadata(metadata);
     }
 
+    public void CreateIndex(string databaseName, string tableName, string indexName, BsonArray columns)
+    {
+        var metadata = LoadMetadata();
+        var databaseMetadata = metadata[databaseName] as Dictionary<string, object>;
+        var tableMetadata = databaseMetadata[tableName] as Dictionary<string, object>;
+        if (!tableMetadata.ContainsKey("indexes"))
+        {
+            tableMetadata["indexes"] = new Dictionary<string, object>();
+        }
+        var indexes = tableMetadata["indexes"] as Dictionary<string, object>;
+        indexes[indexName] = columns;
+        SaveMetadata(metadata);
+    }
     public void DropIndex(string databaseName, string tableName, string indexName)
     {
         var metadata = LoadMetadata();

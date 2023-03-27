@@ -40,8 +40,10 @@ public class CatalogManager
     public void CreateTable(string databaseName, string tableName, Dictionary<string, object> columns)
     {
         var metadata = LoadMetadata();
+
         var databaseMetadata = metadata[databaseName] as Dictionary<string, object>;
         databaseMetadata[tableName] = columns;
+
         SaveMetadata(metadata);
     }
 

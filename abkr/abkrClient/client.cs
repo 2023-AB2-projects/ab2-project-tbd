@@ -1,11 +1,11 @@
-using System;
+﻿using System;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
 
 namespace MiniSQL.Client
 {
-    class Program
+    class client
     {
         static void Main(string[] args)
         {

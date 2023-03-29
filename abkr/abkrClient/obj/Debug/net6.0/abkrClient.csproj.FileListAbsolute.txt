@@ -1,0 +1,15 @@
+C:\Users\bfcsa\source\repos\abkrClient\bin\Debug\net6.0\abkrClient.exe
+C:\Users\bfcsa\source\repos\abkrClient\bin\Debug\net6.0\abkrClient.deps.json
+C:\Users\bfcsa\source\repos\abkrClient\bin\Debug\net6.0\abkrClient.runtimeconfig.json
+C:\Users\bfcsa\source\repos\abkrClient\bin\Debug\net6.0\abkrClient.dll
+C:\Users\bfcsa\source\repos\abkrClient\bin\Debug\net6.0\abkrClient.pdb
+C:\Users\bfcsa\source\repos\abkrClient\obj\Debug\net6.0\abkrClient.csproj.AssemblyReference.cache
+C:\Users\bfcsa\source\repos\abkrClient\obj\Debug\net6.0\abkrClient.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\bfcsa\source\repos\abkrClient\obj\Debug\net6.0\abkrClient.AssemblyInfoInputs.cache
+C:\Users\bfcsa\source\repos\abkrClient\obj\Debug\net6.0\abkrClient.AssemblyInfo.cs
+C:\Users\bfcsa\source\repos\abkrClient\obj\Debug\net6.0\abkrClient.csproj.CoreCompileInputs.cache
+C:\Users\bfcsa\source\repos\abkrClient\obj\Debug\net6.0\abkrClient.dll
+C:\Users\bfcsa\source\repos\abkrClient\obj\Debug\net6.0\refint\abkrClient.dll
+C:\Users\bfcsa\source\repos\abkrClient\obj\Debug\net6.0\abkrClient.pdb
+C:\Users\bfcsa\source\repos\abkrClient\obj\Debug\net6.0\abkrClient.genruntimeconfig.cache
+C:\Users\bfcsa\source\repos\abkrClient\obj\Debug\net6.0\ref\abkrClient.dll

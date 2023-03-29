@@ -23,85 +23,131 @@ using Antlr4.Runtime.Misc;
 using IParseTreeListener = Antlr4.Runtime.Tree.IParseTreeListener;
 using IToken = Antlr4.Runtime.IToken;
 
-namespace abkr.grammarParser
-{
+/// <summary>
+/// This interface defines a complete listener for a parse tree produced by
+/// <see cref="abkr_grammarParser"/>.
+/// </summary>
+[System.CodeDom.Compiler.GeneratedCode("ANTLR", "4.6")]
+[System.CLSCompliant(false)]
+public interface Iabkr_grammarListener : IParseTreeListener {
 	/// <summary>
-	/// This interface defines a complete listener for a parse tree produced by
-	/// <see cref="abkr_grammarParser"/>.
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.statement"/>.
 	/// </summary>
-	[System.CodeDom.Compiler.GeneratedCode("ANTLR", "4.6")]
-	[System.CLSCompliant(false)]
-	public interface Iabkr_grammarListener : IParseTreeListener
-	{
-		/// <summary>
-		/// Enter a parse tree produced by <see cref="abkr_grammarParser.statement"/>.
-		/// </summary>
-		/// <param name="context">The parse tree.</param>
-		void EnterStatement([NotNull] abkr_grammarParser.StatementContext context);
-		/// <summary>
-		/// Exit a parse tree produced by <see cref="abkr_grammarParser.statement"/>.
-		/// </summary>
-		/// <param name="context">The parse tree.</param>
-		void ExitStatement([NotNull] abkr_grammarParser.StatementContext context);
-		/// <summary>
-		/// Enter a parse tree produced by <see cref="abkr_grammarParser.create_database_statement"/>.
-		/// </summary>
-		/// <param name="context">The parse tree.</param>
-		void EnterCreate_database_statement([NotNull] abkr_grammarParser.Create_database_statementContext context);
-		/// <summary>
-		/// Exit a parse tree produced by <see cref="abkr_grammarParser.create_database_statement"/>.
-		/// </summary>
-		/// <param name="context">The parse tree.</param>
-		void ExitCreate_database_statement([NotNull] abkr_grammarParser.Create_database_statementContext context);
-		/// <summary>
-		/// Enter a parse tree produced by <see cref="abkr_grammarParser.create_table_statement"/>.
-		/// </summary>
-		/// <param name="context">The parse tree.</param>
-		void EnterCreate_table_statement([NotNull] abkr_grammarParser.Create_table_statementContext context);
-		/// <summary>
-		/// Exit a parse tree produced by <see cref="abkr_grammarParser.create_table_statement"/>.
-		/// </summary>
-		/// <param name="context">The parse tree.</param>
-		void ExitCreate_table_statement([NotNull] abkr_grammarParser.Create_table_statementContext context);
-		/// <summary>
-		/// Enter a parse tree produced by <see cref="abkr_grammarParser.column_definition_list"/>.
-		/// </summary>
-		/// <param name="context">The parse tree.</param>
-		void EnterColumn_definition_list([NotNull] abkr_grammarParser.Column_definition_listContext context);
-		/// <summary>
-		/// Exit a parse tree produced by <see cref="abkr_grammarParser.column_definition_list"/>.
-		/// </summary>
-		/// <param name="context">The parse tree.</param>
-		void ExitColumn_definition_list([NotNull] abkr_grammarParser.Column_definition_listContext context);
-		/// <summary>
-		/// Enter a parse tree produced by <see cref="abkr_grammarParser.column_definition"/>.
-		/// </summary>
-		/// <param name="context">The parse tree.</param>
-		void EnterColumn_definition([NotNull] abkr_grammarParser.Column_definitionContext context);
-		/// <summary>
-		/// Exit a parse tree produced by <see cref="abkr_grammarParser.column_definition"/>.
-		/// </summary>
-		/// <param name="context">The parse tree.</param>
-		void ExitColumn_definition([NotNull] abkr_grammarParser.Column_definitionContext context);
-		/// <summary>
-		/// Enter a parse tree produced by <see cref="abkr_grammarParser.data_type"/>.
-		/// </summary>
-		/// <param name="context">The parse tree.</param>
-		void EnterData_type([NotNull] abkr_grammarParser.Data_typeContext context);
-		/// <summary>
-		/// Exit a parse tree produced by <see cref="abkr_grammarParser.data_type"/>.
-		/// </summary>
-		/// <param name="context">The parse tree.</param>
-		void ExitData_type([NotNull] abkr_grammarParser.Data_typeContext context);
-		/// <summary>
-		/// Enter a parse tree produced by <see cref="abkr_grammarParser.identifier"/>.
-		/// </summary>
-		/// <param name="context">The parse tree.</param>
-		void EnterIdentifier([NotNull] abkr_grammarParser.IdentifierContext context);
-		/// <summary>
-		/// Exit a parse tree produced by <see cref="abkr_grammarParser.identifier"/>.
-		/// </summary>
-		/// <param name="context">The parse tree.</param>
-		void ExitIdentifier([NotNull] abkr_grammarParser.IdentifierContext context);
-	}
+	/// <param name="context">The parse tree.</param>
+	void EnterStatement([NotNull] abkr_grammarParser.StatementContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitStatement([NotNull] abkr_grammarParser.StatementContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.create_database_statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterCreate_database_statement([NotNull] abkr_grammarParser.Create_database_statementContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.create_database_statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitCreate_database_statement([NotNull] abkr_grammarParser.Create_database_statementContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.create_table_statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterCreate_table_statement([NotNull] abkr_grammarParser.Create_table_statementContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.create_table_statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitCreate_table_statement([NotNull] abkr_grammarParser.Create_table_statementContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.drop_database_statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterDrop_database_statement([NotNull] abkr_grammarParser.Drop_database_statementContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.drop_database_statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitDrop_database_statement([NotNull] abkr_grammarParser.Drop_database_statementContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.drop_table_statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterDrop_table_statement([NotNull] abkr_grammarParser.Drop_table_statementContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.drop_table_statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitDrop_table_statement([NotNull] abkr_grammarParser.Drop_table_statementContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.create_index_statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterCreate_index_statement([NotNull] abkr_grammarParser.Create_index_statementContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.create_index_statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitCreate_index_statement([NotNull] abkr_grammarParser.Create_index_statementContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.drop_index_statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterDrop_index_statement([NotNull] abkr_grammarParser.Drop_index_statementContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.drop_index_statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitDrop_index_statement([NotNull] abkr_grammarParser.Drop_index_statementContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.column_definition_list"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterColumn_definition_list([NotNull] abkr_grammarParser.Column_definition_listContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.column_definition_list"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitColumn_definition_list([NotNull] abkr_grammarParser.Column_definition_listContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.column_definition"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterColumn_definition([NotNull] abkr_grammarParser.Column_definitionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.column_definition"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitColumn_definition([NotNull] abkr_grammarParser.Column_definitionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.identifier_list"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterIdentifier_list([NotNull] abkr_grammarParser.Identifier_listContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.identifier_list"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitIdentifier_list([NotNull] abkr_grammarParser.Identifier_listContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.data_type"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterData_type([NotNull] abkr_grammarParser.Data_typeContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.data_type"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitData_type([NotNull] abkr_grammarParser.Data_typeContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.identifier"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterIdentifier([NotNull] abkr_grammarParser.IdentifierContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.identifier"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitIdentifier([NotNull] abkr_grammarParser.IdentifierContext context);
 }

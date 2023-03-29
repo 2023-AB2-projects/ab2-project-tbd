@@ -6,6 +6,7 @@ using abkr.CatalogManager;
 using abkr.grammarParser; // Import for the Parser class
 using abkr.statements; // Import for IStatement, CreateStatement, and DropStatement
 using Antlr4.Runtime;
+using Antlr4.Runtime.Tree;
 using MongoDB.Driver; // Import for MongoClient
 
 
@@ -45,19 +46,10 @@ class Server
         string data = Encoding.ASCII.GetString(buffer, 0, bytesRead);
         Console.WriteLine("Received: " + data);
 
-        abkr_grammarLexer lexer = new(new AntlrInputStream(data));
-        CommonTokenStream tokens = new(lexer);
-
-        // Parse the SQL statement
-        abkr_grammarParser parser = new abkr_grammarParser(tokens);
-
-        IStatement statement;
         string response;
         try
         {
-            statement = parser.Parse();
-            // Execute the statement using the DatabaseServer instance
-            databaseServer.ExecuteStatement(statement);
+            databaseServer.ExecuteStatement(data);
             response = "Success";
         }
         catch (Exception ex)

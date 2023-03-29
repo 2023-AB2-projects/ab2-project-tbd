@@ -4,6 +4,10 @@ using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
 using abkr.statements;
+using Antlr4.Runtime;
+using Antlr4.Runtime.Tree;
+using abkr.grammarParser;
+
 
 namespace abkr.CatalogManager
 {
@@ -18,6 +22,46 @@ namespace abkr.CatalogManager
             _client = new MongoClient(connectionString);
             _catalogManager = new CatalogManager(metadataFilePath);
         }
+
+        public bool IsMetadataInSync()
+        {
+            var metadata = _catalogManager.LoadMetadata(); // This method should be made public in CatalogManager
+            var databaseList = _client.ListDatabaseNames().ToList();
+
+            foreach (var databaseName in metadata.Keys)
+            {
+                if (!databaseList.Contains(databaseName))
+                {
+                    return false;
+                }
+
+                var collectionList = _client.GetDatabase(databaseName).ListCollectionNames().ToList();
+                var tableMetadata = metadata[databaseName] as Dictionary<string, object>;
+
+                foreach (var tableName in tableMetadata.Keys)
+                {
+                    if (!collectionList.Contains(tableName))
+                    {
+                        return false;
+                    }
+
+                    var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+                    var indexList = collection.Indexes.List().ToList();
+                    var indexMetadata = ((tableMetadata[tableName] as Dictionary<string, object>)["indexes"]) as Dictionary<string, object>;
+
+                    foreach (var indexName in indexMetadata.Keys)
+                    {
+                        if (!indexList.Any(index => index["name"] == indexName))
+                        {
+                            return false;
+                        }
+                    }
+                }
+            }
+
+            return true;
+        }
+
 
         public void CreateDatabase(string databaseName)
         {
@@ -46,11 +90,18 @@ namespace abkr.CatalogManager
         public void CreateIndex(string databaseName, string tableName, string indexName, BsonArray columns)
         {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-            var indexKeys = new IndexKeysDefinitionBuilder<BsonDocument>().Ascending(columns.Select(column => column.AsString));
+            var indexKeys = new IndexKeysDefinitionBuilder<BsonDocument>().Ascending((FieldDefinition<BsonDocument>)columns.Select(column => column.AsString));
             collection.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(indexKeys, new CreateIndexOptions { Name = indexName }));
 
-            _catalogManager.CreateIndex(databaseName, tableName, indexName, columns);
+            var metadata = _catalogManager.LoadMetadata(); // This method should be made public in CatalogManager
+            var databaseMetadata = metadata[databaseName] as Dictionary<string, object>;
+            var tableMetadata = databaseMetadata[tableName] as Dictionary<string, object>;
+            var indexes = tableMetadata["indexes"] as Dictionary<string, object>;
+
+            _catalogManager.CreateIndex(databaseName, tableName, indexName, columns, indexes);
         }
+
+
 
         public void DropIndex(string databaseName, string tableName, string indexName)
         {
@@ -60,39 +111,53 @@ namespace abkr.CatalogManager
             _catalogManager.DropIndex(databaseName, tableName, indexName);
         }
 
-        public void ExecuteStatement(IStatement statement)
+        public void ExecuteStatement(string sql)
         {
-            if (statement is CreateStatement createStatement)
+            // Create a new instance of the ANTLR input stream with the SQL statement
+            var inputStream = new AntlrInputStream(sql);
+
+            // Create a new instance of the lexer and pass the input stream
+            var lexer = new abkr_grammarLexer(inputStream);
+
+            // Create a new instance of the common token stream and pass the lexer
+            var tokenStream = new CommonTokenStream(lexer);
+
+            // Create a new instance of the parser and pass the token stream
+            var parser = new abkr_grammarParser(tokenStream);
+
+            // Invoke the parser's entry rule (statement) and get the parse tree
+            var parseTree = parser.statement();
+
+            // Implement your own parse tree listener (MyAbkrGrammarListener) to process the parse tree and extract the required information
+            var listener = new MyAbkrGrammarListener();
+            ParseTreeWalker.Default.Walk(listener, parseTree);
+
+            // Perform actions based on the parsed statement
+            if (listener.StatementType == StatementType.CreateDatabase)
             {
-                if (createStatement.CreateType == CreateType.Database)
-                {
-                    CreateDatabase(createStatement.DatabaseName);
-                }
-                else if (createStatement.CreateType == CreateType.Table)
-                {
-                    CreateTable(createStatement.DatabaseName, createStatement.TableName, createStatement.AttributeDeclarations);
-                }
-                else if (createStatement.CreateType == CreateType.Index)
-                {
-                    CreateIndex(createStatement.DatabaseName, createStatement.TableName, createStatement.IndexName, createStatement.Columns);
-                }
+                CreateDatabase(listener.DatabaseName);
             }
-            else if (statement is DropStatement dropStatement)
+            else if (listener.StatementType == StatementType.CreateTable)
             {
-                if (dropStatement.TargetType == DropTarget.Database)
-                {
-                    DropDatabase(dropStatement.DatabaseName);
-                }
-                else if (dropStatement.TargetType == DropTarget.Table)
-                {
-                    DropTable(dropStatement.DatabaseName, dropStatement.TableName);
-                }
-                else if (dropStatement.TargetType == DropTarget.Index)
-                {
-                    DropIndex(dropStatement.DatabaseName, dropStatement.TableName, dropStatement.IndexName);
-                }
+                CreateTable(listener.DatabaseName, listener.TableName, listener.Columns);
+            }
+            else if (listener.StatementType == StatementType.DropDatabase)
+            {
+                DropDatabase(listener.DatabaseName);
+            }
+            else if (listener.StatementType == StatementType.DropTable)
+            {
+                DropTable(listener.DatabaseName, listener.TableName);
+            }
+            else if (listener.StatementType == StatementType.CreateIndex)
+            {
+                CreateIndex(listener.DatabaseName, listener.TableName, listener.IndexName, listener.IndexColumns);
+            }
+            else if (listener.StatementType == StatementType.DropIndex)
+            {
+                DropIndex(listener.DatabaseName, listener.TableName, listener.IndexName);
             }
         }
     }
-}
+  }
 

@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
-using abkr.statements;
 
 namespace abkr.CatalogManager
 {
@@ -15,7 +14,7 @@ namespace abkr.CatalogManager
             _metadataFilePath = metadataFilePath;
         }
 
-        private Dictionary<string, object> LoadMetadata()
+        public Dictionary<string, object> LoadMetadata()
         {
             if (File.Exists(_metadataFilePath))
             {
@@ -28,7 +27,7 @@ namespace abkr.CatalogManager
             }
         }
 
-        private void SaveMetadata(Dictionary<string, object> metadata)
+        public void SaveMetadata(Dictionary<string, object> metadata)
         {
             string json = JsonConvert.SerializeObject(metadata, Formatting.Indented);
             File.WriteAllText(_metadataFilePath, json);
@@ -51,7 +50,7 @@ namespace abkr.CatalogManager
             SaveMetadata(metadata);
         }
 
-        public void CreateIndex(string databaseName, string tableName, string indexName, BsonArray columns)
+        public void CreateIndex(string databaseName, string tableName, string indexName, BsonArray columns, Dictionary<string, object>? indexes)
         {
             var metadata = LoadMetadata();
             var databaseMetadata = metadata[databaseName] as Dictionary<string, object>;
@@ -60,8 +59,8 @@ namespace abkr.CatalogManager
             {
                 tableMetadata["indexes"] = new Dictionary<string, object>();
             }
-            var indexes = tableMetadata["indexes"] as Dictionary<string, object>;
-            indexes[indexName] = columns;
+            var indices = tableMetadata["indexes"] as Dictionary<string, object>;
+            indices[indexName] = columns;
             SaveMetadata(metadata);
         }
         public void DropIndex(string databaseName, string tableName, string indexName)

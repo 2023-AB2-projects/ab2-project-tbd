@@ -47,6 +47,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         }
     }
 
+
     public override void EnterDrop_table_statement(abkr_grammarParser.Drop_table_statementContext context)
     {
         StatementType = StatementType.DropTable;

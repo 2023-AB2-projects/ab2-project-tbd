@@ -114,6 +114,7 @@ namespace abkr.CatalogManager
         public void ExecuteStatement(string sql)
         {
             // Create a new instance of the ANTLR input stream with the SQL statement
+            Console.WriteLine(sql);
             var inputStream = new AntlrInputStream(sql);
 
             // Create a new instance of the lexer and pass the input stream

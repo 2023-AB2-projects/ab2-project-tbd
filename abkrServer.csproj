@@ -8,8 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Antlr" Version="3.5.0.2" />
-    <PackageReference Include="Antlr4.Runtime" Version="4.6.6" />
+    <PackageReference Include="Antlr4.Runtime.Standard" Version="4.12.0" />
     <PackageReference Include="EPPlus" Version="6.2.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.19.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
@@ -18,5 +17,10 @@
   <ItemGroup>
     <Folder Include="NewFolder\" />
   </ItemGroup>
+
+  <PropertyGroup>
+    <ANTLR4_Runtime_Version>4.6.6</ANTLR4_Runtime_Version>
+  </PropertyGroup>
+
 
 </Project>

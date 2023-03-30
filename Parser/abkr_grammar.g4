@@ -4,11 +4,11 @@ statement: create_database_statement | create_table_statement | drop_database_st
 
 create_database_statement: CREATE DATABASE identifier;
 
-create_table_statement: CREATE TABLE identifier '(' column_definition_list ')';
+create_table_statement: CREATE TABLE identifier '.' identifier '(' column_definition_list ')';
 
 drop_database_statement: DROP DATABASE identifier;
 
-drop_table_statement: DROP TABLE identifier;
+drop_table_statement: DROP TABLE identifier '.' identifier;
 
 create_index_statement: CREATE INDEX identifier ON identifier '(' identifier_list ')';
 

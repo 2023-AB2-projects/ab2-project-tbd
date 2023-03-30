@@ -4,7 +4,6 @@ using System.Net.Sockets;
 using System.Text;
 using abkr.CatalogManager;
 using abkr.grammarParser; // Import for the Parser class
-using abkr.statements; // Import for IStatement, CreateStatement, and DropStatement
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using MongoDB.Driver; // Import for MongoClient
@@ -22,7 +21,10 @@ class Server
 
         // Initialize the DatabaseServer instance
         var databaseServer = new DatabaseServer("mongodb://localhost:27017", "example.json");
-        Console.WriteLine("Database server initialized");
+        if (databaseServer.IsMetadataInSync())
+        {
+            Console.WriteLine("Database server initialized");
+        }
 
         while (true)
         {

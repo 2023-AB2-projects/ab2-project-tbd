@@ -144,17 +144,17 @@ public partial class abkr_grammarBaseListener : Iabkr_grammarListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitColumn_definition([NotNull] abkr_grammarParser.Column_definitionContext context) { }
 	/// <summary>
-	/// Enter a parse tree produced by <see cref="abkr_grammarParser.identifier_list"/>.
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.column_constraint"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void EnterIdentifier_list([NotNull] abkr_grammarParser.Identifier_listContext context) { }
+	public virtual void EnterColumn_constraint([NotNull] abkr_grammarParser.Column_constraintContext context) { }
 	/// <summary>
-	/// Exit a parse tree produced by <see cref="abkr_grammarParser.identifier_list"/>.
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.column_constraint"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
-	public virtual void ExitIdentifier_list([NotNull] abkr_grammarParser.Identifier_listContext context) { }
+	public virtual void ExitColumn_constraint([NotNull] abkr_grammarParser.Column_constraintContext context) { }
 	/// <summary>
 	/// Enter a parse tree produced by <see cref="abkr_grammarParser.data_type"/>.
 	/// <para>The default implementation does nothing.</para>
@@ -168,6 +168,18 @@ public partial class abkr_grammarBaseListener : Iabkr_grammarListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitData_type([NotNull] abkr_grammarParser.Data_typeContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.identifier_list"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterIdentifier_list([NotNull] abkr_grammarParser.Identifier_listContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.identifier_list"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitIdentifier_list([NotNull] abkr_grammarParser.Identifier_listContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="abkr_grammarParser.identifier"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>
@@ -179,6 +191,54 @@ public partial class abkr_grammarBaseListener : Iabkr_grammarListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitIdentifier([NotNull] abkr_grammarParser.IdentifierContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.insert_statement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterInsert_statement([NotNull] abkr_grammarParser.Insert_statementContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.insert_statement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitInsert_statement([NotNull] abkr_grammarParser.Insert_statementContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.delete_statement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterDelete_statement([NotNull] abkr_grammarParser.Delete_statementContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.delete_statement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitDelete_statement([NotNull] abkr_grammarParser.Delete_statementContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.value_list"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterValue_list([NotNull] abkr_grammarParser.Value_listContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.value_list"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitValue_list([NotNull] abkr_grammarParser.Value_listContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammarParser.value"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterValue([NotNull] abkr_grammarParser.ValueContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammarParser.value"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitValue([NotNull] abkr_grammarParser.ValueContext context) { }
 
 	/// <inheritdoc/>
 	/// <remarks>The default implementation does nothing.</remarks>

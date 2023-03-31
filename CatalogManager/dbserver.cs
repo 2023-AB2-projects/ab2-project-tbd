@@ -3,7 +3,6 @@ using MongoDB.Bson;
 using Newtonsoft.Json;
 using System.Collections.Generic;
 using System.IO;
-using abkr.statements;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using abkr.grammarParser;
@@ -16,6 +15,7 @@ namespace abkr.CatalogManager
     {
         private IMongoClient _client;
         private CatalogManager _catalogManager;
+
 
         public DatabaseServer(string connectionString, string metadataFilePath)
         {
@@ -100,15 +100,26 @@ namespace abkr.CatalogManager
 
             _catalogManager.CreateIndex(databaseName, tableName, indexName, columns, indexes);
         }
-
-
-
         public void DropIndex(string databaseName, string tableName, string indexName)
         {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
             collection.Indexes.DropOne(indexName);
 
             _catalogManager.DropIndex(databaseName, tableName, indexName);
+        }
+
+        public void Insert(string databaseName, string tableName, Dictionary<string, object> rowData)
+        {
+            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+            var document = new BsonDocument(rowData.ToDictionary(kvp => kvp.Key, kvp => BsonValue.Create(kvp.Value)));
+            collection.InsertOne(document);
+        }
+
+        public void Delete(string databaseName, string tableName, string primaryKeyColumn, object primaryKeyValue)
+        {
+            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+            var filter = Builders<BsonDocument>.Filter.Eq(primaryKeyColumn, BsonValue.Create(primaryKeyValue));
+            collection.DeleteOne(filter);
         }
 
         public void ExecuteStatement(string sql)
@@ -157,6 +168,14 @@ namespace abkr.CatalogManager
             else if (listener.StatementType == StatementType.DropIndex)
             {
                 DropIndex(listener.DatabaseName, listener.TableName, listener.IndexName);
+            }
+            else if (listener.StatementType == StatementType.Insert)
+            {
+                Insert(listener.DatabaseName, listener.TableName, listener.RowData);
+            }
+            else if (listener.StatementType == StatementType.Delete)
+            {
+                Delete(listener.DatabaseName, listener.TableName, listener.PrimaryKeyColumn, listener.PrimaryKeyValue);
             }
         }
     }

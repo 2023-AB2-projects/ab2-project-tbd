@@ -1,6 +1,6 @@
 grammar abkr_grammar;
 
-statement: create_database_statement | create_table_statement | drop_database_statement | drop_table_statement | create_index_statement | drop_index_statement;
+statement: create_database_statement | create_table_statement | drop_database_statement | drop_table_statement | create_index_statement | drop_index_statement | insert_statement | delete_statement;
 
 create_database_statement: CREATE DATABASE identifier;
 
@@ -16,13 +16,27 @@ drop_index_statement: DROP INDEX identifier ON identifier;
 
 column_definition_list: column_definition (',' column_definition)*;
 
-column_definition: identifier data_type;
+column_definition: identifier data_type column_constraint*;
 
-identifier_list: identifier (',' identifier)*;
+column_constraint
+    : PRIMARY KEY
+    ;
 
 data_type: INT | VARCHAR '(' NUMBER ')';
 
+identifier_list: identifier (',' identifier)*;
+
 identifier: IDENTIFIER;
+
+insert_statement: INSERT INTO identifier '.' identifier VALUES '(' value_list ')';
+
+delete_statement: DELETE FROM identifier '.' identifier WHERE identifier '=' value;
+
+value_list: value (',' value)*;
+
+value: STRING | NUMBER;
+
+STRING: '\'' (~'\'' | '\'\'' | '\\\'')* '\'';
 
 CREATE: 'CREATE';
 DATABASE: 'DATABASE';
@@ -32,6 +46,14 @@ DROP: 'DROP';
 ON: 'ON';
 INT: 'INT';
 VARCHAR: 'VARCHAR';
+PRIMARY: 'PRIMARY';
+KEY: 'KEY';
+INSERT: 'INSERT';
+INTO: 'INTO';
+VALUES: 'VALUES';
+DELETE: 'DELETE';
+FROM: 'FROM';
+WHERE: 'WHERE';
 NUMBER: [0-9]+;
 IDENTIFIER: [a-zA-Z][a-zA-Z0-9_]*;
 WS: [ \t\r\n]+ -> skip;

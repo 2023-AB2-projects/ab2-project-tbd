@@ -10,6 +10,8 @@ public enum StatementType
     DropTable,
     CreateIndex,
     DropIndex,
+    Insert,
+    Delete,
     Unknown
 }
 
@@ -21,6 +23,14 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public string IndexName { get; private set; }
     public Dictionary<string, object> Columns { get; private set; } = new Dictionary<string, object>();
     public BsonArray IndexColumns { get; private set; } = new BsonArray();
+    public List<object> Values { get; private set; } = new List<object>();
+    public string ColumnName { get; private set; }
+    public object ColumnValue { get; private set; }
+
+    public Dictionary<string, object> RowData { get; private set; }
+    public string PrimaryKeyColumn { get; private set; }
+    public object PrimaryKeyValue { get; private set; }
+
 
     // Override the listener methods to extract the required information
 
@@ -77,5 +87,25 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
             TableName = context.identifier(1).GetText();
             IndexName = context.identifier(2).GetText();
         }
-    }
+        public override void EnterInsert_statement(abkr_grammarParser.Insert_statementContext context)
+        {
+            StatementType = StatementType.Insert;
+            DatabaseName = context.identifier(0).GetText();
+            TableName = context.identifier(1).GetText();
+
+            var values = context.value_list().value();
+            foreach (var value in values)
+            {
+                Values.Add(value.GetText());
+            }
+        }
+        public override void EnterDelete_statement(abkr_grammarParser.Delete_statementContext context)
+        {
+            StatementType = StatementType.Delete;
+            DatabaseName = context.identifier(0).GetText();
+            TableName = context.identifier(1).GetText();
+            ColumnName = context.identifier(2).GetText();
+            ColumnValue = context.value().GetText();
+        }
+}
 

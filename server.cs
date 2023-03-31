@@ -20,11 +20,15 @@ class Server
         Console.WriteLine("Server started");
 
         // Initialize the DatabaseServer instance
-        var databaseServer = new DatabaseServer("mongodb://localhost:27017", "example.json");
-        if (databaseServer.IsMetadataInSync())
-        {
-            Console.WriteLine("Database server initialized");
-        }
+        var databaseServer = new DatabaseServer("mongodb://localhost:27017/", "example.json");
+
+        bool isMetadataInSync = databaseServer.IsMetadataInSync();
+        Console.WriteLine("Is metadata in sync: " + isMetadataInSync);
+
+        if (isMetadataInSync )
+            databaseServer.CreateDatabase("myNewDatabase");
+
+
 
         while (true)
         {

@@ -1,12 +1,7 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Text;
 using abkr.CatalogManager;
-using abkr.grammarParser; // Import for the Parser class
-using Antlr4.Runtime;
-using Antlr4.Runtime.Tree;
-using MongoDB.Driver; // Import for MongoClient
 
 
 class Server
@@ -41,33 +36,43 @@ class Server
         }
     }
 
-    static void HandleClient(TcpClient client, DatabaseServer databaseServer)
+
+    static async Task HandleClient(TcpClient client, DatabaseServer databaseServer)
     {
         // Get the network stream for reading and writing
-        NetworkStream stream = client.GetStream();
+        using NetworkStream stream = client.GetStream();
+        using StreamReader reader = new StreamReader(stream, Encoding.ASCII);
+        using StreamWriter writer = new StreamWriter(stream, Encoding.ASCII) { AutoFlush = true };
 
-        // Read data from the client
-        byte[] buffer = new byte[1024];
-        int bytesRead = stream.Read(buffer, 0, buffer.Length);
-        string data = Encoding.ASCII.GetString(buffer, 0, bytesRead);
-        Console.WriteLine("Received: " + data);
-
-        string response;
         try
         {
-            databaseServer.ExecuteStatement(data);
-            response = "Success";
+            // Read data from the client
+            string data = await reader.ReadLineAsync();
+            Console.WriteLine("Received: " + data);
+
+            string response;
+            try
+            {
+                databaseServer.ExecuteStatement(data);
+                response = "Success";
+            }
+            catch (Exception ex)
+            {
+                response = $"Error: {ex.Message}";
+            }
+
+            // Write a response to the client
+            await writer.WriteLineAsync(response);
         }
-        catch (Exception ex)
+        catch (IOException ex)
         {
-            response = $"Error: {ex.Message}";
+            Console.WriteLine($"Error: {ex.Message}");
         }
-
-        // Write a response to the client
-        byte[] responseData = Encoding.ASCII.GetBytes(response);
-        stream.Write(responseData, 0, responseData.Length);
-
-        client.Close();
-        Console.WriteLine("Client disconnected");
+        finally
+        {
+            client.Close();
+            Console.WriteLine("Client disconnected");
+        }
     }
+
 }

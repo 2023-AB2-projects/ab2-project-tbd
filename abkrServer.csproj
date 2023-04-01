@@ -22,7 +22,7 @@
     <ANTLR4_Runtime_Version>4.6.6</ANTLR4_Runtime_Version>
   </PropertyGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties catalogmanager_4example_1json__JsonSchema="https://appliedengdesign.github.io/cnccodes-json-schema/draft/2022-07/schema" /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions><VisualStudio><UserProperties catalogmanager_4example_1json__JsonSchema="https://beaujs.com/schema.json" /></VisualStudio></ProjectExtensions>
 
 
 </Project>

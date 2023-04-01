@@ -14,6 +14,8 @@ namespace abkr.CatalogManager
     public class DatabaseServer
     {
         private IMongoClient _client;
+        public IMongoClient MongoClient => _client;
+
         private CatalogManager _catalogManager;
 
 
@@ -30,7 +32,7 @@ namespace abkr.CatalogManager
 
         public bool IsMetadataInSync()
         {
-            var metadata = _catalogManager.LoadMetadata(); // This method should be made public in CatalogManager
+            var metadata = _catalogManager.LoadMetadata();
             var databaseList = _client.ListDatabaseNames().ToList();
 
             foreach (var databaseName in metadata.Keys)
@@ -42,6 +44,11 @@ namespace abkr.CatalogManager
 
                 var collectionList = _client.GetDatabase(databaseName).ListCollectionNames().ToList();
                 var tableMetadata = metadata[databaseName] as Dictionary<string, object>;
+
+                if (tableMetadata == null) // Add this null check
+                {
+                    return false;
+                }
 
                 foreach (var tableName in tableMetadata.Keys)
                 {
@@ -68,16 +75,18 @@ namespace abkr.CatalogManager
         }
 
 
+
         public void CreateDatabase(string databaseName)
         {
             _catalogManager.CreateDatabase(databaseName);
         }
 
-        public void CreateTable(string databaseName, string tableName, Dictionary<string, object> columns)
+        public void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns)
         {
             var bsonColumns = BsonDocument.Parse(JsonConvert.SerializeObject(columns));
             _catalogManager.CreateTable(databaseName, tableName, columns);
         }
+
 
         public void DropDatabase(string databaseName)
         {
@@ -171,7 +180,12 @@ namespace abkr.CatalogManager
             }
             else if (listener.StatementType == StatementType.CreateTable)
             {
-                CreateTable(listener.DatabaseName, listener.TableName, listener.Columns);
+                var stringColumns = new Dictionary<string, string>();
+                foreach (var column in listener.Columns)
+                {
+                    stringColumns[column.Key] = column.Value.ToString();
+                }
+                CreateTable(listener.DatabaseName, listener.TableName, stringColumns);
             }
             else if (listener.StatementType == StatementType.DropDatabase)
             {
@@ -248,7 +262,12 @@ namespace abkr.CatalogManager
             }
             else if (listener.StatementType == StatementType.CreateTable)
             {
-                CreateTable(listener.DatabaseName, listener.TableName, listener.Columns);
+                var stringColumns = new Dictionary<string, string>();
+                foreach (var column in listener.Columns)
+                {
+                    stringColumns[column.Key] = column.Value.ToString();
+                }
+                CreateTable(listener.DatabaseName, listener.TableName, stringColumns);
             }
             else if (listener.StatementType == StatementType.DropDatabase)
             {

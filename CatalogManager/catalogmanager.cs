@@ -16,22 +16,40 @@ namespace abkr.CatalogManager
 
         public Dictionary<string, object> LoadMetadata()
         {
-            if (File.Exists(_metadataFilePath))
+            if (!File.Exists(_metadataFilePath))
             {
-                string json = File.ReadAllText(_metadataFilePath);
-                return JsonConvert.DeserializeObject<Dictionary<string, object>>(json);
+                Console.WriteLine($"Metadata file not found at {_metadataFilePath}. Creating a new file.");
+                File.WriteAllText(_metadataFilePath, "{}");
             }
-            else
+
+            string metadataJson = File.ReadAllText(_metadataFilePath);
+
+            if (string.IsNullOrWhiteSpace(metadataJson))
             {
+                Console.WriteLine("Metadata file is empty. Returning an empty dictionary.");
+                return new Dictionary<string, object>();
+            }
+
+            try
+            {
+                return JsonConvert.DeserializeObject<Dictionary<string, object>>(metadataJson);
+            }
+            catch (JsonReaderException ex)
+            {
+                Console.WriteLine($"Error reading metadata file: {ex.Message}");
                 return new Dictionary<string, object>();
             }
         }
+
+
 
         public void SaveMetadata(Dictionary<string, object> metadata)
         {
             string json = JsonConvert.SerializeObject(metadata, Formatting.Indented);
             File.WriteAllText(_metadataFilePath, json);
+            Console.WriteLine($"Metadata saved to {_metadataFilePath}");
         }
+
 
         public void CreateDatabase(string databaseName)
         {
@@ -40,15 +58,32 @@ namespace abkr.CatalogManager
             SaveMetadata(metadata);
         }
 
-        public void CreateTable(string databaseName, string tableName, Dictionary<string, object> columns)
+
+        public void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns)
         {
             var metadata = LoadMetadata();
 
-            var databaseMetadata = metadata[databaseName] as Dictionary<string, object>;
-            databaseMetadata[tableName] = columns;
+            if (!metadata.ContainsKey(databaseName))
+            {
+                metadata[databaseName] = new Dictionary<string, object>();
+            }
 
-            SaveMetadata(metadata);
+            var databaseMetadata = metadata[databaseName] as Dictionary<string, object>;
+
+            if (!databaseMetadata.ContainsKey(tableName))
+            {
+                databaseMetadata[tableName] = columns;
+                SaveMetadata(metadata);
+            }
+            else
+            {
+                throw new ArgumentException($"Table '{tableName}' already exists in database '{databaseName}'.");
+            }
         }
+
+
+
+
 
         public void CreateIndex(string databaseName, string tableName, string indexName, BsonArray columns, Dictionary<string, object>? indexes)
         {

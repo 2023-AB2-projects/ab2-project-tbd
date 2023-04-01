@@ -17,9 +17,14 @@ namespace abkr.CatalogManager
         private CatalogManager _catalogManager;
 
 
-        public DatabaseServer(string connectionString, string metadataFilePath)
+        public DatabaseServer(string connectionString, string metadataFileName)
         {
             _client = new MongoClient(connectionString);
+            string metadataFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, metadataFileName);
+            if (!File.Exists(metadataFilePath))
+            {
+                File.WriteAllText(metadataFilePath, JsonConvert.SerializeObject(new Dictionary<string, object>()));
+            }
             _catalogManager = new CatalogManager(metadataFilePath);
         }
 
@@ -108,19 +113,34 @@ namespace abkr.CatalogManager
             _catalogManager.DropIndex(databaseName, tableName, indexName);
         }
 
-        public void Insert(string databaseName, string tableName, Dictionary<string, object> rowData)
+        public void Insert(string databaseName, string tableName, string primaryKeyColumn, Dictionary<string, object> rowData)
         {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-            var document = new BsonDocument(rowData.ToDictionary(kvp => kvp.Key, kvp => BsonValue.Create(kvp.Value)));
+
+            // Extract the primary key value from the rowData
+            var primaryKeyValue = rowData[primaryKeyColumn];
+            rowData.Remove(primaryKeyColumn);
+
+            // Create a new document with the primary key as the key and the rest of the rowData as the value
+            var document = new BsonDocument
+    {
+        { "_id", BsonValue.Create(primaryKeyValue) },
+        { "value", new BsonDocument(rowData.ToDictionary(kvp => kvp.Key, kvp => BsonValue.Create(kvp.Value))) }
+    };
+
             collection.InsertOne(document);
         }
+
 
         public void Delete(string databaseName, string tableName, string primaryKeyColumn, object primaryKeyValue)
         {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-            var filter = Builders<BsonDocument>.Filter.Eq(primaryKeyColumn, BsonValue.Create(primaryKeyValue));
+
+            // Since the primary key is stored as the '_id' field in the document, you don't need the primaryKeyColumn parameter
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", BsonValue.Create(primaryKeyValue));
             collection.DeleteOne(filter);
         }
+
 
         public void ExecuteStatement(string sql)
         {
@@ -171,8 +191,105 @@ namespace abkr.CatalogManager
             }
             else if (listener.StatementType == StatementType.Insert)
             {
-                Insert(listener.DatabaseName, listener.TableName, listener.RowData);
+                Dictionary<string, object> rowData = new Dictionary<string, object>();
+                string primaryKeyColumn = null;
+
+                for (int i = 0; i < listener.Columns.Count; i++)
+                {
+                    rowData[listener.Columns.ElementAt(i).Key] = listener.Values[i];
+                    if (listener.PrimaryKeyColumn == listener.Columns.ElementAt(i).Key)
+                    {
+                        primaryKeyColumn = listener.PrimaryKeyColumn;
+                    }
+                }
+
+                if (primaryKeyColumn != null)
+                {
+                    Insert(listener.DatabaseName, listener.TableName, primaryKeyColumn, rowData);
+                }
+                else
+                {
+                    throw new Exception("Primary key not found! ");
+                }
             }
+
+
+            else if (listener.StatementType == StatementType.Delete)
+            {
+                Delete(listener.DatabaseName, listener.TableName, listener.PrimaryKeyColumn, listener.PrimaryKeyValue);
+            }
+        }
+        public async Task ExecuteStatementAsync(string sql)
+        {
+            // Create a new instance of the ANTLR input stream with the SQL statement
+            Console.WriteLine(sql);
+            var inputStream = new AntlrInputStream(sql);
+
+            // Create a new instance of the lexer and pass the input stream
+            var lexer = new abkr_grammarLexer(inputStream);
+
+            // Create a new instance of the common token stream and pass the lexer
+            var tokenStream = new CommonTokenStream(lexer);
+
+            // Create a new instance of the parser and pass the token stream
+            var parser = new abkr_grammarParser(tokenStream);
+
+            // Invoke the parser's entry rule (statement) and get the parse tree
+            var parseTree = parser.statement();
+
+            // Implement your own parse tree listener (MyAbkrGrammarListener) to process the parse tree and extract the required information
+            var listener = new MyAbkrGrammarListener();
+            ParseTreeWalker.Default.Walk(listener, parseTree);
+
+            // Perform actions based on the parsed statement
+            if (listener.StatementType == StatementType.CreateDatabase)
+            {
+                CreateDatabase(listener.DatabaseName);
+            }
+            else if (listener.StatementType == StatementType.CreateTable)
+            {
+                CreateTable(listener.DatabaseName, listener.TableName, listener.Columns);
+            }
+            else if (listener.StatementType == StatementType.DropDatabase)
+            {
+                DropDatabase(listener.DatabaseName);
+            }
+            else if (listener.StatementType == StatementType.DropTable)
+            {
+                DropTable(listener.DatabaseName, listener.TableName);
+            }
+            else if (listener.StatementType == StatementType.CreateIndex)
+            {
+                CreateIndex(listener.DatabaseName, listener.TableName, listener.IndexName, listener.IndexColumns);
+            }
+            else if (listener.StatementType == StatementType.DropIndex)
+            {
+                DropIndex(listener.DatabaseName, listener.TableName, listener.IndexName);
+            }
+            else if (listener.StatementType == StatementType.Insert)
+            {
+                Dictionary<string, object> rowData = new Dictionary<string, object>();
+                string primaryKeyColumn = null;
+
+                for (int i = 0; i < listener.Columns.Count; i++)
+                {
+                    rowData[listener.Columns.ElementAt(i).Key] = listener.Values[i];
+                    if (listener.PrimaryKeyColumn == listener.Columns.ElementAt(i).Key)
+                    {
+                        primaryKeyColumn = listener.PrimaryKeyColumn;
+                    }
+                }
+
+                if (primaryKeyColumn != null)
+                {
+                    Insert(listener.DatabaseName, listener.TableName, primaryKeyColumn, rowData);
+                }
+                else
+                {
+                    throw new Exception("Primary key not found!");
+                }
+            }
+
             else if (listener.StatementType == StatementType.Delete)
             {
                 Delete(listener.DatabaseName, listener.TableName, listener.PrimaryKeyColumn, listener.PrimaryKeyValue);

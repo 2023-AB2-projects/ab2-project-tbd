@@ -67,45 +67,47 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
 
     public override void EnterCreate_index_statement(abkr_grammarParser.Create_index_statementContext context)
-        {
-            StatementType = StatementType.CreateIndex;
-            DatabaseName = context.identifier(0).GetText();
-            TableName = context.identifier(1).GetText();
-            IndexName = context.identifier(2).GetText();
+    {
+        StatementType = StatementType.CreateIndex;
+        DatabaseName = context.identifier(0).GetText();
+        TableName = context.identifier(1).GetText();
+        IndexName = context.identifier(2).GetText();
 
-            var columnIdentifiers = context.identifier_list().identifier();
-            foreach (var columnIdentifier in columnIdentifiers)
-            {
-                IndexColumns.Add(columnIdentifier.GetText());
-            }
+        var columnIdentifiers = context.identifier_list().identifier();
+        foreach (var columnIdentifier in columnIdentifiers)
+        {
+            IndexColumns.Add(columnIdentifier.GetText());
         }
+    }
 
-        public override void EnterDrop_index_statement(abkr_grammarParser.Drop_index_statementContext context)
-        {
-            StatementType = StatementType.DropIndex;
-            DatabaseName = context.identifier(0).GetText();
-            TableName = context.identifier(1).GetText();
-            IndexName = context.identifier(2).GetText();
-        }
-        public override void EnterInsert_statement(abkr_grammarParser.Insert_statementContext context)
-        {
-            StatementType = StatementType.Insert;
-            DatabaseName = context.identifier(0).GetText();
-            TableName = context.identifier(1).GetText();
+    public override void EnterDrop_index_statement(abkr_grammarParser.Drop_index_statementContext context)
+    {
+        StatementType = StatementType.DropIndex;
+        DatabaseName = context.identifier(0).GetText();
+        TableName = context.identifier(1).GetText();
+        IndexName = context.identifier(2).GetText();
+    }
 
-            var values = context.value_list().value();
-            foreach (var value in values)
-            {
-                Values.Add(value.GetText());
-            }
-        }
-        public override void EnterDelete_statement(abkr_grammarParser.Delete_statementContext context)
+    public override void EnterInsert_statement(abkr_grammarParser.Insert_statementContext context)
+    {
+        StatementType = StatementType.Insert;
+        DatabaseName = context.identifier(0).GetText();
+        TableName = context.identifier(1).GetText();
+
+        var values = context.value_list().value();
+        foreach (var value in values)
         {
-            StatementType = StatementType.Delete;
-            DatabaseName = context.identifier(0).GetText();
-            TableName = context.identifier(1).GetText();
-            ColumnName = context.identifier(2).GetText();
-            ColumnValue = context.value().GetText();
+            Values.Add(value.GetText());
         }
+    }
+
+    public override void EnterDelete_statement(abkr_grammarParser.Delete_statementContext context)
+    {
+        StatementType = StatementType.Delete;
+        DatabaseName = context.identifier(0).GetText();
+        TableName = context.identifier(1).GetText();
+        ColumnName = context.identifier(2).GetText();
+        ColumnValue = context.value().GetText();
+    }
 }
 

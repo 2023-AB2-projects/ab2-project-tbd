@@ -1,7 +1,9 @@
 ﻿using MongoDB.Bson;
-using Newtonsoft.Json;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Xml.Linq;
 
 namespace abkr.CatalogManager
 {
@@ -14,65 +16,63 @@ namespace abkr.CatalogManager
             _metadataFilePath = metadataFilePath;
         }
 
-        public Dictionary<string, object> LoadMetadata()
+        public XElement LoadMetadata()
         {
             if (!File.Exists(_metadataFilePath))
             {
                 Console.WriteLine($"Metadata file not found at {_metadataFilePath}. Creating a new file.");
-                File.WriteAllText(_metadataFilePath, "{}");
-            }
-
-            string metadataJson = File.ReadAllText(_metadataFilePath);
-
-            if (string.IsNullOrWhiteSpace(metadataJson))
-            {
-                Console.WriteLine("Metadata file is empty. Returning an empty dictionary.");
-                return new Dictionary<string, object>();
+                var databasesElement = new XElement("Databases");
+                databasesElement.Save(_metadataFilePath);
             }
 
             try
             {
-                return JsonConvert.DeserializeObject<Dictionary<string, object>>(metadataJson);
+                return XElement.Load(_metadataFilePath);
             }
-            catch (JsonReaderException ex)
+            catch (Exception ex)
             {
                 Console.WriteLine($"Error reading metadata file: {ex.Message}");
-                return new Dictionary<string, object>();
+                return new XElement("Databases");
             }
         }
 
-
-
-        public void SaveMetadata(Dictionary<string, object> metadata)
+        public void SaveMetadata(XElement metadata)
         {
-            string json = JsonConvert.SerializeObject(metadata, Formatting.Indented);
-            File.WriteAllText(_metadataFilePath, json);
+            Directory.CreateDirectory(Path.GetDirectoryName(_metadataFilePath));
+            metadata.Save(_metadataFilePath);
             Console.WriteLine($"Metadata saved to {_metadataFilePath}");
         }
-
 
         public void CreateDatabase(string databaseName)
         {
             var metadata = LoadMetadata();
-            metadata[databaseName] = new Dictionary<string, object>();
+            var databaseElement = new XElement("DataBase", new XAttribute("dataBaseName", databaseName));
+            metadata.Add(databaseElement);
             SaveMetadata(metadata);
+            Console.WriteLine($"Database '{databaseName}' created.");
         }
-
 
         public void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns)
         {
             var metadata = LoadMetadata();
+            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName").Value == databaseName);
 
-            if (!metadata.ContainsKey(databaseName))
+            if (databaseElement == null)
             {
-                metadata[databaseName] = new Dictionary<string, object>();
+                throw new ArgumentException($"Database '{databaseName}' does not exist.");
             }
 
-            var databaseMetadata = metadata[databaseName] as Dictionary<string, object>;
-
-            if (!databaseMetadata.ContainsKey(tableName))
+            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName").Value == tableName);
+            if (tableElement == null)
             {
-                databaseMetadata[tableName] = columns;
+                tableElement = new XElement("Table", new XAttribute("tableName", tableName));
+                var structureElement = new XElement("Structure");
+                foreach (var column in columns)
+                {
+                    structureElement.Add(new XElement("Attribute", new XAttribute("attributeName", column.Key), new XAttribute("type", column.Value)));
+                }
+                tableElement.Add(structureElement);
+                databaseElement.Add(tableElement);
                 SaveMetadata(metadata);
             }
             else
@@ -82,48 +82,108 @@ namespace abkr.CatalogManager
         }
 
 
-
-
-
-        public void CreateIndex(string databaseName, string tableName, string indexName, BsonArray columns, Dictionary<string, object>? indexes)
+        public void CreateIndex(string databaseName, string tableName, string indexName, List<string> columns, bool isUnique)
         {
             var metadata = LoadMetadata();
-            var databaseMetadata = metadata[databaseName] as Dictionary<string, object>;
-            var tableMetadata = databaseMetadata[tableName] as Dictionary<string, object>;
-            if (!tableMetadata.ContainsKey("indexes"))
+            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName").Value == databaseName);
+
+            if (databaseElement == null)
             {
-                tableMetadata["indexes"] = new Dictionary<string, object>();
+                throw new ArgumentException($"Database '{databaseName}' does not exist.");
             }
-            var indices = tableMetadata["indexes"] as Dictionary<string, object>;
-            indices[indexName] = columns;
+
+            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName").Value == tableName);
+            if (tableElement == null)
+            {
+                throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
+            }
+
+            var indexFilesElement = tableElement.Element("IndexFiles");
+            if (indexFilesElement == null)
+            {
+                indexFilesElement = new XElement("IndexFiles");
+                tableElement.Add(indexFilesElement);
+            }
+
+            var indexElement = new XElement("IndexFile", new XAttribute("indexName", indexName), new XAttribute("isUnique", isUnique));
+            var indexAttributesElement = new XElement("IndexAttributes");
+
+            foreach (var column in columns)
+            {
+                indexAttributesElement.Add(new XElement("IAttribute", column));
+            }
+
+            indexElement.Add(indexAttributesElement);
+            indexFilesElement.Add(indexElement);
             SaveMetadata(metadata);
         }
+
         public void DropIndex(string databaseName, string tableName, string indexName)
         {
             var metadata = LoadMetadata();
-            var databaseMetadata = metadata[databaseName] as Dictionary<string, object>;
-            var tableMetadata = databaseMetadata[tableName] as Dictionary<string, object>;
-            if (tableMetadata.ContainsKey("indexes"))
+            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName").Value == databaseName);
+
+            if (databaseElement == null)
             {
-                var indexes = tableMetadata["indexes"] as Dictionary<string, object>;
-                indexes.Remove(indexName);
+                throw new ArgumentException($"Database '{databaseName}' does not exist.");
             }
-            SaveMetadata(metadata);
+
+            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName").Value == tableName);
+            if (tableElement == null)
+            {
+                throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
+            }
+
+            var indexFilesElement = tableElement.Element("IndexFiles");
+            var indexElement = indexFilesElement?.Elements("IndexFile").FirstOrDefault(e => e.Attribute("indexName").Value == indexName);
+
+            if (indexElement != null)
+            {
+                indexElement.Remove();
+                SaveMetadata(metadata);
+            }
+            else
+            {
+                throw new ArgumentException($"Index '{indexName}' does not exist in table '{tableName}'.");
+            }
         }
+
         public void DropDatabase(string databaseName)
         {
             var metadata = LoadMetadata();
-            metadata.Remove(databaseName);
-            SaveMetadata(metadata);
+            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName").Value == databaseName);
+
+            if (databaseElement != null)
+            {
+                databaseElement.Remove();
+                SaveMetadata(metadata);
+            }
+            else
+            {
+                throw new ArgumentException($"Database '{databaseName}' does not exist.");
+            }
         }
 
         public void DropTable(string databaseName, string tableName)
         {
             var metadata = LoadMetadata();
-            var databaseMetadata = metadata[databaseName] as Dictionary<string, object>;
-            databaseMetadata.Remove(tableName);
-            SaveMetadata(metadata);
-        }
+            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName").Value == databaseName);
 
+            if (databaseElement == null)
+            {
+                throw new ArgumentException($"Database '{databaseName}' does not exist.");
+            }
+
+            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName").Value == tableName);
+            if (tableElement != null)
+            {
+                tableElement.Remove();
+                SaveMetadata(metadata);
+            }
+            else
+            {
+                throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
+            }
+        }
     }
 }

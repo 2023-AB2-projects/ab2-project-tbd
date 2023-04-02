@@ -28,7 +28,7 @@ class Server
         Console.WriteLine("Server started");
 
         // Initialize the DatabaseServer instance
-        var databaseServer = new DatabaseServer("mongodb://localhost:27017/", "example.json");  
+        var databaseServer = new DatabaseServer("mongodb://localhost:27017/", "example.xml");  
 
         bool isMetadataInSync = databaseServer.IsMetadataInSync();
         Console.WriteLine("Is metadata in sync: " + isMetadataInSync);
@@ -37,6 +37,7 @@ class Server
         {
             // Wait for a client to connect
             TcpClient client = null;
+            databaseServer.ListDatabases();
             try
             {
                 client = await AcceptTcpClientAsync(listener, cts.Token);
@@ -50,6 +51,7 @@ class Server
                 Console.WriteLine($"Error: {ex.Message}");
                 continue;
             }
+            databaseServer.ListDatabases();
 
             Console.WriteLine("Client connected");
 
@@ -90,26 +92,32 @@ class Server
 
         try
         {
-            // Read data from the client
-            string data = await reader.ReadLineAsync();
-            Console.WriteLine("Received: " + data);
-
-            string response;
-            try
+            while (!cancellationToken.IsCancellationRequested && client.Connected)
             {
-                await databaseServer.ExecuteStatementAsync(data);
-                response = "Success";
-            }
-            catch (Exception ex)
-            {
-                response = $"Error: {ex.Message}";
-            }
+                // Read data from the client
+                string data = await reader.ReadLineAsync();
 
-            // Write a response to the client
-            await writer.WriteLineAsync(response);
+                if (data == null || data.ToLower() == "exit")
+                {
+                    break;
+                }
 
-            // Add a small delay before closing the connection
-            await Task.Delay(500);
+                Console.WriteLine("Received: " + data);
+
+                string response;
+                try
+                {
+                    await databaseServer.ExecuteStatementAsync(data);
+                    response = "Success";
+                }
+                catch (Exception ex)
+                {
+                    response = $"Error: {ex.Message}";
+                }
+
+                // Write a response to the client
+                await writer.WriteLineAsync(response);
+            }
         }
         catch (IOException ex)
         {
@@ -121,4 +129,5 @@ class Server
             Console.WriteLine("Client disconnected");
         }
     }
+
 }

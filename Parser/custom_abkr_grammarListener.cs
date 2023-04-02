@@ -40,8 +40,6 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         DatabaseName = context.identifier().GetText();
     }
 
-    // Implement similar methods for other
-
     public override void EnterCreate_table_statement(abkr_grammarParser.Create_table_statementContext context)
     {
         StatementType = StatementType.CreateTable;
@@ -54,8 +52,34 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
             var columnName = columnDefinition.identifier().GetText();
             var dataType = columnDefinition.data_type().GetText();
             Columns[columnName] = dataType;
+
+            // Check if the current column has a PRIMARY KEY constraint and set PrimaryKeyColumn accordingly
+            var constraints = columnDefinition.column_constraint();
+            foreach (var constraint in constraints)
+            {
+                if (constraint.Start.Text == "PRIMARY" && constraint.Stop.Text == "KEY")
+                {
+                    PrimaryKeyColumn = columnName;
+                }
+            }
         }
     }
+    public override void EnterColumn_constraint(abkr_grammarParser.Column_constraintContext context)
+    {
+        if (context.PRIMARY() != null && context.KEY() != null)
+        {
+            PrimaryKeyColumn = ColumnName;
+        }
+    }
+
+    public override void EnterColumn_definition(abkr_grammarParser.Column_definitionContext context)
+    {
+        ColumnName = context.identifier().GetText();
+        base.EnterColumn_definition(context);
+    }
+
+
+
 
 
     public override void EnterDrop_table_statement(abkr_grammarParser.Drop_table_statementContext context)

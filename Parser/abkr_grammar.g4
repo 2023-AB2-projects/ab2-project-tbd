@@ -19,8 +19,9 @@ column_definition_list: column_definition (',' column_definition)*;
 column_definition: identifier data_type column_constraint*;
 
 column_constraint
-    : PRIMARY KEY
+    : PRIMARY KEY { $primary_key_found = true; }
     ;
+
 
 data_type: INT | VARCHAR '(' NUMBER ')';
 

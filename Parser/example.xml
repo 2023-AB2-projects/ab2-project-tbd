@@ -1,0 +1,11 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<metadata>
+  <DataBase dataBaseName="test">
+    <Table tableName="testTable">
+      <Structure>
+        <Attribute attributeName="id" type="INT" />
+        <Attribute attributeName="name" type="VARCHAR(50)" />
+      </Structure>
+    </Table>
+  </DataBase>
+</metadata>

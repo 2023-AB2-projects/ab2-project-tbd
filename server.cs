@@ -28,7 +28,7 @@ class Server
         Console.WriteLine("Server started");
 
         // Initialize the DatabaseServer instance
-        var databaseServer = new DatabaseServer("mongodb://localhost:27017/", "example.xml");  
+        var databaseServer = new DatabaseServer("mongodb://localhost:27017/", "C:/Users/bfcsa/source/repos/abkr/abkrServer/Parser/example.xml");  
 
         bool isMetadataInSync = databaseServer.IsMetadataInSync();
         Console.WriteLine("Is metadata in sync: " + isMetadataInSync);

@@ -19,7 +19,7 @@ column_definition_list: column_definition (',' column_definition)*;
 column_definition: identifier data_type column_constraint*;
 
 column_constraint
-    : PRIMARY KEY { $primary_key_found = true; }
+    : PRIMARY KEY 
     ;
 
 
@@ -29,7 +29,7 @@ identifier_list: identifier (',' identifier)*;
 
 identifier: IDENTIFIER;
 
-insert_statement: INSERT INTO identifier '.' identifier VALUES '(' value_list ')';
+insert_statement: INSERT INTO identifier '.' identifier ( '(' identifier_list ')' )? VALUES '(' value_list ')';
 
 delete_statement: DELETE FROM identifier '.' identifier WHERE identifier '=' value;
 

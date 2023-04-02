@@ -52,7 +52,17 @@ namespace abkr.CatalogManager
             Console.WriteLine($"Database '{databaseName}' created.");
         }
 
-        public void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns)
+        public string GetPrimaryKeyColumn(string databaseName, string tableName)
+        {
+            XElement metadata = LoadMetadata();
+            XElement databaseElement = metadata.Elements("database").FirstOrDefault(db => db.Attribute("name").Value == databaseName);
+            XElement tableElement = databaseElement?.Elements("table").FirstOrDefault(tbl => tbl.Attribute("name").Value == tableName);
+
+            return tableElement?.Attribute("primaryKeyColumn")?.Value;
+        }
+
+
+        public void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns, string primaryKeyColumn)
         {
             var metadata = LoadMetadata();
             var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName").Value == databaseName);
@@ -69,8 +79,18 @@ namespace abkr.CatalogManager
                 var structureElement = new XElement("Structure");
                 foreach (var column in columns)
                 {
-                    structureElement.Add(new XElement("Attribute", new XAttribute("attributeName", column.Key), new XAttribute("type", column.Value)));
+                    XElement attribute = new XElement("Attribute");
+                    attribute.SetAttributeValue("attributeName", column.Key);
+                    attribute.SetAttributeValue("type", column.Value);
+
+                    if (column.Key == primaryKeyColumn)
+                    {
+                        attribute.SetAttributeValue("isPrimaryKey", "true");
+                    }
+
+                    structureElement.Add(attribute); // Changed from 'structure.Add(attribute);'
                 }
+
                 tableElement.Add(structureElement);
                 databaseElement.Add(tableElement);
                 SaveMetadata(metadata);
@@ -80,6 +100,7 @@ namespace abkr.CatalogManager
                 throw new ArgumentException($"Table '{tableName}' already exists in database '{databaseName}'.");
             }
         }
+
 
 
         public void CreateIndex(string databaseName, string tableName, string indexName, List<string> columns, bool isUnique)

@@ -90,29 +90,29 @@ namespace abkr.CatalogManager
 
 
         public void CreateDatabase(string databaseName)
-            {
-                _catalogManager.CreateDatabase(databaseName);
-            }
+        {
+            _catalogManager.CreateDatabase(databaseName);
+        }
 
-            public void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns)
-            {
-                _catalogManager.CreateTable(databaseName, tableName, columns);
-            }
+        public void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns, string primaryKeyColumn)
+        {
+            _catalogManager.CreateTable(databaseName, tableName, columns, primaryKeyColumn);
+        }
 
 
 
-            public void DropDatabase(string databaseName)
-            {
-                _client.DropDatabase(databaseName);
-                _catalogManager.DropDatabase(databaseName);
-            }
+        public void DropDatabase(string databaseName)
+        {
+            _client.DropDatabase(databaseName);
+            _catalogManager.DropDatabase(databaseName);
+        }
 
-            public void DropTable(string databaseName, string tableName)
-            {
-                var database = _client.GetDatabase(databaseName);
-                database.DropCollection(tableName);
-                _catalogManager.DropTable(databaseName, tableName);
-            }
+        public void DropTable(string databaseName, string tableName)
+        {
+            var database = _client.GetDatabase(databaseName);
+            database.DropCollection(tableName);
+            _catalogManager.DropTable(databaseName, tableName);
+        }
 
         public void CreateIndex(string databaseName, string tableName, string indexName, BsonArray columns)
         {
@@ -130,102 +130,109 @@ namespace abkr.CatalogManager
 
 
         public void DropIndex(string databaseName, string tableName, string indexName)
-            {
-                var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-                collection.Indexes.DropOne(indexName);
+        {
+            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+            collection.Indexes.DropOne(indexName);
 
-                _catalogManager.DropIndex(databaseName, tableName, indexName);
-            }
+            _catalogManager.DropIndex(databaseName, tableName, indexName);
+        }
 
-            public void Insert(string databaseName, string tableName, string primaryKeyColumn, Dictionary<string, object> rowData)
-            {
-                var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+        public void Insert(string databaseName, string tableName, string primaryKeyColumn, Dictionary<string, object> rowData)
+        {
+            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
 
-                // Extract the primary key value from the rowData
-                var primaryKeyValue = rowData[primaryKeyColumn];
-                rowData.Remove(primaryKeyColumn);
+            // Extract the primary key value from the rowData
+            var primaryKeyValue = rowData[primaryKeyColumn];
+            rowData.Remove(primaryKeyColumn);
 
-                // Create a new document with the primary key as the key and the rest of the rowData as the value
-                var document = new BsonDocument
+            // Create a new document with the primary key as the key and the rest of the rowData as the value
+            var document = new BsonDocument
                 {
                     { "_id", BsonValue.Create(primaryKeyValue) },
                     { "value", new BsonDocument(rowData.ToDictionary(kvp => kvp.Key, kvp => BsonValue.Create(kvp.Value))) }
                 };
 
-                collection.InsertOne(document);
-            }
+            collection.InsertOne(document);
+        }
 
 
-            public void Delete(string databaseName, string tableName, string primaryKeyColumn, object primaryKeyValue)
+        public void Delete(string databaseName, string tableName, string primaryKeyColumn, object primaryKeyValue)
+        {
+            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+
+            // Since the primary key is stored as the '_id' field in the document, you don't need the primaryKeyColumn parameter
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", BsonValue.Create(primaryKeyValue));
+            collection.DeleteOne(filter);
+        }
+
+
+        public void ExecuteStatement(string sql)
+        {
+            // Create a new instance of the ANTLR input stream with the SQL statement
+            Console.WriteLine(sql);
+            var inputStream = new AntlrInputStream(sql);
+
+            // Create a new instance of the lexer and pass the input stream
+            var lexer = new abkr_grammarLexer(inputStream);
+
+            // Create a new instance of the common token stream and pass the lexer
+            var tokenStream = new CommonTokenStream(lexer);
+
+            // Create a new instance of the parser and pass the token stream
+            var parser = new abkr_grammarParser(tokenStream);
+
+            // Invoke the parser's entry rule (statement) and get the parse tree
+            var parseTree = parser.statement();
+
+            // Implement your own parse tree listener (MyAbkrGrammarListener) to process the parse tree and extract the required information
+            var listener = new MyAbkrGrammarListener();
+            ParseTreeWalker.Default.Walk(listener, parseTree);
+
+            // Perform actions based on the parsed statement
+            if (listener.StatementType == StatementType.CreateDatabase)
             {
-                var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-
-                // Since the primary key is stored as the '_id' field in the document, you don't need the primaryKeyColumn parameter
-                var filter = Builders<BsonDocument>.Filter.Eq("_id", BsonValue.Create(primaryKeyValue));
-                collection.DeleteOne(filter);
+                CreateDatabase(listener.DatabaseName);
             }
-
-
-            public void ExecuteStatement(string sql)
+            else if (listener.StatementType == StatementType.CreateTable)
             {
-                // Create a new instance of the ANTLR input stream with the SQL statement
-                Console.WriteLine(sql);
-                var inputStream = new AntlrInputStream(sql);
-
-                // Create a new instance of the lexer and pass the input stream
-                var lexer = new abkr_grammarLexer(inputStream);
-
-                // Create a new instance of the common token stream and pass the lexer
-                var tokenStream = new CommonTokenStream(lexer);
-
-                // Create a new instance of the parser and pass the token stream
-                var parser = new abkr_grammarParser(tokenStream);
-
-                // Invoke the parser's entry rule (statement) and get the parse tree
-                var parseTree = parser.statement();
-
-                // Implement your own parse tree listener (MyAbkrGrammarListener) to process the parse tree and extract the required information
-                var listener = new MyAbkrGrammarListener();
-                ParseTreeWalker.Default.Walk(listener, parseTree);
-
-                // Perform actions based on the parsed statement
-                if (listener.StatementType == StatementType.CreateDatabase)
+                var stringColumns = new Dictionary<string, string>();
+                foreach (var column in listener.Columns)
                 {
-                    CreateDatabase(listener.DatabaseName);
+                    stringColumns[column.Key] = column.Value.ToString();
                 }
-                else if (listener.StatementType == StatementType.CreateTable)
-                {
-                    var stringColumns = new Dictionary<string, string>();
-                    foreach (var column in listener.Columns)
-                    {
-                        stringColumns[column.Key] = column.Value.ToString();
-                    }
-                    CreateTable(listener.DatabaseName, listener.TableName, stringColumns);
-                }
-                else if (listener.StatementType == StatementType.DropDatabase)
-                {
-                    DropDatabase(listener.DatabaseName);
-                }
-                else if (listener.StatementType == StatementType.DropTable)
-                {
-                    DropTable(listener.DatabaseName, listener.TableName);
-                }
-                else if (listener.StatementType == StatementType.CreateIndex)
-                {
-                    CreateIndex(listener.DatabaseName, listener.TableName, listener.IndexName, listener.IndexColumns);
-                }
-                else if (listener.StatementType == StatementType.DropIndex)
-                {
-                    DropIndex(listener.DatabaseName, listener.TableName, listener.IndexName);
-                }
+                CreateTable(listener.DatabaseName, listener.TableName, stringColumns, listener.PrimaryKeyColumn);
+            }
+            else if (listener.StatementType == StatementType.DropDatabase)
+            {
+                DropDatabase(listener.DatabaseName);
+            }
+            else if (listener.StatementType == StatementType.DropTable)
+            {
+                DropTable(listener.DatabaseName, listener.TableName);
+            }
+            else if (listener.StatementType == StatementType.CreateIndex)
+            {
+                CreateIndex(listener.DatabaseName, listener.TableName, listener.IndexName, listener.IndexColumns);
+            }
+            else if (listener.StatementType == StatementType.DropIndex)
+            {
+                DropIndex(listener.DatabaseName, listener.TableName, listener.IndexName);
+            }
             else if (listener.StatementType == StatementType.Insert)
             {
                 Dictionary<string, object> rowData = new Dictionary<string, object>();
-                string primaryKeyColumn = listener.PrimaryKeyColumn;
+                string primaryKeyColumn = null;
+
+                Console.WriteLine("Columns: " + string.Join(", ", listener.Columns.Keys)); // Add this line
+                Console.WriteLine("Values: " + string.Join(", ", listener.Values)); // Add this line
 
                 for (int i = 0; i < listener.Columns.Count; i++)
                 {
                     rowData[listener.Columns.ElementAt(i).Key] = listener.Values[i];
+                    if (listener.PrimaryKeyColumn == listener.Columns.ElementAt(i).Key)
+                    {
+                        primaryKeyColumn = listener.PrimaryKeyColumn;
+                    }
                 }
 
                 if (primaryKeyColumn != null)
@@ -237,92 +244,93 @@ namespace abkr.CatalogManager
                     throw new Exception("Primary key not found! ");
                 }
             }
+
             else if (listener.StatementType == StatementType.Delete)
-                {
-                    Delete(listener.DatabaseName, listener.TableName, listener.PrimaryKeyColumn, listener.PrimaryKeyValue);
-                }
-            }
-            public async Task ExecuteStatementAsync(string sql)
             {
-                // Create a new instance of the ANTLR input stream with the SQL statement
-                Console.WriteLine(sql);
-                var inputStream = new AntlrInputStream(sql);
+                Delete(listener.DatabaseName, listener.TableName, listener.PrimaryKeyColumn, listener.PrimaryKeyValue);
+            }
+        }
+        public async Task ExecuteStatementAsync(string sql)
+        {
+            // Create a new instance of the ANTLR input stream with the SQL statement
+            Console.WriteLine(sql);
+            var inputStream = new AntlrInputStream(sql);
 
-                // Create a new instance of the lexer and pass the input stream
-                var lexer = new abkr_grammarLexer(inputStream);
+            // Create a new instance of the lexer and pass the input stream
+            var lexer = new abkr_grammarLexer(inputStream);
 
-                // Create a new instance of the common token stream and pass the lexer
-                var tokenStream = new CommonTokenStream(lexer);
+            // Create a new instance of the common token stream and pass the lexer
+            var tokenStream = new CommonTokenStream(lexer);
 
-                // Create a new instance of the parser and pass the token stream
-                var parser = new abkr_grammarParser(tokenStream);
+            // Create a new instance of the parser and pass the token stream
+            var parser = new abkr_grammarParser(tokenStream);
 
-                // Invoke the parser's entry rule (statement) and get the parse tree
-                var parseTree = parser.statement();
+            // Invoke the parser's entry rule (statement) and get the parse tree
+            var parseTree = parser.statement();
 
-                // Implement your own parse tree listener (MyAbkrGrammarListener) to process the parse tree and extract the required information
-                var listener = new MyAbkrGrammarListener();
-                ParseTreeWalker.Default.Walk(listener, parseTree);
+            // Implement your own parse tree listener (MyAbkrGrammarListener) to process the parse tree and extract the required information
+            var listener = new MyAbkrGrammarListener();
+            ParseTreeWalker.Default.Walk(listener, parseTree);
 
-                // Perform actions based on the parsed statement
-                if (listener.StatementType == StatementType.CreateDatabase)
+            // Perform actions based on the parsed statement
+            if (listener.StatementType == StatementType.CreateDatabase)
+            {
+                CreateDatabase(listener.DatabaseName);
+            }
+            else if (listener.StatementType == StatementType.CreateTable)
+            {
+                var stringColumns = new Dictionary<string, string>();
+                foreach (var column in listener.Columns)
                 {
-                    CreateDatabase(listener.DatabaseName);
+                    stringColumns[column.Key] = column.Value.ToString();
                 }
-                else if (listener.StatementType == StatementType.CreateTable)
-                {
-                    var stringColumns = new Dictionary<string, string>();
-                    foreach (var column in listener.Columns)
-                    {
-                        stringColumns[column.Key] = column.Value.ToString();
-                    }
-                    CreateTable(listener.DatabaseName, listener.TableName, stringColumns);
-                }
-                else if (listener.StatementType == StatementType.DropDatabase)
-                {
-                    DropDatabase(listener.DatabaseName);
-                }
-                else if (listener.StatementType == StatementType.DropTable)
-                {
-                    DropTable(listener.DatabaseName, listener.TableName);
-                }
-                else if (listener.StatementType == StatementType.CreateIndex)
-                {
-                    CreateIndex(listener.DatabaseName, listener.TableName, listener.IndexName, listener.IndexColumns);
-                }
-                else if (listener.StatementType == StatementType.DropIndex)
-                {
-                    DropIndex(listener.DatabaseName, listener.TableName, listener.IndexName);
-                }
-                else if (listener.StatementType == StatementType.Insert)
-                {
-                    Dictionary<string, object> rowData = new Dictionary<string, object>();
-                    string primaryKeyColumn = null;
+                CreateTable(listener.DatabaseName, listener.TableName, stringColumns, listener.PrimaryKeyColumn);
+            }
+            else if (listener.StatementType == StatementType.DropDatabase)
+            {
+                DropDatabase(listener.DatabaseName);
+            }
+            else if (listener.StatementType == StatementType.DropTable)
+            {
+                DropTable(listener.DatabaseName, listener.TableName);
+            }
+            else if (listener.StatementType == StatementType.CreateIndex)
+            {
+                CreateIndex(listener.DatabaseName, listener.TableName, listener.IndexName, listener.IndexColumns);
+            }
+            else if (listener.StatementType == StatementType.DropIndex)
+            {
+                DropIndex(listener.DatabaseName, listener.TableName, listener.IndexName);
+            }
+            else if (listener.StatementType == StatementType.Insert)
+            {
+                Dictionary<string, object> rowData = new Dictionary<string, object>();
+                string primaryKeyColumn = null;
 
-                    for (int i = 0; i < listener.Columns.Count; i++)
-                    {
-                        rowData[listener.Columns.ElementAt(i).Key] = listener.Values[i];
-                        if (listener.PrimaryKeyColumn == listener.Columns.ElementAt(i).Key)
-                        {
-                            primaryKeyColumn = listener.PrimaryKeyColumn;
-                        }
-                    }
+                Console.WriteLine("Columns: " + string.Join(", ", listener.Columns.Keys)); // Add this line
+                Console.WriteLine("Values: " + string.Join(", ", listener.Values)); // Add this line
 
-                    if (primaryKeyColumn != null)
-                    {
-                        Insert(listener.DatabaseName, listener.TableName, primaryKeyColumn, rowData);
-                    }
-                    else
-                    {
-                        throw new Exception("Primary key not found!");
-                    }
+                for (int i = 0; i < listener.Columns.Count; i++)
+                {
+                    rowData[listener.Columns.ElementAt(i).Key] = listener.Values[i];
+                    primaryKeyColumn = _catalogManager.GetPrimaryKeyColumn(listener.DatabaseName, listener.TableName);
                 }
 
-                else if (listener.StatementType == StatementType.Delete)
+                if (primaryKeyColumn != null)
                 {
-                    Delete(listener.DatabaseName, listener.TableName, listener.PrimaryKeyColumn, listener.PrimaryKeyValue);
+                    Insert(listener.DatabaseName, listener.TableName, primaryKeyColumn, rowData);
+                }
+                else
+                {
+                    throw new Exception("Primary key not found! ");
                 }
             }
+
+            else if (listener.StatementType == StatementType.Delete)
+            {
+                Delete(listener.DatabaseName, listener.TableName, listener.PrimaryKeyColumn, listener.PrimaryKeyValue);
+            }
+        }
     }
-  }
+}
 

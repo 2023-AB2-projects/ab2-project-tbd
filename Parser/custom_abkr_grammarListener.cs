@@ -53,30 +53,97 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
             var dataType = columnDefinition.data_type().GetText();
             Columns[columnName] = dataType;
 
-            // Check if the current column has a PRIMARY KEY constraint and set PrimaryKeyColumn accordingly
             var constraints = columnDefinition.column_constraint();
             foreach (var constraint in constraints)
             {
-                if (constraint.Start.Text == "PRIMARY" && constraint.Stop.Text == "KEY")
+                if (constraint.PRIMARY() != null && constraint.KEY() != null)
                 {
                     PrimaryKeyColumn = columnName;
                 }
             }
         }
     }
+
     public override void EnterColumn_constraint(abkr_grammarParser.Column_constraintContext context)
     {
         if (context.PRIMARY() != null && context.KEY() != null)
         {
             PrimaryKeyColumn = ColumnName;
+            Console.WriteLine($"PrimaryKeyColumn set to: {PrimaryKeyColumn}");
         }
     }
 
+    private bool primaryKeyFound;
+    private string primaryKeyColumn;
+
+
     public override void EnterColumn_definition(abkr_grammarParser.Column_definitionContext context)
     {
-        ColumnName = context.identifier().GetText();
-        base.EnterColumn_definition(context);
+        string columnName = context.identifier().GetText();
+        Columns[columnName] = context.data_type().GetText();
+
+        Console.WriteLine($"Column name: {columnName}, Data type: {Columns[columnName]}");
+
+        if (context.column_constraint() != null)
+        {
+            foreach (var constraint in context.column_constraint())
+            {
+                if (constraint.PRIMARY() != null)
+                {
+                    primaryKeyFound = true;
+                    primaryKeyColumn = columnName;
+                    Console.WriteLine($"Primary key found for column: {primaryKeyColumn}");
+                    break;
+                }
+            }
+        }
     }
+
+
+
+
+    public override void EnterInsert_statement(abkr_grammarParser.Insert_statementContext context)
+    {
+        StatementType = StatementType.Insert;
+        DatabaseName = context.identifier(0).GetText();
+        TableName = context.identifier(1).GetText();
+
+        // Add this block to populate columns
+        var columnIdentifiers = context.identifier_list()?.identifier();
+        if (columnIdentifiers != null)
+        {
+            int columnIndex = 0;
+            foreach (var columnIdentifier in columnIdentifiers)
+            {
+                string columnName = columnIdentifier.GetText();
+                Columns[columnName] = null;
+                if (columnName == PrimaryKeyColumn)
+                {
+                    var values = context.value_list().value();
+                    if (values != null && values.Count() > columnIndex)
+                    {
+                        PrimaryKeyValue = values[columnIndex].GetText();
+                    }
+                }
+                columnIndex++;
+            }
+        }
+
+        if (PrimaryKeyColumn == null)
+        {
+            throw new Exception("Primary Key not found!");
+        }
+
+        var valuelist = context.value_list().value();
+        foreach (var value in valuelist)
+        {
+            Values.Add(value.GetText());
+        }
+    }
+
+
+
+
 
 
 
@@ -110,19 +177,6 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         DatabaseName = context.identifier(0).GetText();
         TableName = context.identifier(1).GetText();
         IndexName = context.identifier(2).GetText();
-    }
-
-    public override void EnterInsert_statement(abkr_grammarParser.Insert_statementContext context)
-    {
-        StatementType = StatementType.Insert;
-        DatabaseName = context.identifier(0).GetText();
-        TableName = context.identifier(1).GetText();
-
-        var values = context.value_list().value();
-        foreach (var value in values)
-        {
-            Values.Add(value.GetText());
-        }
     }
 
     public override void EnterDelete_statement(abkr_grammarParser.Delete_statementContext context)

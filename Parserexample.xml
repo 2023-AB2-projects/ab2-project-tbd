@@ -1,15 +1,11 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Databases>
+<metadata>
   <DataBase dataBaseName="tbd">
     <Table tableName="soon">
       <Structure>
-        <Attribute attributeName="nr" type="INT" isPrimaryKey="true" />
+        <Attribute attributeName="nr" type="INT" />
         <Attribute attributeName="name" type="VARCHAR(50)" />
       </Structure>
-      <primaryKey name="nr" />
     </Table>
   </DataBase>
-  <DataBase dataBaseName="tbd" />
-  <DataBase dataBaseName="tbd" />
-  <DataBase dataBaseName="tbd" />
-</Databases>
+</metadata>

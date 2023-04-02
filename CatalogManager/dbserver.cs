@@ -6,6 +6,7 @@ using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using abkr.grammarParser;
 using System.Xml.Linq;
+using Amazon.Auth.AccessControlPolicy;
 
 
 namespace abkr.CatalogManager
@@ -185,7 +186,7 @@ namespace abkr.CatalogManager
             var parseTree = parser.statement();
 
             // Implement your own parse tree listener (MyAbkrGrammarListener) to process the parse tree and extract the required information
-            var listener = new MyAbkrGrammarListener();
+            var listener = new MyAbkrGrammarListener("C:/ Users / bfcsa / source / repos / abkr / abkrServer / Parser /example.xml");
             ParseTreeWalker.Default.Walk(listener, parseTree);
 
             // Perform actions based on the parsed statement
@@ -229,10 +230,7 @@ namespace abkr.CatalogManager
                 for (int i = 0; i < listener.Columns.Count; i++)
                 {
                     rowData[listener.Columns.ElementAt(i).Key] = listener.Values[i];
-                    if (listener.PrimaryKeyColumn == listener.Columns.ElementAt(i).Key)
-                    {
-                        primaryKeyColumn = listener.PrimaryKeyColumn;
-                    }
+                    primaryKeyColumn = _catalogManager.GetPrimaryKeyColumn(listener.DatabaseName, listener.TableName);
                 }
 
                 if (primaryKeyColumn != null)
@@ -244,7 +242,6 @@ namespace abkr.CatalogManager
                     throw new Exception("Primary key not found! ");
                 }
             }
-
             else if (listener.StatementType == StatementType.Delete)
             {
                 Delete(listener.DatabaseName, listener.TableName, listener.PrimaryKeyColumn, listener.PrimaryKeyValue);
@@ -269,7 +266,7 @@ namespace abkr.CatalogManager
             var parseTree = parser.statement();
 
             // Implement your own parse tree listener (MyAbkrGrammarListener) to process the parse tree and extract the required information
-            var listener = new MyAbkrGrammarListener();
+            var listener = new MyAbkrGrammarListener("C:/Users/bfcsa/source/repos/abkr/abkrServer/Parser/example.xml");
             ParseTreeWalker.Default.Walk(listener, parseTree);
 
             // Perform actions based on the parsed statement

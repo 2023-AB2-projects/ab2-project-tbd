@@ -1,6 +1,7 @@
 ﻿using abkr.grammarParser;
 using Antlr4.Runtime.Misc;
 using MongoDB.Bson;
+using System.Xml;
 
 public enum StatementType
 {
@@ -30,6 +31,15 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public Dictionary<string, object> RowData { get; private set; }
     public string PrimaryKeyColumn { get; private set; }
     public object PrimaryKeyValue { get; private set; }
+
+    private XmlDocument metadataXml;
+
+    public MyAbkrGrammarListener(string metadataFilePath)
+    {
+        metadataXml = new XmlDocument();
+        metadataXml.Load(metadataFilePath);
+
+    }
 
 
     // Override the listener methods to extract the required information
@@ -64,18 +74,6 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         }
     }
 
-    public override void EnterColumn_constraint(abkr_grammarParser.Column_constraintContext context)
-    {
-        if (context.PRIMARY() != null && context.KEY() != null)
-        {
-            PrimaryKeyColumn = ColumnName;
-            Console.WriteLine($"PrimaryKeyColumn set to: {PrimaryKeyColumn}");
-        }
-    }
-
-    private bool primaryKeyFound;
-    private string primaryKeyColumn;
-
 
     public override void EnterColumn_definition(abkr_grammarParser.Column_definitionContext context)
     {
@@ -90,9 +88,8 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
             {
                 if (constraint.PRIMARY() != null)
                 {
-                    primaryKeyFound = true;
-                    primaryKeyColumn = columnName;
-                    Console.WriteLine($"Primary key found for column: {primaryKeyColumn}");
+                    PrimaryKeyColumn = columnName;
+                    Console.WriteLine($"Primary key found for column: {PrimaryKeyColumn}");
                     break;
                 }
             }
@@ -102,47 +99,38 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
 
 
+
     public override void EnterInsert_statement(abkr_grammarParser.Insert_statementContext context)
     {
-        StatementType = StatementType.Insert;
         DatabaseName = context.identifier(0).GetText();
         TableName = context.identifier(1).GetText();
 
-        // Add this block to populate columns
-        var columnIdentifiers = context.identifier_list()?.identifier();
-        if (columnIdentifiers != null)
+        Columns.Clear();
+        Values.Clear();
+
+        int columnCount = context.identifier_list().identifier().Length;
+        for (int i = 0; i < columnCount; i++)
         {
-            int columnIndex = 0;
-            foreach (var columnIdentifier in columnIdentifiers)
+            Columns[context.identifier_list().identifier(i).GetText()] = null;
+        }
+
+        int valueCount = context.value_list().value().Length;
+        for (int i = 0; i < valueCount; i++)
+        {
+            Columns[context.identifier_list().identifier(i).GetText()] = context.value_list().value(i).GetText();
+        }
+
+        // Check if the primary key column is included in the Columns dictionary
+        XmlNode primaryKeyNode = metadataXml.SelectSingleNode($"/Databases/DataBase[@dataBaseName='{DatabaseName}']/Table[@tableName='{TableName}']/Structure/Attribute[@isPrimaryKey='true']");
+        if (primaryKeyNode != null)
+        {
+            string primaryKeyColumnName = primaryKeyNode.Attributes["attributeName"].Value;
+            if (!Columns.ContainsKey(primaryKeyColumnName) || Columns[primaryKeyColumnName] == null)
             {
-                string columnName = columnIdentifier.GetText();
-                Columns[columnName] = null;
-                if (columnName == PrimaryKeyColumn)
-                {
-                    var values = context.value_list().value();
-                    if (values != null && values.Count() > columnIndex)
-                    {
-                        PrimaryKeyValue = values[columnIndex].GetText();
-                    }
-                }
-                columnIndex++;
+                throw new InvalidOperationException("Error: Primary key not found!");
             }
         }
-
-        if (PrimaryKeyColumn == null)
-        {
-            throw new Exception("Primary Key not found!");
-        }
-
-        var valuelist = context.value_list().value();
-        foreach (var value in valuelist)
-        {
-            Values.Add(value.GetText());
-        }
     }
-
-
-
 
 
 

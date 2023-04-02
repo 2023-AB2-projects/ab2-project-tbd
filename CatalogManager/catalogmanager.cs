@@ -83,15 +83,18 @@ namespace abkr.CatalogManager
                     attribute.SetAttributeValue("attributeName", column.Key);
                     attribute.SetAttributeValue("type", column.Value);
 
-                    if (column.Key == primaryKeyColumn)
+                    if (column.Key == primaryKeyColumn && !string.IsNullOrEmpty(primaryKeyColumn))
                     {
                         attribute.SetAttributeValue("isPrimaryKey", "true");
+                        Console.WriteLine($"Primary key attribute added for column: {column.Key}");
                     }
 
-                    structureElement.Add(attribute); // Changed from 'structure.Add(attribute);'
+                    structureElement.Add(attribute);
                 }
 
+                var primaryKeyElement = new XElement("primaryKey", new XAttribute("name", primaryKeyColumn));
                 tableElement.Add(structureElement);
+                tableElement.Add(primaryKeyElement); // Add primary key element to table
                 databaseElement.Add(tableElement);
                 SaveMetadata(metadata);
             }
@@ -100,8 +103,6 @@ namespace abkr.CatalogManager
                 throw new ArgumentException($"Table '{tableName}' already exists in database '{databaseName}'.");
             }
         }
-
-
 
         public void CreateIndex(string databaseName, string tableName, string indexName, List<string> columns, bool isUnique)
         {

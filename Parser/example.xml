@@ -12,4 +12,22 @@
   <DataBase dataBaseName="tbd" />
   <DataBase dataBaseName="tbd" />
   <DataBase dataBaseName="tbd" />
+  <DataBase dataBaseName="abkr">
+    <Table tableName="newTable">
+      <Structure>
+        <Attribute attributeName="id" type="INT" isPrimaryKey="true" />
+        <Attribute attributeName="name" type="VARCHAR(50)" />
+      </Structure>
+      <primaryKey name="id" />
+    </Table>
+  </DataBase>
+  <DataBase dataBaseName="k">
+    <Table tableName="kk">
+      <Structure>
+        <Attribute attributeName="kid" type="INT" isPrimaryKey="true" />
+        <Attribute attributeName="kar" type="VARCHAR(50)" />
+      </Structure>
+      <primaryKey name="kid" />
+    </Table>
+  </DataBase>
 </Databases>

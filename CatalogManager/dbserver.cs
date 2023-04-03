@@ -14,10 +14,10 @@ namespace abkr.CatalogManager
 
     public class DatabaseServer
     {
-        private IMongoClient _client;
-        public IMongoClient MongoClient => _client;
-
-        private CatalogManager _catalogManager;
+        static private IMongoClient? _client;
+        static public IMongoClient MongoClient => _client;
+        
+        static private CatalogManager? _catalogManager;
 
 
         public DatabaseServer(string connectionString, string metadataFileName)
@@ -36,7 +36,8 @@ namespace abkr.CatalogManager
 
         public void ListDatabases()
         {
-            var databaseList = _client.ListDatabaseNames().ToList();
+            var databaseList = _client.ListDatabaseNames().ToList()
+                ??throw new Exception("No Databases present.");
             Console.WriteLine("Databases:");
             foreach (var databaseName in databaseList)
             {
@@ -92,28 +93,60 @@ namespace abkr.CatalogManager
 
         public void CreateDatabase(string databaseName)
         {
+            _client.GetDatabase(databaseName);   
+            Console.WriteLine($"Creating database: {databaseName}");
             _catalogManager.CreateDatabase(databaseName);
         }
 
         public void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns, string primaryKeyColumn)
         {
+            var database=_client.GetDatabase(databaseName);
+            database.CreateCollection(tableName);
+            Console.WriteLine($"Creating table: {databaseName}.{tableName}");
             _catalogManager.CreateTable(databaseName, tableName, columns, primaryKeyColumn);
         }
 
-
-
         public void DropDatabase(string databaseName)
         {
+            Console.WriteLine($"Dropping database: {databaseName}");
             _client.DropDatabase(databaseName);
             _catalogManager.DropDatabase(databaseName);
         }
 
         public void DropTable(string databaseName, string tableName)
         {
+            Console.WriteLine($"Dropping table: {databaseName}.{tableName}");
             var database = _client.GetDatabase(databaseName);
             database.DropCollection(tableName);
             _catalogManager.DropTable(databaseName, tableName);
         }
+
+        public void Insert(string databaseName, string tableName, string primaryKeyColumn, Dictionary<string, object> rowData)
+        {
+            Console.WriteLine($"Inserting row into {databaseName}.{tableName}");
+            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+
+            var primaryKeyValue = rowData[primaryKeyColumn];
+            rowData.Remove(primaryKeyColumn);
+
+            var document = new BsonDocument
+        {
+            { "_id", BsonValue.Create(primaryKeyValue) },
+            { "value", new BsonDocument(rowData.ToDictionary(kvp => kvp.Key, kvp => BsonValue.Create(kvp.Value))) }
+        };
+
+            collection.InsertOne(document);
+        }
+
+        public void Delete(string databaseName, string tableName, string primaryKeyColumn, object primaryKeyValue)
+        {
+            Console.WriteLine($"Deleting row from {databaseName}.{tableName}");
+            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", BsonValue.Create(primaryKeyValue));
+            collection.DeleteOne(filter);
+        }
+
 
         public void CreateIndex(string databaseName, string tableName, string indexName, BsonArray columns)
         {
@@ -138,33 +171,33 @@ namespace abkr.CatalogManager
             _catalogManager.DropIndex(databaseName, tableName, indexName);
         }
 
-        public void Insert(string databaseName, string tableName, string primaryKeyColumn, Dictionary<string, object> rowData)
-        {
-            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+        //public void Insert(string databaseName, string tableName, string primaryKeyColumn, Dictionary<string, object> rowData)
+        //{
+        //    var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
 
-            // Extract the primary key value from the rowData
-            var primaryKeyValue = rowData[primaryKeyColumn];
-            rowData.Remove(primaryKeyColumn);
+        //    // Extract the primary key value from the rowData
+        //    var primaryKeyValue = rowData[primaryKeyColumn];
+        //    rowData.Remove(primaryKeyColumn);
 
-            // Create a new document with the primary key as the key and the rest of the rowData as the value
-            var document = new BsonDocument
-                {
-                    { "_id", BsonValue.Create(primaryKeyValue) },
-                    { "value", new BsonDocument(rowData.ToDictionary(kvp => kvp.Key, kvp => BsonValue.Create(kvp.Value))) }
-                };
+        //    // Create a new document with the primary key as the key and the rest of the rowData as the value
+        //    var document = new BsonDocument
+        //        {
+        //            { "_id", BsonValue.Create(primaryKeyValue) },
+        //            { "value", new BsonDocument(rowData.ToDictionary(kvp => kvp.Key, kvp => BsonValue.Create(kvp.Value))) }
+        //        };
 
-            collection.InsertOne(document);
-        }
+        //    collection.InsertOne(document);
+        //}
 
 
-        public void Delete(string databaseName, string tableName, string primaryKeyColumn, object primaryKeyValue)
-        {
-            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+        //public void Delete(string databaseName, string tableName, string primaryKeyColumn, object primaryKeyValue)
+        //{
+        //    var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
 
-            // Since the primary key is stored as the '_id' field in the document, you don't need the primaryKeyColumn parameter
-            var filter = Builders<BsonDocument>.Filter.Eq("_id", BsonValue.Create(primaryKeyValue));
-            collection.DeleteOne(filter);
-        }
+        //    // Since the primary key is stored as the '_id' field in the document, you don't need the primaryKeyColumn parameter
+        //    var filter = Builders<BsonDocument>.Filter.Eq("_id", BsonValue.Create(primaryKeyValue));
+        //    collection.DeleteOne(filter);
+        //}
 
 
         public void ExecuteStatement(string sql)

@@ -54,25 +54,35 @@ namespace abkr.CatalogManager
 
         public string GetPrimaryKeyColumn(string databaseName, string tableName)
         {
-            XElement metadata = LoadMetadata();
-            XElement databaseElement = metadata.Elements("database").FirstOrDefault(db => db.Attribute("name").Value == databaseName);
-            XElement tableElement = databaseElement?.Elements("table").FirstOrDefault(tbl => tbl.Attribute("name").Value == tableName);
+            XElement? metadata = LoadMetadata();
+            XElement? databaseElement = metadata?.Elements("DataBase").FirstOrDefault(db => db.Attribute("dataBaseName")?.Value == databaseName);
+            XElement? tableElement = databaseElement?.Elements("Table").FirstOrDefault(tbl => tbl.Attribute("tableName")?.Value == tableName);
 
-            return tableElement?.Attribute("primaryKeyColumn")?.Value;
+            if (tableElement == null)
+            {
+                throw new Exception($"ERROR: Table {tableName} not found in database {databaseName}!");
+            }
+
+            XElement? primaryKeyAttribute = tableElement.Elements("Structure").Elements("Attribute")
+                .FirstOrDefault(attr => attr.Attribute("isPrimaryKey")?.Value == "true");
+
+            if (primaryKeyAttribute == null)
+            {
+                throw new Exception($"ERROR: Primary key column not found in table {tableName}!");
+            }
+
+            return primaryKeyAttribute.Attribute("attributeName")?.Value
+                ?? throw new Exception($"ERROR: Primary key column name not found in table {tableName}!");
         }
 
 
         public void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns, string primaryKeyColumn)
         {
             var metadata = LoadMetadata();
-            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName").Value == databaseName);
+            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName)
+                ??throw new ArgumentException($"Database '{databaseName}' does not exist.");
 
-            if (databaseElement == null)
-            {
-                throw new ArgumentException($"Database '{databaseName}' does not exist.");
-            }
-
-            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName").Value == tableName);
+            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName")?.Value == tableName);
             if (tableElement == null)
             {
                 tableElement = new XElement("Table", new XAttribute("tableName", tableName));
@@ -107,18 +117,12 @@ namespace abkr.CatalogManager
         public void CreateIndex(string databaseName, string tableName, string indexName, List<string> columns, bool isUnique)
         {
             var metadata = LoadMetadata();
-            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName").Value == databaseName);
 
-            if (databaseElement == null)
-            {
-                throw new ArgumentException($"Database '{databaseName}' does not exist.");
-            }
+            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName) 
+                ?? throw new ArgumentException($"Database '{databaseName}' does not exist.");
 
-            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName").Value == tableName);
-            if (tableElement == null)
-            {
-                throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
-            }
+            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName")?.Value == tableName) 
+                ?? throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
 
             var indexFilesElement = tableElement.Element("IndexFiles");
             if (indexFilesElement == null)
@@ -143,21 +147,18 @@ namespace abkr.CatalogManager
         public void DropIndex(string databaseName, string tableName, string indexName)
         {
             var metadata = LoadMetadata();
-            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName").Value == databaseName);
+            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName);
 
             if (databaseElement == null)
             {
                 throw new ArgumentException($"Database '{databaseName}' does not exist.");
             }
 
-            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName").Value == tableName);
-            if (tableElement == null)
-            {
-                throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
-            }
+            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName")?.Value == tableName) 
+                ?? throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
 
             var indexFilesElement = tableElement.Element("IndexFiles");
-            var indexElement = indexFilesElement?.Elements("IndexFile").FirstOrDefault(e => e.Attribute("indexName").Value == indexName);
+            var indexElement = indexFilesElement?.Elements("IndexFile").FirstOrDefault(e => e.Attribute("indexName")?.Value == indexName);
 
             if (indexElement != null)
             {
@@ -173,7 +174,7 @@ namespace abkr.CatalogManager
         public void DropDatabase(string databaseName)
         {
             var metadata = LoadMetadata();
-            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName").Value == databaseName);
+            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName);
 
             if (databaseElement != null)
             {
@@ -189,14 +190,10 @@ namespace abkr.CatalogManager
         public void DropTable(string databaseName, string tableName)
         {
             var metadata = LoadMetadata();
-            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName").Value == databaseName);
+            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName) 
+                ?? throw new ArgumentException($"Database '{databaseName}' does not exist.");
 
-            if (databaseElement == null)
-            {
-                throw new ArgumentException($"Database '{databaseName}' does not exist.");
-            }
-
-            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName").Value == tableName);
+            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName")?.Value == tableName);
             if (tableElement != null)
             {
                 tableElement.Remove();

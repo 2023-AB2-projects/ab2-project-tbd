@@ -32,7 +32,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public string PrimaryKeyColumn { get; private set; }
     public object PrimaryKeyValue { get; private set; }
 
-    private XmlDocument metadataXml;
+    private readonly XmlDocument metadataXml;
 
     public MyAbkrGrammarListener(string metadataFilePath)
     {
@@ -102,6 +102,9 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
     public override void EnterInsert_statement(abkr_grammarParser.Insert_statementContext context)
     {
+        //Console.WriteLine("EnterInsert_statement called"); // Add this line
+        StatementType = StatementType.Insert;
+
         DatabaseName = context.identifier(0).GetText();
         TableName = context.identifier(1).GetText();
 
@@ -120,6 +123,10 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
             Columns[context.identifier_list().identifier(i).GetText()] = context.value_list().value(i).GetText();
         }
 
+        // Add these lines to log the column names and values
+        //Console.WriteLine("Columns: " + string.Join(", ", Columns.Keys));
+        //Console.WriteLine("Values: " + string.Join(", ", Columns.Values));
+
         // Check if the primary key column is included in the Columns dictionary
         XmlNode primaryKeyNode = metadataXml.SelectSingleNode($"/Databases/DataBase[@dataBaseName='{DatabaseName}']/Table[@tableName='{TableName}']/Structure/Attribute[@isPrimaryKey='true']");
         if (primaryKeyNode != null)
@@ -131,11 +138,6 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
             }
         }
     }
-
-
-
-
-
 
     public override void EnterDrop_table_statement(abkr_grammarParser.Drop_table_statementContext context)
     {

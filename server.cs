@@ -36,8 +36,7 @@ class Server
         while (!cts.Token.IsCancellationRequested)
         {
             // Wait for a client to connect
-            TcpClient client = null;
-            databaseServer.ListDatabases();
+            TcpClient? client = null;
             try
             {
                 client = await AcceptTcpClientAsync(listener, cts.Token);
@@ -95,7 +94,7 @@ class Server
             while (!cancellationToken.IsCancellationRequested && client.Connected)
             {
                 // Read data from the client
-                string data = await reader.ReadLineAsync();
+                string? data = await reader.ReadLineAsync();
 
                 if (data == null || data.ToLower() == "exit")
                 {
@@ -107,7 +106,7 @@ class Server
                 string response;
                 try
                 {
-                    await databaseServer.ExecuteStatementAsync(data);
+                    await DatabaseServer.ExecuteStatementAsync(data);
                     response = "Success";
                 }
                 catch (Exception ex)

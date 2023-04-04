@@ -14,10 +14,6 @@
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="NewFolder\" />
-  </ItemGroup>
-
   <PropertyGroup>
     <ANTLR4_Runtime_Version>4.6.6</ANTLR4_Runtime_Version>
   </PropertyGroup>

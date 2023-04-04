@@ -1,33 +1,12 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Databases>
-  <DataBase dataBaseName="tbd">
-    <Table tableName="soon">
-      <Structure>
-        <Attribute attributeName="nr" type="INT" isPrimaryKey="true" />
-        <Attribute attributeName="name" type="VARCHAR(50)" />
-      </Structure>
-      <primaryKey name="nr" />
-    </Table>
-  </DataBase>
-  <DataBase dataBaseName="tbd" />
-  <DataBase dataBaseName="tbd" />
-  <DataBase dataBaseName="tbd" />
+<metadata>
   <DataBase dataBaseName="abkr">
-    <Table tableName="newTable">
+    <Table tableName="collection">
       <Structure>
-        <Attribute attributeName="id" type="INT" isPrimaryKey="true" />
-        <Attribute attributeName="name" type="VARCHAR(50)" />
+        <Attribute attributeName="cID" type="INT" isPrimaryKey="true" />
+        <Attribute attributeName="cNAME" type="VARCHAR(255)" />
       </Structure>
-      <primaryKey name="id" />
+      <primaryKey name="cID" />
     </Table>
   </DataBase>
-  <DataBase dataBaseName="k">
-    <Table tableName="kk">
-      <Structure>
-        <Attribute attributeName="kid" type="INT" isPrimaryKey="true" />
-        <Attribute attributeName="kar" type="VARCHAR(50)" />
-      </Structure>
-      <primaryKey name="kid" />
-    </Table>
-  </DataBase>
-</Databases>
+</metadata>

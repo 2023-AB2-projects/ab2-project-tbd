@@ -52,25 +52,29 @@ namespace abkr.CatalogManager
 
         public static bool IsMetadataInSync(CatalogManager? _catalogManager)
         {
-            XElement? metadata = _catalogManager?.LoadMetadata();
+            XElement? metadata = _catalogManager?.LoadMetadata()
+                ??throw new Exception("ERROR: Metadata does not exist!");
 
             Console.Write(metadata?.ToString());
-            var databaseList = _client?.ListDatabaseNames().ToList();
+            var databaseList = _client?.ListDatabaseNames().ToList()
+                ??throw new Exception("ERROR: No databases!");
 
             foreach (var databaseElement in metadata.Elements("database"))
             {
-                string databaseName = databaseElement.Attribute("name").Value;
+                string? databaseName = databaseElement?.Attribute("name")?.Value;
 
                 if (!databaseList.Contains(databaseName))
                 {
                     return false;
                 }
 
-                var collectionList = _client.GetDatabase(databaseName).ListCollectionNames().ToList();
+                var collectionList = _client?.GetDatabase(databaseName).ListCollectionNames().ToList()
+                    ??throw new Exception("ERROR: Tables not found!");
 
                 foreach (var tableElement in databaseElement.Elements("table"))
                 {
-                    string tableName = tableElement.Attribute("name").Value;
+                    string? tableName = tableElement?.Attribute("name")?.Value
+                        ??throw new Exception("ERROR: Table name not found!");
 
                     if (!collectionList.Contains(tableName))
                     {
@@ -82,7 +86,7 @@ namespace abkr.CatalogManager
 
                     foreach (var indexElement in tableElement.Elements("index"))
                     {
-                        string indexName = indexElement.Attribute("name").Value;
+                        string? indexName = indexElement?.Attribute("name")?.Value;
 
                         if (!indexList.Any(index => index["name"] == indexName))
                         {
@@ -101,24 +105,24 @@ namespace abkr.CatalogManager
 
         public static void CreateDatabase(string databaseName)
         {
-            _client.GetDatabase(databaseName);   
+            _client?.GetDatabase(databaseName);   
             Console.WriteLine($"Creating database: {databaseName}");
-            _catalogManager.CreateDatabase(databaseName);
+            _catalogManager?.CreateDatabase(databaseName);
         }
 
         public static void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns, string primaryKeyColumn)
         {
-            var database=_client.GetDatabase(databaseName);
-            database.CreateCollection(tableName);
+            var database=_client?.GetDatabase(databaseName);
+            database?.CreateCollection(tableName);
             Console.WriteLine($"Creating table: {databaseName}.{tableName}");
-            _catalogManager.CreateTable(databaseName, tableName, columns, primaryKeyColumn);
+            _catalogManager?.CreateTable(databaseName, tableName, columns, primaryKeyColumn);
         }
 
         public static void DropDatabase(string databaseName)
         {
             Console.WriteLine($"Dropping database: {databaseName}");
-            _client.DropDatabase(databaseName);
-            _catalogManager.DropDatabase(databaseName);
+            _client?.DropDatabase(databaseName);
+            _catalogManager?.DropDatabase(databaseName);
         }
 
         public static void DropTable(string databaseName, string tableName)
@@ -126,7 +130,7 @@ namespace abkr.CatalogManager
             Console.WriteLine($"Dropping table: {databaseName}.{tableName}");
             var database = _client.GetDatabase(databaseName);
             database.DropCollection(tableName);
-            _catalogManager.DropTable(databaseName, tableName);
+            _catalogManager?.DropTable(databaseName, tableName);
         }
 
         public static void Insert(string databaseName, string tableName, string primaryKeyColumn, List<Dictionary<string, object>> rowsData)
@@ -135,7 +139,7 @@ namespace abkr.CatalogManager
             var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName)
                 ?? throw new Exception("ERROR: Table not found! Null ref");
 
-            List<BsonDocument> documents = new List<BsonDocument>();
+            List<BsonDocument> documents = new();
 
             try
             {
@@ -183,14 +187,14 @@ namespace abkr.CatalogManager
         {
             var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
             var indexKeys = new IndexKeysDefinitionBuilder<BsonDocument>().Ascending((FieldDefinition<BsonDocument>)columns.Select(column => column.AsString));
-            collection.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(indexKeys, new CreateIndexOptions { Name = indexName }));
+            collection?.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(indexKeys, new CreateIndexOptions { Name = indexName }));
 
-            XElement metadata = _catalogManager.LoadMetadata(); 
-            XElement? databaseMetadata = metadata.Element(databaseName);
+            XElement? metadata = _catalogManager?.LoadMetadata(); 
+            XElement? databaseMetadata = metadata?.Element(databaseName);
             XElement? tableMetadata = databaseMetadata?.Element(tableName);
             XElement? indexes = tableMetadata?.Element("indexes");
 
-            _catalogManager.CreateIndex(databaseName, tableName, indexName, columns.Select(column => column.AsString).ToList(), false); // Convert BsonArray to List<string>
+            _catalogManager?.CreateIndex(databaseName, tableName, indexName, columns.Select(column => column.AsString).ToList(), false); // Convert BsonArray to List<string>
         }
 
 
@@ -218,7 +222,7 @@ namespace abkr.CatalogManager
             }
         }
 
-        public static async Task ExecuteStatementAsync(string sql)
+        public static Task ExecuteStatementAsync(string sql)
         {
             Console.WriteLine("ExecuteStatementAsync called");
 
@@ -281,7 +285,7 @@ namespace abkr.CatalogManager
                 Console.WriteLine("Columns: " + string.Join(", ", listener.Columns.Keys));
                 Console.WriteLine("Values: " + string.Join(", ", listener.Values));
 
-                primaryKeyColumn = _catalogManager.GetPrimaryKeyColumn(listener.DatabaseName, listener.TableName)
+                primaryKeyColumn = _catalogManager?.GetPrimaryKeyColumn(listener.DatabaseName, listener.TableName)
                         ?? throw new Exception("ERROR: Primary key not found!");
                 Console.WriteLine(primaryKeyColumn.ToString());
 
@@ -303,6 +307,8 @@ namespace abkr.CatalogManager
             {
                 Delete(listener.DatabaseName, listener.TableName, listener.PrimaryKeyColumn, listener.PrimaryKeyValue);
             }
+
+            return Task.CompletedTask;
         }
     }
 }

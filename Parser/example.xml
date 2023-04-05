@@ -9,4 +9,13 @@
       <primaryKey name="cID" />
     </Table>
   </DataBase>
+  <DataBase dataBaseName="test">
+    <Table tableName="test">
+      <Structure>
+        <Attribute attributeName="tID" type="INT" isPrimaryKey="true" />
+        <Attribute attributeName="tNAME" type="VARCHAR(8)" />
+      </Structure>
+      <primaryKey name="tID" />
+    </Table>
+  </DataBase>
 </metadata>

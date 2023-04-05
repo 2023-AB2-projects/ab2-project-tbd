@@ -9,7 +9,7 @@ namespace abkr.CatalogManager
 {
     public class CatalogManager
     {
-        private string _metadataFilePath;
+        private readonly string _metadataFilePath;
 
         public CatalogManager(string metadataFilePath)
         {

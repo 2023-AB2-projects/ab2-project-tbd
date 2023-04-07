@@ -145,7 +145,9 @@ namespace abkr.CatalogManager
             {
                 foreach (var rowData in rowsData)
                 {
+                    Console.WriteLine("Row data:");
                     var primaryKeyValue = rowData[primaryKeyColumn];
+                    Console.WriteLine(primaryKeyColumn + " = " + primaryKeyValue);
                     rowData.Remove(primaryKeyColumn);
 
                     var document = new BsonDocument
@@ -172,15 +174,14 @@ namespace abkr.CatalogManager
 
 
 
-        public static void Delete(string databaseName, string tableName, string primaryKeyColumn, object primaryKeyValue)
+        public static void Delete(string databaseName, string tableName, FilterDefinition<BsonDocument> filter)
         {
-            Console.WriteLine($"Deleting row from {databaseName}.{tableName}");
             var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-
-            var filter = Builders<BsonDocument>.Filter.Eq("_id", BsonValue.Create(primaryKeyValue));
-            collection?.DeleteOne(filter);
-            
+            var deleteResult = collection.DeleteOne(filter);
+            Console.WriteLine($"Deleted count: {deleteResult.DeletedCount}");
         }
+
+
 
 
         public static void CreateIndex(string databaseName, string tableName, string indexName, BsonArray columns)
@@ -221,6 +222,19 @@ namespace abkr.CatalogManager
                 Console.WriteLine(document.ToString());
             }
         }
+
+        public static void PrintAllDocuments(string databaseName, string tableName)
+        {
+            var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+            var documents = collection.Find(Builders<BsonDocument>.Filter.Empty).ToList();
+
+            Console.WriteLine($"Documents in {databaseName}.{tableName}:");
+            foreach (var document in documents)
+            {
+                Console.WriteLine(document);
+            }
+        }
+
 
         public static Task ExecuteStatementAsync(string sql)
         {
@@ -276,36 +290,36 @@ namespace abkr.CatalogManager
             }
             else if (listener.StatementType == StatementType.Insert)
             {
-
-
                 Dictionary<string, object> rowData = new Dictionary<string, object>();
                 string? primaryKeyColumn = null;
 
-                Console.WriteLine("Before calling Insert method..."); 
+                Console.WriteLine("Before calling Insert method...");
                 Console.WriteLine("Columns: " + string.Join(", ", listener.Columns.Keys));
-                Console.WriteLine("Values: " + string.Join(", ", listener.Values));
+                Console.WriteLine("Values: " + string.Join(", ", listener.Columns.Values));
 
                 primaryKeyColumn = _catalogManager?.GetPrimaryKeyColumn(listener.DatabaseName, listener.TableName)
                         ?? throw new Exception("ERROR: Primary key not found!");
-                Console.WriteLine(primaryKeyColumn.ToString());
 
-                for (int i = 0; i < listener.Values.Count; i++)
+                // Iterate through the listener.Columns dictionary
+                foreach (var column in listener.Columns)
                 {
-                    rowData[listener.Columns.ElementAt(i).Key] = listener.Values[i];
-                    
+                    rowData[column.Key] = column.Value;
                 }
-                Console.WriteLine(rowData.ToString());
+
+                Console.WriteLine("Row data: " + string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}")));
+
                 Insert(listener.DatabaseName, listener.TableName, primaryKeyColumn, new List<Dictionary<string, object>> { rowData });
 
                 Console.WriteLine("After calling Insert method...");
 
                 Query(listener.DatabaseName, listener.TableName);
-
             }
-
             else if (listener.StatementType == StatementType.Delete)
             {
-                Delete(listener.DatabaseName, listener.TableName, listener.PrimaryKeyColumn, listener.PrimaryKeyValue);
+                Console.WriteLine($"Deleting row from {listener.DatabaseName}.{listener.TableName}");
+                PrintAllDocuments(listener.DatabaseName, listener.TableName);
+                Delete(listener.DatabaseName, listener.TableName, listener.DeleteFilter);
+                PrintAllDocuments(listener.DatabaseName, listener.TableName);
             }
 
             return Task.CompletedTask;

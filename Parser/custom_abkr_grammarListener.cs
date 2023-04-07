@@ -1,6 +1,7 @@
 ﻿using abkr.grammarParser;
 using Antlr4.Runtime.Misc;
 using MongoDB.Bson;
+using MongoDB.Driver;
 using System.Xml;
 
 public enum StatementType
@@ -27,10 +28,11 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public List<object> Values { get; private set; } = new List<object>();
     public string ColumnName { get; private set; }
     public object ColumnValue { get; private set; }
-
     public Dictionary<string, object> RowData { get; private set; }
     public string PrimaryKeyColumn { get; private set; }
     public object PrimaryKeyValue { get; private set; }
+    public FilterDefinition<BsonDocument> DeleteFilter { get; private set; }
+
 
     private readonly XmlDocument metadataXml;
 
@@ -102,7 +104,6 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
     public override void EnterInsert_statement(abkr_grammarParser.Insert_statementContext context)
     {
-        //Console.WriteLine("EnterInsert_statement called"); // Add this line
         StatementType = StatementType.Insert;
 
         DatabaseName = context.identifier(0).GetText();
@@ -111,33 +112,24 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         Columns.Clear();
         Values.Clear();
 
-        int columnCount = context.identifier_list().identifier().Length;
-        for (int i = 0; i < columnCount; i++)
+        int? columnCount = context.identifier_list().identifier().Length;
+        if (columnCount != 0)
         {
-            Columns[context.identifier_list().identifier(i).GetText()] = null;
+            for (int i = 0; i < columnCount; i++)
+            {
+                Columns[context.identifier_list().identifier(i).GetText()] = null;
+            }
         }
-
         int valueCount = context.value_list().value().Length;
         for (int i = 0; i < valueCount; i++)
         {
             Columns[context.identifier_list().identifier(i).GetText()] = context.value_list().value(i).GetText();
         }
 
-        // Add these lines to log the column names and values
-        //Console.WriteLine("Columns: " + string.Join(", ", Columns.Keys));
-        //Console.WriteLine("Values: " + string.Join(", ", Columns.Values));
-
-        // Check if the primary key column is included in the Columns dictionary
-        XmlNode primaryKeyNode = metadataXml.SelectSingleNode($"/Databases/DataBase[@dataBaseName='{DatabaseName}']/Table[@tableName='{TableName}']/Structure/Attribute[@isPrimaryKey='true']");
-        if (primaryKeyNode != null)
-        {
-            string primaryKeyColumnName = primaryKeyNode.Attributes["attributeName"].Value;
-            if (!Columns.ContainsKey(primaryKeyColumnName) || Columns[primaryKeyColumnName] == null)
-            {
-                throw new InvalidOperationException("Error: Primary key not found!");
-            }
-        }
+        Console.WriteLine("[Insert] Columns: " + string.Join(", ", Columns.Keys));
+        Console.WriteLine("[Insert] Values: " + string.Join(", ", Columns.Values));
     }
+
 
     public override void EnterDrop_table_statement(abkr_grammarParser.Drop_table_statementContext context)
     {
@@ -174,8 +166,60 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         StatementType = StatementType.Delete;
         DatabaseName = context.identifier(0).GetText();
         TableName = context.identifier(1).GetText();
-        ColumnName = context.identifier(2).GetText();
+        ColumnName = GetPrimaryKeyColumnName(DatabaseName, TableName); 
         ColumnValue = context.value().GetText();
+
+        // Debug information
+        Console.WriteLine($"[Debug] DatabaseName: {DatabaseName}");
+        Console.WriteLine($"[Debug] TableName: {TableName}");
+        Console.WriteLine($"[Debug] ColumnName: {ColumnName}");
+        Console.WriteLine($"[Debug] ColumnValue: {ColumnValue}");
+
+        if (context.value().NUMBER() != null)
+        {
+            int.TryParse(ColumnValue.ToString(), out int intValue);
+            ColumnValue = intValue.ToString(); 
+        }
+        else if (context.value().STRING() != null)
+        {
+            ColumnValue = ColumnValue.ToString().Substring(1, ColumnValue.ToString().Length - 2);
+        }
+
+        DeleteFilter = Builders<BsonDocument>.Filter.Eq(ColumnName, ColumnValue);
     }
+
+
+    private string GetPrimaryKeyColumnName(string databaseName, string tableName)
+    {
+        XmlNode tableNode = metadataXml.SelectSingleNode($"//DataBase[@dataBaseName='{databaseName}']/Table[@tableName='{tableName}']");
+        if (tableNode != null)
+        {
+            XmlNode primaryKeyNode = tableNode.SelectSingleNode("primaryKey");
+            if (primaryKeyNode != null)
+            {
+                return primaryKeyNode.Attributes["name"].Value;
+            }
+        }
+
+        return null;
+    }
+
+
+
+
+    private object GetValueFromValue(abkr_grammarParser.ValueContext context)
+    {
+        if (context.STRING() != null)
+        {
+            return context.STRING().GetText().Trim('\'');
+        }
+        else if (context.NUMBER() != null)
+        {
+            return int.Parse(context.NUMBER().GetText());
+        }
+
+        return null;
+    }
+
 }
 

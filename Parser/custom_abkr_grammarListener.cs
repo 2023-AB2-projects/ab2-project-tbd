@@ -166,7 +166,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         StatementType = StatementType.Delete;
         DatabaseName = context.identifier(0).GetText();
         TableName = context.identifier(1).GetText();
-        ColumnName = GetPrimaryKeyColumnName(DatabaseName, TableName); 
+        var FilterColumnName=ColumnName = context.identifier(2).GetText();
         ColumnValue = context.value().GetText();
 
         // Debug information
@@ -175,17 +175,14 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         Console.WriteLine($"[Debug] ColumnName: {ColumnName}");
         Console.WriteLine($"[Debug] ColumnValue: {ColumnValue}");
 
-        if (context.value().NUMBER() != null)
-        {
-            int.TryParse(ColumnValue.ToString(), out int intValue);
-            ColumnValue = intValue.ToString(); 
-        }
-        else if (context.value().STRING() != null)
-        {
-            ColumnValue = ColumnValue.ToString().Substring(1, ColumnValue.ToString().Length - 2);
-        }
 
-        DeleteFilter = Builders<BsonDocument>.Filter.Eq(ColumnName, ColumnValue);
+        if(ColumnName == GetPrimaryKeyColumnName(DatabaseName,TableName))
+        {
+            FilterColumnName = "_id";
+        }
+        
+
+        DeleteFilter = Builders<BsonDocument>.Filter.Eq(FilterColumnName, ColumnValue);
     }
 
 

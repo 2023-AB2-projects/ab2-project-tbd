@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Databases>
+  <DataBase dataBaseName="test">
+    <Table tableName="testTable">
+      <Structure>
+        <Attribute attributeName="ide" type="INT" />
+        <Attribute attributeName="neve" type="VARCHAR(50)" />
+      </Structure>
+    </Table>
+  </DataBase>
+  <DataBase dataBaseName="tbd">
+    <Table tableName="soon">
+      <Structure>
+        <Attribute attributeName="nr" type="INT" />
+        <Attribute attributeName="name" type="VARCHAR(50)" />
+      </Structure>
+    </Table>
+  </DataBase>
+  <DataBase dataBaseName="tbd" />
+  <DataBase dataBaseName="tbd" />
+</Databases>

@@ -166,24 +166,23 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         StatementType = StatementType.Delete;
         DatabaseName = context.identifier(0).GetText();
         TableName = context.identifier(1).GetText();
-        var FilterColumnName=ColumnName = context.identifier(2).GetText();
-        ColumnValue = context.value().GetText();
 
-        // Debug information
-        Console.WriteLine($"[Debug] DatabaseName: {DatabaseName}");
-        Console.WriteLine($"[Debug] TableName: {TableName}");
-        Console.WriteLine($"[Debug] ColumnName: {ColumnName}");
-        Console.WriteLine($"[Debug] ColumnValue: {ColumnValue}");
+        string columnName = context.identifier(2).GetText();
+        string columnValue = context.value().GetText();
 
-
-        if(ColumnName == GetPrimaryKeyColumnName(DatabaseName,TableName))
+        if (columnName == GetPrimaryKeyColumnName(DatabaseName, TableName))
         {
-            FilterColumnName = "_id";
+            columnName = "_id";
         }
-        
+        else
+        {
+            columnName = "value." + columnName;
+        }
 
-        DeleteFilter = Builders<BsonDocument>.Filter.Eq(FilterColumnName, ColumnValue);
+        DeleteFilter = Builders<BsonDocument>.Filter.Eq(columnName, columnValue);
     }
+
+
 
 
     private string GetPrimaryKeyColumnName(string databaseName, string tableName)

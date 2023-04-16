@@ -177,7 +177,7 @@ namespace abkr.CatalogManager
         public static void Delete(string databaseName, string tableName, FilterDefinition<BsonDocument> filter)
         {
             var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-            var deleteResult = collection.DeleteOne(filter);
+            var deleteResult = collection.DeleteMany(filter);
             Console.WriteLine($"Deleted count: {deleteResult.DeletedCount}");
         }
 

@@ -110,15 +110,26 @@ namespace abkr.CatalogManager
             _catalogManager?.CreateDatabase(databaseName);
         }
 
-        public static void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns, string primaryKeyColumn)
+        public static void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns, string primaryKeyColumn, List<string> uniqueKeys = null, Dictionary<string, string> foreignKeys = null)
         {
-            var database=_client?.GetDatabase(databaseName);
+            var database = _client?.GetDatabase(databaseName);
             database?.CreateCollection(tableName);
             Console.WriteLine($"Creating table: {databaseName}.{tableName}");
             _catalogManager?.CreateTable(databaseName, tableName, columns, primaryKeyColumn);
+
+            // Create index files for unique keys
+            if (uniqueKeys != null)
+            {
+                foreach (var uniqueKey in uniqueKeys)
+                {
+                    CreateIndex(databaseName, tableName, $"{uniqueKey}_unique", new BsonArray(new[] { uniqueKey }));
+                }
+            }
+
+
         }
 
-        public static void DropDatabase(string databaseName)
+            public static void DropDatabase(string databaseName)
         {
             Console.WriteLine($"Dropping database: {databaseName}");
             _client?.DropDatabase(databaseName);

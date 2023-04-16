@@ -10,7 +10,7 @@ drop_database_statement: DROP DATABASE identifier;
 
 drop_table_statement: DROP TABLE identifier '.' identifier;
 
-create_index_statement: CREATE INDEX identifier ON identifier '(' identifier_list ')';
+create_index_statement: CREATE (UNIQUE)? INDEX identifier ON identifier '(' identifier_list ')';
 
 drop_index_statement: DROP INDEX identifier ON identifier;
 
@@ -19,9 +19,10 @@ column_definition_list: column_definition (',' column_definition)*;
 column_definition: identifier data_type column_constraint*;
 
 column_constraint
-    : PRIMARY KEY 
+    : PRIMARY KEY
+    | UNIQUE
+    | FOREIGN KEY REFERENCES identifier '.' identifier
     ;
-
 
 data_type: INT | VARCHAR '(' NUMBER ')';
 
@@ -43,12 +44,15 @@ CREATE: 'CREATE';
 DATABASE: 'DATABASE';
 TABLE: 'TABLE';
 INDEX: 'INDEX';
+UNIQUE: 'UNIQUE';
 DROP: 'DROP';
 ON: 'ON';
 INT: 'INT';
 VARCHAR: 'VARCHAR';
 PRIMARY: 'PRIMARY';
 KEY: 'KEY';
+FOREIGN: 'FOREIGN';
+REFERENCES: 'REFERENCES';
 INSERT: 'INSERT';
 INTO: 'INTO';
 VALUES: 'VALUES';

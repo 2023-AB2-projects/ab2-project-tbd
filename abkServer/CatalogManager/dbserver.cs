@@ -126,10 +126,18 @@ namespace abkr.CatalogManager
                 }
             }
 
-
+            // If there's a foreign key column, create an index for it.
+            if (foreignKeys != null)
+            {
+                foreach (var foreignKey in foreignKeys)
+                {
+                    CreateIndex(databaseName, tableName, $"{foreignKey.Key}_fk", new BsonArray(new[] { foreignKey.Key }));
+                }
+            }
         }
 
-            public static void DropDatabase(string databaseName)
+
+        public static void DropDatabase(string databaseName)
         {
             Console.WriteLine($"Dropping database: {databaseName}");
             _client?.DropDatabase(databaseName);

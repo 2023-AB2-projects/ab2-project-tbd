@@ -269,7 +269,7 @@ namespace abkr.CatalogManager
             var tokenStream = new CommonTokenStream(lexer);
 
             // Create a new instance of the parser and pass the token stream
-            var parser = new abkr_grammarParser(tokenStream);
+            var parser = new abkr_grammar(tokenStream);
 
             // Invoke the parser's entry rule (statement) and get the parse tree
             var parseTree = parser.statement();

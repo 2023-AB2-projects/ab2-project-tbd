@@ -46,13 +46,13 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
     // Override the listener methods to extract the required information
 
-    public override void EnterCreate_database_statement(abkr_grammarParser.Create_database_statementContext context)
+    public override void EnterCreate_database_statement(abkr_grammar.Create_database_statementContext context)
     {
         StatementType = StatementType.CreateDatabase;
         DatabaseName = context.identifier().GetText();
     }
 
-    public override void EnterCreate_table_statement(abkr_grammarParser.Create_table_statementContext context)
+    public override void EnterCreate_table_statement(abkr_grammar.Create_table_statementContext context)
     {
         StatementType = StatementType.CreateTable;
         DatabaseName = context.identifier(0).GetText();
@@ -77,7 +77,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     }
 
 
-    public override void EnterColumn_definition(abkr_grammarParser.Column_definitionContext context)
+    public override void EnterColumn_definition(abkr_grammar.Column_definitionContext context)
     {
         string columnName = context.identifier().GetText();
         Columns[columnName] = context.data_type().GetText();
@@ -102,7 +102,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
 
 
-    public override void EnterInsert_statement(abkr_grammarParser.Insert_statementContext context)
+    public override void EnterInsert_statement(abkr_grammar.Insert_statementContext context)
     {
         StatementType = StatementType.Insert;
 
@@ -131,7 +131,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     }
 
 
-    public override void EnterDrop_table_statement(abkr_grammarParser.Drop_table_statementContext context)
+    public override void EnterDrop_table_statement(abkr_grammar.Drop_table_statementContext context)
     {
         StatementType = StatementType.DropTable;
         DatabaseName = context.identifier(0).GetText();
@@ -139,7 +139,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     }
 
 
-    public override void EnterCreate_index_statement(abkr_grammarParser.Create_index_statementContext context)
+    public override void EnterCreate_index_statement(abkr_grammar.Create_index_statementContext context)
     {
         StatementType = StatementType.CreateIndex;
         DatabaseName = context.identifier(0).GetText();
@@ -153,7 +153,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         }
     }
 
-    public override void EnterDrop_index_statement(abkr_grammarParser.Drop_index_statementContext context)
+    public override void EnterDrop_index_statement(abkr_grammar.Drop_index_statementContext context)
     {
         StatementType = StatementType.DropIndex;
         DatabaseName = context.identifier(0).GetText();
@@ -161,7 +161,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         IndexName = context.identifier(2).GetText();
     }
 
-    public override void EnterDelete_statement(abkr_grammarParser.Delete_statementContext context)
+    public override void EnterDelete_statement(abkr_grammar.Delete_statementContext context)
     {
         StatementType = StatementType.Delete;
         DatabaseName = context.identifier(0).GetText();
@@ -203,7 +203,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
 
 
-    private object GetValueFromValue(abkr_grammarParser.ValueContext context)
+    private object GetValueFromValue(abkr_grammar.ValueContext context)
     {
         if (context.STRING() != null)
         {

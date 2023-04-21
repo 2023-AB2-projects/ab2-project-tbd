@@ -29,7 +29,6 @@ class Server
 
 
         TcpClient client = null; // Store the connected client
-        TcpClient client = client; // Store the connected client
         LogMessage("Server started", logMessages, client);
         // Initialize the DatabaseServer instance
         var databaseServer = new DatabaseServer("mongodb://localhost:27017/", "C:/Users/bfcsa/source/repos/abkr/abkrServer/Parser/example.xml");  

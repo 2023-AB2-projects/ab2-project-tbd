@@ -1,17 +1,17 @@
 {
   "format": 1,
   "restore": {
-    "C:\\Users\\bfcsa\\source\\repos\\abkrClient\\abkrClient.csproj": {}
+    "C:\\Users\\bfcsa\\source\\repos\\ab2-project-tbd\\abkr\\abkrClient\\abkrClient.csproj": {}
   },
   "projects": {
-    "C:\\Users\\bfcsa\\source\\repos\\abkrClient\\abkrClient.csproj": {
+    "C:\\Users\\bfcsa\\source\\repos\\ab2-project-tbd\\abkr\\abkrClient\\abkrClient.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "C:\\Users\\bfcsa\\source\\repos\\abkrClient\\abkrClient.csproj",
+        "projectUniqueName": "C:\\Users\\bfcsa\\source\\repos\\ab2-project-tbd\\abkr\\abkrClient\\abkrClient.csproj",
         "projectName": "abkrClient",
-        "projectPath": "C:\\Users\\bfcsa\\source\\repos\\abkrClient\\abkrClient.csproj",
+        "projectPath": "C:\\Users\\bfcsa\\source\\repos\\ab2-project-tbd\\abkr\\abkrClient\\abkrClient.csproj",
         "packagesPath": "C:\\Users\\bfcsa\\.nuget\\packages\\",
-        "outputPath": "C:\\Users\\bfcsa\\source\\repos\\abkrClient\\obj\\",
+        "outputPath": "C:\\Users\\bfcsa\\source\\repos\\ab2-project-tbd\\abkr\\abkrClient\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
           "C:\\Users\\bfcsa\\AppData\\Roaming\\NuGet\\NuGet.Config",

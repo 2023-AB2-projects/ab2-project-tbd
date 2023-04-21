@@ -16,12 +16,14 @@ namespace abkr.Client.GUI
         private StreamReader _reader;
         private StreamWriter _writer;
         private SemaphoreSlim _readerSemaphore; // Add semaphore
+        private SemaphoreSlim _writerSemaphore; // Add semaphore
 
         public MainWindow()
         {
             InitializeComponent();
 
             _readerSemaphore = new SemaphoreSlim(1, 1); // Initialize semaphore
+            _writerSemaphore = new SemaphoreSlim(1, 1); // Initialize semaphore
 
             ConnectToServerAsync().ConfigureAwait(false);
             //RequestLogMessagesAsync().ConfigureAwait(false);
@@ -37,7 +39,7 @@ namespace abkr.Client.GUI
             _writer = new StreamWriter(_stream, Encoding.ASCII) { AutoFlush = true };
 
             // Start receiving log messages from the server
-            _ = ReceiveLogMessagesAsync();
+            _ = Task.Run(async () => await ReceiveLogMessagesAsync());
 
             LogMessage("Connected to server. Enter SQL statements or type 'exit' to quit:");
 
@@ -100,24 +102,13 @@ namespace abkr.Client.GUI
                 return;
             }
 
-            await Task.Run(async () =>
-            {
-                // Send SQL statement to server
-                await _writer.WriteLineAsync(sqlStatement);
+            // Send SQL statement to server
+            await _writerSemaphore.WaitAsync(); // Acquire semaphore before writing
+            await _writer.WriteLineAsync(sqlStatement);
+            _writerSemaphore.Release(); // Release semaphore after writing
 
-                // Receive response from server
-                await _readerSemaphore.WaitAsync(); // Acquire semaphore before reading
-                string response = await _reader.ReadLineAsync();
-                _readerSemaphore.Release(); // Release semaphore after reading
-
-                // Update UI on the UI thread
-                Dispatcher.Invoke(() =>
-                {
-                    LogMessage($"Sent: {sqlStatement}");
-                    LogMessage($"Received: {response}");
-                    txtInput.Clear();
-                });
-            });
+            LogMessage($"Sent: {sqlStatement}");
+            txtInput.Clear();
         }
 
 

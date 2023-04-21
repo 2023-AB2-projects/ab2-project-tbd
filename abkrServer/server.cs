@@ -107,14 +107,14 @@ class Server
         return await tcs.Task;
     }
 
-    static async Task HandleClient(TcpClient client, DatabaseServer databaseServer, CancellationToken cancellationToken, List<string> logMessages) // Add logMessages as a parameter
+    static async Task HandleClient(TcpClient client, DatabaseServer databaseServer, CancellationToken cancellationToken, List<string> logMessages)
     {
         // Get the network stream for reading and writing
         using NetworkStream stream = client.GetStream();
         using StreamReader reader = new StreamReader(stream, Encoding.ASCII);
         using StreamWriter writer = new StreamWriter(stream, Encoding.ASCII) { AutoFlush = true };
 
-        bool sendLogMessages = false; // Add this line
+        bool sendLogMessages = false;
 
         try
         {
@@ -134,7 +134,7 @@ class Server
                     continue;
                 }
 
-                LogMessage("Received: " + data, logMessages, client, sendLogMessages); // Add sendLogMessages as an argument
+                LogMessage("Received: " + data, logMessages, client, sendLogMessages);
 
                 string response;
                 try
@@ -153,15 +153,7 @@ class Server
         }
         catch (IOException ex)
         {
-            LogMessage($"Error: {ex.Message}", logMessages, client, sendLogMessages); // Pass sendLogMessages as an argument
+            LogMessage($"Error: {ex.Message}", logMessages, client, sendLogMessages);
         }
-        //finally
-        //{
-        //    // Log the "Client disconnected" message before actually disconnecting the client
-        //    LogMessage("Client disconnected", logMessages, client, sendLogMessages);
-        //    //client.Close();
-        //}
-
     }
-
 }

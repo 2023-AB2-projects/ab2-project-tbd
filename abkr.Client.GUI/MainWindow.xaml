@@ -7,10 +7,10 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <TextBox x:Name="txtOutput" Grid.Row="0" IsReadOnly="True" VerticalScrollBarVisibility="Auto" TextWrapping="Wrap"/>
+        <ListBox Name="listBoxLog" Grid.Row="0"/>
         <DockPanel Grid.Row="1" Margin="0,10,0,0">
-            <TextBox x:Name="txtInput" Width="600" VerticalContentAlignment="Center"/>
-            <Button x:Name="btnSend" Content="Send" Margin="10,0,0,0" Click="btnSend_Click"/>
+            <TextBox Name="txtInput" Width="600" VerticalContentAlignment="Center"/>
+            <Button Name="btnSend" Content="Send" Margin="10,0,0,0" Click="btnSend_Click"/>
         </DockPanel>
     </Grid>
 </Window>

@@ -31,14 +31,37 @@ namespace abkr.Client.GUI
             _reader = new StreamReader(_stream, Encoding.ASCII);
             _writer = new StreamWriter(_stream, Encoding.ASCII) { AutoFlush = true };
 
+            // Start receiving log messages from the server
+            _ = ReceiveLogMessagesAsync();
+
             LogMessage("Connected to server. Enter SQL statements or type 'exit' to quit:");
+        }
+
+        private async Task ReceiveLogMessagesAsync()
+        {
+            while (_client.Connected)
+            {
+                try
+                {
+                    string message = await _reader.ReadLineAsync();
+                    if (message != null)
+                    {
+                        LogMessage(message);
+                    }
+                }
+                catch (IOException)
+                {
+                    break;
+                }
+            }
         }
 
         private void LogMessage(string message)
         {
-            txtOutput.AppendText(message + Environment.NewLine);
-            txtOutput.ScrollToEnd();
+            listBoxLog.Items.Add(message);
+            listBoxLog.ScrollIntoView(listBoxLog.Items[listBoxLog.Items.Count - 1]);
         }
+
 
         private async void btnSend_Click(object sender, RoutedEventArgs e)
         {
@@ -60,9 +83,11 @@ namespace abkr.Client.GUI
 
             // Receive response from server
             string response = await _reader.ReadLineAsync();
-            LogMessage(response);
+            LogMessage($"Sent: {sqlStatement}");
+            LogMessage($"Received: {response}");
             txtInput.Clear();
         }
+
 
         private void Disconnect()
         {

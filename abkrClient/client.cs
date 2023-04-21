@@ -2,18 +2,23 @@
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading.Tasks;
 
 namespace abkr.Client
 {
     class Client
     {
-        static void Main(string[] args)
+        static async Task Main(string[] args)
         {
-            // connect to server
+            // Connect to server
             TcpClient client = new TcpClient();
-            client.Connect(IPAddress.Parse("127.0.0.1"), 1234);
+            await client.ConnectAsync(IPAddress.Parse("127.0.0.1"), 1234);
 
             Console.WriteLine("Connected to server. Enter SQL statements or type 'exit' to quit:");
+
+            using NetworkStream stream = client.GetStream();
+            using StreamReader reader = new StreamReader(stream, Encoding.ASCII);
+            using StreamWriter writer = new StreamWriter(stream, Encoding.ASCII) { AutoFlush = true };
 
             while (true)
             {
@@ -31,20 +36,15 @@ namespace abkr.Client
                     break;
                 }
 
-                // send SQL statement to server
-                byte[] data = Encoding.ASCII.GetBytes(sqlStatement + "\n");
+                // Send SQL statement to server
+                await writer.WriteLineAsync(sqlStatement);
 
-                NetworkStream stream = client.GetStream();
-                stream.Write(data, 0, data.Length);
-
-                // receive response from server
-                data = new byte[1024];
-                int bytesRead = stream.Read(data, 0, data.Length);
-                string response = Encoding.ASCII.GetString(data, 0, bytesRead);
+                // Receive response from server
+                string response = await reader.ReadLineAsync();
                 Console.WriteLine(response);
             }
 
-            // close connection
+            // Close connection
             client.Close();
             Console.WriteLine("Disconnected from server.");
         }

@@ -28,18 +28,18 @@ class Server
         List<string> logMessages = new List<string>(); // Store log messages
 
 
-        TcpClient client = null; // Store the connected client
-        LogMessage("Server started", logMessages, client);
         // Initialize the DatabaseServer instance
         var databaseServer = new DatabaseServer("mongodb://localhost:27017/", "C:/Users/bfcsa/source/repos/abkr/abkrServer/Parser/example.xml");  
 
         bool isMetadataInSync = databaseServer.IsMetadataInSync();
+        Console.WriteLine("Is metadata in sync: " + isMetadataInSync);
 
-        LogMessage("Is metadata in sync: " + isMetadataInSync, logMessages,client);
 
         while (!cts.Token.IsCancellationRequested)
         {
             // Wait for a client to connect
+            TcpClient client = null; // Store the connected client
+
             try
             {
                 client = await AcceptTcpClientAsync(listener, cts.Token);
@@ -50,33 +50,36 @@ class Server
             }
             catch (Exception ex)
             {
-                LogMessage($"Error: {ex.Message}", logMessages,client);
+                LogMessage($"Error: {ex.Message}", logMessages, client, false); // Pass false for sendLogMessages
                 continue;
             }
             databaseServer.ListDatabases();
 
-            LogMessage("Client connected", logMessages,client);
+            LogMessage("Client connected", logMessages, client, false); // Pass false for sendLogMessages
 
             // Handle the client connection and pass the DatabaseServer instance
             _ = HandleClient(client, databaseServer, cts.Token, logMessages);
         }
+
 
         // Stop the listener and close all active client connections
         listener.Stop();
         Console.WriteLine("Server stopped");
     }
 
-    private static void LogMessage(string message, List<string> logMessages, TcpClient _connectedClient)
+    private static void LogMessage(string message, List<string> logMessages, TcpClient _connectedClient, bool sendLogMessages)
     {
         Console.WriteLine(message);
         logMessages.Add(message);
 
-        // Send the log message to the connected client immediately
-        if (_connectedClient != null)
+        // Send the log message to the connected client only when sendLogMessages is true
+        if (_connectedClient != null && sendLogMessages && _connectedClient.Connected) // Add the _connectedClient.Connected check
         {
             SendLogMessageToClient(_connectedClient, message);
         }
     }
+
+
 
     private static async void SendLogMessageToClient(TcpClient client, string logMessage)
     {
@@ -111,6 +114,8 @@ class Server
         using StreamReader reader = new StreamReader(stream, Encoding.ASCII);
         using StreamWriter writer = new StreamWriter(stream, Encoding.ASCII) { AutoFlush = true };
 
+        bool sendLogMessages = false; // Add this line
+
         try
         {
             while (!cancellationToken.IsCancellationRequested && client.Connected)
@@ -123,7 +128,13 @@ class Server
                     break;
                 }
 
-                LogMessage("Received: " + data, logMessages,client); // Log the received data
+                if (data.ToLower() == "request_log_messages")
+                {
+                    sendLogMessages = true;
+                    continue;
+                }
+
+                LogMessage("Received: " + data, logMessages, client, sendLogMessages); // Add sendLogMessages as an argument
 
                 string response;
                 try
@@ -142,13 +153,15 @@ class Server
         }
         catch (IOException ex)
         {
-            LogMessage($"Error: {ex.Message}", logMessages);
+            LogMessage($"Error: {ex.Message}", logMessages, client, sendLogMessages); // Pass sendLogMessages as an argument
         }
-        finally
-        {
-            client.Close();
-            LogMessage("Client disconnected", logMessages); // Log that the client disconnected
-        }
+        //finally
+        //{
+        //    // Log the "Client disconnected" message before actually disconnecting the client
+        //    LogMessage("Client disconnected", logMessages, client, sendLogMessages);
+        //    //client.Close();
+        //}
+
     }
 
 }

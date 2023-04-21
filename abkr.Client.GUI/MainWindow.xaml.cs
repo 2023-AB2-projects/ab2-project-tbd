@@ -3,6 +3,7 @@ using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 
@@ -14,12 +15,16 @@ namespace abkr.Client.GUI
         private NetworkStream _stream;
         private StreamReader _reader;
         private StreamWriter _writer;
+        private SemaphoreSlim _readerSemaphore; // Add semaphore
 
         public MainWindow()
         {
             InitializeComponent();
 
+            _readerSemaphore = new SemaphoreSlim(1, 1); // Initialize semaphore
+
             ConnectToServerAsync().ConfigureAwait(false);
+            //RequestLogMessagesAsync().ConfigureAwait(false);
         }
 
         private async Task ConnectToServerAsync()
@@ -35,7 +40,11 @@ namespace abkr.Client.GUI
             _ = ReceiveLogMessagesAsync();
 
             LogMessage("Connected to server. Enter SQL statements or type 'exit' to quit:");
+
+            // Call RequestLogMessagesAsync after initializing the variables
+            await RequestLogMessagesAsync();
         }
+
 
         private async Task ReceiveLogMessagesAsync()
         {
@@ -43,7 +52,10 @@ namespace abkr.Client.GUI
             {
                 try
                 {
+                    await _readerSemaphore.WaitAsync(); // Acquire semaphore before reading
                     string message = await _reader.ReadLineAsync();
+                    _readerSemaphore.Release(); // Release semaphore after reading
+
                     if (message != null)
                     {
                         LogMessage(message);
@@ -51,6 +63,7 @@ namespace abkr.Client.GUI
                 }
                 catch (IOException)
                 {
+                    _readerSemaphore.Release(); // Release semaphore in case of an exception
                     break;
                 }
             }
@@ -61,6 +74,15 @@ namespace abkr.Client.GUI
             listBoxLog.Items.Add(message);
             listBoxLog.ScrollIntoView(listBoxLog.Items[listBoxLog.Items.Count - 1]);
         }
+
+        private async Task RequestLogMessagesAsync()
+        {
+            if (_client.Connected)
+            {
+                await _writer.WriteLineAsync("request_log_messages");
+            }
+        }
+
 
 
         private async void btnSend_Click(object sender, RoutedEventArgs e)
@@ -78,15 +100,26 @@ namespace abkr.Client.GUI
                 return;
             }
 
-            // Send SQL statement to server
-            await _writer.WriteLineAsync(sqlStatement);
+            await Task.Run(async () =>
+            {
+                // Send SQL statement to server
+                await _writer.WriteLineAsync(sqlStatement);
 
-            // Receive response from server
-            string response = await _reader.ReadLineAsync();
-            LogMessage($"Sent: {sqlStatement}");
-            LogMessage($"Received: {response}");
-            txtInput.Clear();
+                // Receive response from server
+                await _readerSemaphore.WaitAsync(); // Acquire semaphore before reading
+                string response = await _reader.ReadLineAsync();
+                _readerSemaphore.Release(); // Release semaphore after reading
+
+                // Update UI on the UI thread
+                Dispatcher.Invoke(() =>
+                {
+                    LogMessage($"Sent: {sqlStatement}");
+                    LogMessage($"Received: {response}");
+                    txtInput.Clear();
+                });
+            });
         }
+
 
 
         private void Disconnect()

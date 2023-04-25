@@ -1,0 +1,2 @@
+Connected to server. Enter SQL statements or type 'exit' to quit:
+Sent: create database ok

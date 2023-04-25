@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using abkr.ClientLogger;
 
 namespace abkr.Client.GUI
 {
@@ -17,6 +18,7 @@ namespace abkr.Client.GUI
         private StreamWriter _writer;
         private SemaphoreSlim _readerSemaphore; // Add semaphore
         private SemaphoreSlim _writerSemaphore; // Add semaphore
+        private static Logger logger = new Logger("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkr.Client.GUI/client_logger.txt");
 
         public MainWindow()
         {
@@ -38,51 +40,7 @@ namespace abkr.Client.GUI
             _reader = new StreamReader(_stream, Encoding.ASCII);
             _writer = new StreamWriter(_stream, Encoding.ASCII) { AutoFlush = true };
 
-            // Start receiving log messages from the server
-            _ = Task.Run(async () => await ReceiveLogMessagesAsync());
-
-            LogMessage("Connected to server. Enter SQL statements or type 'exit' to quit:");
-
-            // Call RequestLogMessagesAsync after initializing the variables
-            await RequestLogMessagesAsync();
-        }
-
-
-        private async Task ReceiveLogMessagesAsync()
-        {
-            while (_client.Connected)
-            {
-                try
-                {
-                    await _readerSemaphore.WaitAsync(); // Acquire semaphore before reading
-                    string message = await _reader.ReadLineAsync();
-                    _readerSemaphore.Release(); // Release semaphore after reading
-
-                    if (message != null)
-                    {
-                        LogMessage(message);
-                    }
-                }
-                catch (IOException)
-                {
-                    _readerSemaphore.Release(); // Release semaphore in case of an exception
-                    break;
-                }
-            }
-        }
-
-        private void LogMessage(string message)
-        {
-            listBoxLog.Items.Add(message);
-            listBoxLog.ScrollIntoView(listBoxLog.Items[listBoxLog.Items.Count - 1]);
-        }
-
-        private async Task RequestLogMessagesAsync()
-        {
-            if (_client.Connected)
-            {
-                await _writer.WriteLineAsync("request_log_messages");
-            }
+            logger.LogMessage("Connected to server. Enter SQL statements or type 'exit' to quit:");
         }
 
 
@@ -107,7 +65,7 @@ namespace abkr.Client.GUI
             await _writer.WriteLineAsync(sqlStatement);
             _writerSemaphore.Release(); // Release semaphore after writing
 
-            LogMessage($"Sent: {sqlStatement}");
+            logger.LogMessage($"Sent: {sqlStatement}");
             txtInput.Clear();
         }
 
@@ -116,7 +74,7 @@ namespace abkr.Client.GUI
         private void Disconnect()
         {
             _client.Close();
-            LogMessage("Disconnected from server.");
+            logger.LogMessage("Disconnected from server.");
             btnSend.IsEnabled = false;
         }
     }

@@ -6,10 +6,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using abkr.CatalogManager;
+using abkr.ServerLogger;
 
 class Server
 {
     private static CancellationTokenSource cts = new CancellationTokenSource();
+    private static Logger logger = new Logger("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/server_logger.txt");
 
     public static async Task Main()
     {
@@ -18,7 +20,7 @@ class Server
         {
             eventArgs.Cancel = true;
             cts.Cancel();
-            Console.WriteLine("Shutting down...");
+            logger.LogMessage("CTRL+C pressed. Shutting down...");
         };
 
         // Create a TCP listener on port 1234
@@ -32,8 +34,7 @@ class Server
         var databaseServer = new DatabaseServer("mongodb://localhost:27017/", "C:/Users/bfcsa/source/repos/abkr/abkrServer/Parser/example.xml");  
 
         bool isMetadataInSync = databaseServer.IsMetadataInSync();
-        Console.WriteLine("Is metadata in sync: " + isMetadataInSync);
-
+        logger.LogMessage($"Metadata is in sync: {isMetadataInSync}");
 
         while (!cts.Token.IsCancellationRequested)
         {
@@ -50,13 +51,12 @@ class Server
             }
             catch (Exception ex)
             {
-                LogMessage($"Error: {ex.Message}", logMessages, client, false); // Pass false for sendLogMessages
+                logger.LogMessage($"Error: {ex.Message}");
                 continue;
             }
             databaseServer.ListDatabases();
 
-            LogMessage("Client connected", logMessages, client, false); // Pass false for sendLogMessages
-
+            logger.LogMessage("Client connected"); 
             // Handle the client connection and pass the DatabaseServer instance
             _ = HandleClient(client, databaseServer, cts.Token, logMessages);
         }
@@ -64,30 +64,9 @@ class Server
 
         // Stop the listener and close all active client connections
         listener.Stop();
-        Console.WriteLine("Server stopped");
+        logger.LogMessage("Server stopped");
     }
 
-    private static void LogMessage(string message, List<string> logMessages, TcpClient _connectedClient, bool sendLogMessages)
-    {
-        Console.WriteLine(message);
-        logMessages.Add(message);
-
-        // Send the log message to the connected client only when sendLogMessages is true
-        if (_connectedClient != null && sendLogMessages && _connectedClient.Connected) // Add the _connectedClient.Connected check
-        {
-            SendLogMessageToClient(_connectedClient, message);
-        }
-    }
-
-
-
-    private static async void SendLogMessageToClient(TcpClient client, string logMessage)
-    {
-        using NetworkStream stream = client.GetStream();
-        using StreamWriter writer = new StreamWriter(stream, Encoding.ASCII) { AutoFlush = true };
-
-        await writer.WriteLineAsync(logMessage);
-    }
     static async Task<TcpClient> AcceptTcpClientAsync(TcpListener listener, CancellationToken cancellationToken)
     {
         var tcs = new TaskCompletionSource<TcpClient>();
@@ -128,13 +107,7 @@ class Server
                     break;
                 }
 
-                if (data.ToLower() == "request_log_messages")
-                {
-                    sendLogMessages = true;
-                    continue;
-                }
-
-                LogMessage("Received: " + data, logMessages, client, sendLogMessages);
+                logger.LogMessage("Received: " + data);
 
                 string response;
                 try
@@ -153,7 +126,7 @@ class Server
         }
         catch (IOException ex)
         {
-            LogMessage($"Error: {ex.Message}", logMessages, client, sendLogMessages);
+            logger.LogMessage($"Error: {ex.Message}");
         }
     }
 }

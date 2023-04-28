@@ -7,8 +7,16 @@
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <ListBox Name="listBoxLog" Grid.Row="0"/>
-        <DockPanel Grid.Row="1" Margin="0,10,0,0">
+        <TextBox x:Name="txtConsole" Grid.Row="0" FontFamily="Consolas" IsReadOnly="True" VerticalScrollBarVisibility="Auto" />
+        <DockPanel Grid.Row="1" Margin="0,10,0,0" RenderTransformOrigin="0.5,0.5">
+            <DockPanel.RenderTransform>
+                <TransformGroup>
+                    <ScaleTransform/>
+                    <SkewTransform AngleX="0"/>
+                    <RotateTransform/>
+                    <TranslateTransform X="0"/>
+                </TransformGroup>
+            </DockPanel.RenderTransform>
             <TextBox Name="txtInput" Width="600" VerticalContentAlignment="Center"/>
             <Button Name="btnSend" Content="Send" Margin="10,0,0,0" Click="btnSend_Click"/>
         </DockPanel>

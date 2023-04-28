@@ -1,2 +1,9 @@
 Connected to server. Enter SQL statements or type 'exit' to quit:
 Sent: create database ok
+Connected to server. Enter SQL statements or type 'exit' to quit:
+Connected to server. Enter SQL statements or type 'exit' to quit:
+Sent: insert into test.test (tID,tNAME) values (9, 'asd')
+Connected to server. Enter SQL statements or type 'exit' to quit:
+Sent: create database logtest
+Sent: drop database logtest
+Sent: create database logtest

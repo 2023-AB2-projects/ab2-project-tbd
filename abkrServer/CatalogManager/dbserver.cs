@@ -99,10 +99,6 @@ namespace abkr.CatalogManager
             return true;
         }
 
-
-
-
-
         public static void CreateDatabase(string databaseName)
         {
             _client?.GetDatabase(databaseName);   

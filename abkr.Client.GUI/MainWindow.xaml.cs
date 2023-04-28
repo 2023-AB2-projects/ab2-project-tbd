@@ -18,7 +18,9 @@ namespace abkr.Client.GUI
         private StreamWriter _writer;
         private SemaphoreSlim _readerSemaphore; // Add semaphore
         private SemaphoreSlim _writerSemaphore; // Add semaphore
-        private static Logger logger = new Logger("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkr.Client.GUI/client_logger.txt");
+        private static Logger clientLogger = new Logger("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkr.Client.GUI/client_logger.txt");
+        private static Logger serverLogger = new Logger("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/server_logger.txt");
+
 
         public MainWindow()
         {
@@ -28,7 +30,6 @@ namespace abkr.Client.GUI
             _writerSemaphore = new SemaphoreSlim(1, 1); // Initialize semaphore
 
             ConnectToServerAsync().ConfigureAwait(false);
-            //RequestLogMessagesAsync().ConfigureAwait(false);
         }
 
         private async Task ConnectToServerAsync()
@@ -40,8 +41,11 @@ namespace abkr.Client.GUI
             _reader = new StreamReader(_stream, Encoding.ASCII);
             _writer = new StreamWriter(_stream, Encoding.ASCII) { AutoFlush = true };
 
-            logger.LogMessage("Connected to server. Enter SQL statements or type 'exit' to quit:");
+            string logMessage = "Connected to server. Enter SQL statements or type 'exit' to quit:";
+            clientLogger.LogMessage(logMessage);
+            UpdateConsole(logMessage); // Update the console
         }
+
 
 
 
@@ -65,16 +69,23 @@ namespace abkr.Client.GUI
             await _writer.WriteLineAsync(sqlStatement);
             _writerSemaphore.Release(); // Release semaphore after writing
 
-            logger.LogMessage($"Sent: {sqlStatement}");
+            string logMessage = $"Sent: {sqlStatement}";
+            clientLogger.LogMessage(logMessage);
+            UpdateConsole(logMessage); // Update the console
             txtInput.Clear();
         }
 
+        private void UpdateConsole(string message)
+        {
+            txtConsole.AppendText(message + Environment.NewLine);
+            txtConsole.ScrollToEnd();
+        }
 
 
         private void Disconnect()
         {
             _client.Close();
-            logger.LogMessage("Disconnected from server.");
+            clientLogger.LogMessage("Disconnected from server.");
             btnSend.IsEnabled = false;
         }
     }

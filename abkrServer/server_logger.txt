@@ -1,3 +1,18 @@
 Metadata is in sync: True
 Client connected
 Received: create database ok
+Metadata is in sync: True
+Client connected
+Metadata is in sync: True
+Client connected
+Received: insert into test.test (tID,tNAME) values (9, 'asd')
+Metadata is in sync: True
+Client connected
+Metadata is in sync: True
+Client connected
+Metadata is in sync: True
+Client connected
+Received: create database logtest
+Received: drop database logtest
+Received: create database logtest
+Error: Unable to read data from the transport connection: An existing connection was forcibly closed by the remote host..

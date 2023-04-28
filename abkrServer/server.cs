@@ -31,7 +31,7 @@ class Server
 
 
         // Initialize the DatabaseServer instance
-        var databaseServer = new DatabaseServer("mongodb://localhost:27017/", "C:/Users/bfcsa/source/repos/abkr/abkrServer/Parser/example.xml");  
+        var databaseServer = new DatabaseServer("mongodb://localhost:27017/", "C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/Parser/example.xml");  
 
         bool isMetadataInSync = databaseServer.IsMetadataInSync();
         logger.LogMessage($"Metadata is in sync: {isMetadataInSync}");
@@ -92,8 +92,6 @@ class Server
         using NetworkStream stream = client.GetStream();
         using StreamReader reader = new StreamReader(stream, Encoding.ASCII);
         using StreamWriter writer = new StreamWriter(stream, Encoding.ASCII) { AutoFlush = true };
-
-        bool sendLogMessages = false;
 
         try
         {

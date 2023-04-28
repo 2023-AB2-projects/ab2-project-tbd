@@ -35,6 +35,4 @@
       <primaryKey name="succitn" />
     </Table>
   </DataBase>
-  <DataBase dataBaseName="logtest" />
-  <DataBase dataBaseName="logtest" />
 </metadata>

@@ -45,59 +45,6 @@ namespace abkr.CatalogManager
             }
         }
 
-        public bool IsMetadataInSync()
-        {
-            return IsMetadataInSync(_catalogManager);
-        }
-
-        public static bool IsMetadataInSync(CatalogManager? _catalogManager)
-        {
-            XElement? metadata = _catalogManager?.LoadMetadata()
-                ??throw new Exception("ERROR: Metadata does not exist!");
-
-            Console.Write(metadata?.ToString());
-            var databaseList = _client?.ListDatabaseNames().ToList()
-                ??throw new Exception("ERROR: No databases!");
-
-            foreach (var databaseElement in metadata.Elements("database"))
-            {
-                string? databaseName = databaseElement?.Attribute("name")?.Value;
-
-                if (!databaseList.Contains(databaseName))
-                {
-                    return false;
-                }
-
-                var collectionList = _client?.GetDatabase(databaseName).ListCollectionNames().ToList()
-                    ??throw new Exception("ERROR: Tables not found!");
-
-                foreach (var tableElement in databaseElement.Elements("table"))
-                {
-                    string? tableName = tableElement?.Attribute("name")?.Value
-                        ??throw new Exception("ERROR: Table name not found!");
-
-                    if (!collectionList.Contains(tableName))
-                    {
-                        return false;
-                    }
-
-                    var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-                    var indexList = collection.Indexes.List().ToList();
-
-                    foreach (var indexElement in tableElement.Elements("index"))
-                    {
-                        string? indexName = indexElement?.Attribute("name")?.Value;
-
-                        if (!indexList.Any(index => index["name"] == indexName))
-                        {
-                            return false;
-                        }
-                    }
-                }
-            }
-
-            return true;
-        }
 
         public static void CreateDatabase(string databaseName)
         {
@@ -106,7 +53,7 @@ namespace abkr.CatalogManager
             _catalogManager?.CreateDatabase(databaseName);
         }
 
-        public static void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns, string primaryKeyColumn, List<string> uniqueKeys = null, Dictionary<string, string> foreignKeys = null)
+        public static void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns, string primaryKeyColumn, List<string>? uniqueKeys = null, Dictionary<string, string>? foreignKeys = null)
         {
             var database = _client?.GetDatabase(databaseName);
             database?.CreateCollection(tableName);

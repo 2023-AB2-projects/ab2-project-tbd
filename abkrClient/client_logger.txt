@@ -1,0 +1,10 @@
+Connected to server. Enter SQL statements or type 'exit' to quit:
+Success
+Connected to server. Enter SQL statements or type 'exit' to quit:
+Success
+Connected to server. Enter SQL statements or type 'exit' to quit:
+Success
+Success
+Success
+Success
+Success

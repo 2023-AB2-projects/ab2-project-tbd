@@ -52,6 +52,12 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         DatabaseName = context.identifier().GetText();
     }
 
+    public override void EnterDrop_database_statement([NotNull] abkr_grammar.Drop_database_statementContext context)
+    {
+        StatementType = StatementType.DropDatabase;
+        DatabaseName = context.identifier().GetText();
+    }
+
     public override void EnterCreate_table_statement(abkr_grammar.Create_table_statementContext context)
     {
         StatementType = StatementType.CreateTable;
@@ -187,10 +193,10 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
     private string GetPrimaryKeyColumnName(string databaseName, string tableName)
     {
-        XmlNode tableNode = metadataXml.SelectSingleNode($"//DataBase[@dataBaseName='{databaseName}']/Table[@tableName='{tableName}']");
+        XmlNode? tableNode = metadataXml.SelectSingleNode($"//DataBase[@dataBaseName='{databaseName}']/Table[@tableName='{tableName}']");
         if (tableNode != null)
         {
-            XmlNode primaryKeyNode = tableNode.SelectSingleNode("primaryKey");
+            XmlNode? primaryKeyNode = tableNode.SelectSingleNode("primaryKey");
             if (primaryKeyNode != null)
             {
                 return primaryKeyNode.Attributes["name"].Value;

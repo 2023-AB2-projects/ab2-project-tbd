@@ -365,3 +365,5 @@ FodyWeavers.xsd
 /.vs/abkrServer/DesignTimeBuild/.dtbcache.v2
 /.vs/abkrServer/v17/.suo
 /Parser/antlr-4.12.0-complete.jar
+/abkrClient/client_logger.txt
+/abkrServer/server_logger.txt

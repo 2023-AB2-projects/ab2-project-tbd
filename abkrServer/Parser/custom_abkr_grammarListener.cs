@@ -1,4 +1,5 @@
-﻿using abkr.grammarParser;
+﻿using abkr.CatalogManager;
+using abkr.grammarParser;
 using Antlr4.Runtime.Misc;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -32,6 +33,9 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public string PrimaryKeyColumn { get; private set; }
     public object PrimaryKeyValue { get; private set; }
     public FilterDefinition<BsonDocument> DeleteFilter { get; private set; }
+    public Dictionary<string, string> ForeignKeyColumns { get; private set; } = new Dictionary<string, string>();
+    public List<string> UniqueKeyColumns { get; private set; } = new List<string>();
+
 
 
     private readonly XmlDocument metadataXml;
@@ -57,31 +61,42 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         StatementType = StatementType.DropDatabase;
         DatabaseName = context.identifier().GetText();
     }
-
     public override void EnterCreate_table_statement(abkr_grammar.Create_table_statementContext context)
     {
-        StatementType = StatementType.CreateTable;
-        DatabaseName = context.identifier(0).GetText();
-        TableName = context.identifier(1).GetText();
-
+        base.EnterCreate_table_statement(context);
+        var tableName = context.identifier()[1].GetText();
         var columnDefinitions = context.column_definition_list().column_definition();
+        Dictionary<string, string> columns = new Dictionary<string, string>();
+        Dictionary<string, string> foreignKeys = new Dictionary<string, string>();
+        List<string> uniqueKeys = new List<string>();
+        string primaryKey = "";
+
         foreach (var columnDefinition in columnDefinitions)
         {
             var columnName = columnDefinition.identifier().GetText();
-            var dataType = columnDefinition.data_type().GetText();
-            Columns[columnName] = dataType;
+            var columnType = columnDefinition.data_type().GetText();
+            columns[columnName] = columnType;
 
-            var constraints = columnDefinition.column_constraint();
-            foreach (var constraint in constraints)
+            var columnConstraints = columnDefinition.column_constraint();
+            foreach (var constraint in columnConstraints)
             {
-                if (constraint.PRIMARY() != null && constraint.KEY() != null)
+                if (constraint.UNIQUE() != null)
                 {
-                    PrimaryKeyColumn = columnName;
+                    uniqueKeys.Add(columnName);
+                }
+                else if (constraint.PRIMARY() != null)
+                {
+                    primaryKey = columnName;
+                }
+                else if (constraint.FOREIGN() != null)
+                {
+                    var foreignTable = constraint.identifier()[0].GetText();
+                    var foreignColumn = constraint.identifier()[1].GetText();
+                    foreignKeys[columnName] = $"{foreignTable}.{foreignColumn}";
                 }
             }
         }
     }
-
 
     public override void EnterColumn_definition(abkr_grammar.Column_definitionContext context)
     {
@@ -99,6 +114,22 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
                     PrimaryKeyColumn = columnName;
                     Console.WriteLine($"Primary key found for column: {PrimaryKeyColumn}");
                     break;
+                }
+
+                // Handle foreign keys
+                if (constraint.FOREIGN() != null)
+                {
+                    string foreignTable = constraint.identifier(0).GetText();
+                    string foreignColumn = constraint.identifier(1).GetText();
+                    ForeignKeyColumns[columnName] = $"{foreignTable}.{foreignColumn}";
+                    Console.WriteLine($"Foreign key found for column: {columnName} referencing: {ForeignKeyColumns[columnName]}");
+                }
+
+                // Handle unique keys
+                if (constraint.UNIQUE() != null)
+                {
+                    UniqueKeyColumns.Add(columnName);
+                    Console.WriteLine($"Unique key found for column: {columnName}");
                 }
             }
         }

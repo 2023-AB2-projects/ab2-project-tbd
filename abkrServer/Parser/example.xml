@@ -35,4 +35,5 @@
       <primaryKey name="succitn" />
     </Table>
   </DataBase>
+  <DataBase dataBaseName="db" />
 </metadata>

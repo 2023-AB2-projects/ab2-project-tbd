@@ -53,12 +53,17 @@ namespace abkr.CatalogManager
             _catalogManager?.CreateDatabase(databaseName);
         }
 
-        public static void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns, string primaryKeyColumn, List<string>? uniqueKeys = null, Dictionary<string, string>? foreignKeys = null)
-        {
+public static void CreateTable(
+    string databaseName, 
+    string tableName, 
+    Dictionary<string, string> columns, 
+    string primaryKeyColumn, 
+    List<string> uniqueKeys, // This line is changed
+    Dictionary<string, string> foreignKeys)        {
             var database = _client?.GetDatabase(databaseName);
             database?.CreateCollection(tableName);
             Console.WriteLine($"Creating table: {databaseName}.{tableName}");
-            _catalogManager?.CreateTable(databaseName, tableName, columns, primaryKeyColumn);
+            _catalogManager?.CreateTable(databaseName, tableName, columns, primaryKeyColumn, foreignKeys, uniqueKeys);
 
             // Create index files for unique keys
             if (uniqueKeys != null)
@@ -78,6 +83,7 @@ namespace abkr.CatalogManager
                 }
             }
         }
+
 
 
         public static void DropDatabase(string databaseName)
@@ -232,7 +238,7 @@ namespace abkr.CatalogManager
                 {
                     stringColumns[column.Key] = column.Value.ToString();
                 }
-                CreateTable(listener.DatabaseName, listener.TableName, stringColumns, listener.PrimaryKeyColumn);
+                CreateTable(listener.DatabaseName, listener.TableName, stringColumns, listener.PrimaryKeyColumn, listener.UniqueKeyColumns,listener.ForeignKeyColumns);
             }
             else if (listener.StatementType == StatementType.DropDatabase)
             {

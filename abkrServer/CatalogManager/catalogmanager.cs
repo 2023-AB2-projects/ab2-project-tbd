@@ -76,11 +76,11 @@ namespace abkr.CatalogManager
         }
 
 
-        public void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns, string primaryKeyColumn)
+        public void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns, string primaryKeyColumn, Dictionary<string, string> foreignKeys, List<string> uniqueKeys)
         {
             var metadata = LoadMetadata();
             var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName)
-                ??throw new ArgumentException($"Database '{databaseName}' does not exist.");
+                ?? throw new ArgumentException($"Database '{databaseName}' does not exist.");
 
             var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName")?.Value == tableName);
             if (tableElement == null)
@@ -99,6 +99,21 @@ namespace abkr.CatalogManager
                         Console.WriteLine($"Primary key attribute added for column: {column.Key}");
                     }
 
+                    // Check if the column is a foreign key
+                    if (foreignKeys.ContainsKey(column.Key))
+                    {
+                        attribute.SetAttributeValue("isForeignKey", "true");
+                        attribute.SetAttributeValue("references", foreignKeys[column.Key]);
+                        Console.WriteLine($"Foreign key attribute added for column: {column.Key}");
+                    }
+
+                    // Check if the column is a unique key
+                    if (uniqueKeys.Contains(column.Key))
+                    {
+                        attribute.SetAttributeValue("isUnique", "true");
+                        Console.WriteLine($"Unique key attribute added for column: {column.Key}");
+                    }
+
                     structureElement.Add(attribute);
                 }
 
@@ -113,6 +128,7 @@ namespace abkr.CatalogManager
                 throw new ArgumentException($"Table '{tableName}' already exists in database '{databaseName}'.");
             }
         }
+
 
         public void CreateIndex(string databaseName, string tableName, string indexName, List<string> columns, bool isUnique)
         {

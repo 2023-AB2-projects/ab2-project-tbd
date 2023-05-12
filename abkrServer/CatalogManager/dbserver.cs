@@ -1,12 +1,8 @@
 using MongoDB.Driver;
 using MongoDB.Bson;
-using System.Collections.Generic;
-using System.IO;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
-using abkr.grammarParser;
 using System.Xml.Linq;
-using Amazon.Auth.AccessControlPolicy;
 
 
 namespace abkr.CatalogManager
@@ -53,38 +49,69 @@ namespace abkr.CatalogManager
             _catalogManager?.CreateDatabase(databaseName);
         }
 
-public static void CreateTable(
-    string databaseName, 
-    string tableName, 
-    Dictionary<string, string> columns, 
-    string primaryKeyColumn, 
-    List<string> uniqueKeys, // This line is changed
-    Dictionary<string, string> foreignKeys)        {
+        public static void CreateTable(string databaseName, string tableName, List<Column> columns)
+        {
             var database = _client?.GetDatabase(databaseName);
             database?.CreateCollection(tableName);
             Console.WriteLine($"Creating table: {databaseName}.{tableName}");
-            _catalogManager?.CreateTable(databaseName, tableName, columns, primaryKeyColumn, foreignKeys, uniqueKeys);
+
+            var columnsDictionary = columns?.ToDictionary(column => column.Name, column => column.Type);
+            var primaryKeyColumn = columns.FirstOrDefault(column => column.IsPrimaryKey)?.Name;
+            var uniqueKeys = columns.Where(column => column.IsUnique).Select(column => column.Name).ToList();
+            var foreignKeys = columns
+                .Where(column => !string.IsNullOrEmpty(column.ForeignKeyReference))
+                .ToDictionary(column => column.Name, column => column.ForeignKeyReference);
+
+            _catalogManager?.CreateTable(databaseName, tableName, columnsDictionary, primaryKeyColumn, foreignKeys, uniqueKeys);
 
             // Create index files for unique keys
-            if (uniqueKeys != null)
+            foreach (var uniqueKey in uniqueKeys)
             {
-                foreach (var uniqueKey in uniqueKeys)
-                {
-                    CreateIndex(databaseName, tableName, $"{uniqueKey}_unique", new BsonArray(new[] { uniqueKey }));
-                }
+                CreateIndex(databaseName, tableName, $"{uniqueKey}_unique", new BsonArray(new[] { uniqueKey }), true);
             }
 
             // If there's a foreign key column, create an index for it.
-            if (foreignKeys != null)
+            foreach (var foreignKey in foreignKeys)
             {
-                foreach (var foreignKey in foreignKeys)
-                {
-                    CreateIndex(databaseName, tableName, $"{foreignKey.Key}_fk", new BsonArray(new[] { foreignKey.Key }));
-                }
+                CreateIndex(databaseName, tableName, $"{foreignKey.Key}_fk", new BsonArray(new[] { foreignKey.Key }), false);
             }
         }
 
 
+        public static void CreateNonUniqueIndex(string databaseName, string tableName, string indexColumnName, string primaryKeyName)
+        {
+            var database = _client?.GetDatabase(databaseName);
+            var collection = database?.GetCollection<BsonDocument>(tableName);
+
+            var nonUniqueIndexCollection = database?.GetCollection<BsonDocument>(tableName + "_" + indexColumnName + "_NonUniqueIndex");
+            nonUniqueIndexCollection?.DeleteMany(new BsonDocument()); // Clear the non-unique index collection if it already exists
+
+            var nonUniqueIndex = new Dictionary<string, List<string>>();
+
+            var cursor = collection.Find(new BsonDocument()).ToCursor();
+            foreach (var document in cursor.ToEnumerable())
+            {
+                var indexColumnValue = document[indexColumnName].AsString;
+                var primaryKeyValue = document[primaryKeyName].AsString;
+
+                if (!nonUniqueIndex.ContainsKey(indexColumnValue))
+                {
+                    nonUniqueIndex[indexColumnValue] = new List<string>();
+                }
+
+                nonUniqueIndex[indexColumnValue].Add(primaryKeyValue);
+            }
+
+            foreach (var pair in nonUniqueIndex)
+            {
+                var indexDocument = new BsonDocument
+        {
+            { "IndexColumnValue", pair.Key },
+            { "PrimaryKeys", new BsonArray(pair.Value) }
+        };
+                nonUniqueIndexCollection?.InsertOne(indexDocument);
+            }
+        }
 
         public static void DropDatabase(string databaseName)
         {
@@ -149,21 +176,24 @@ public static void CreateTable(
             Console.WriteLine($"Deleted count: {deleteResult.DeletedCount}");
         }
 
-
-
-
-        public static void CreateIndex(string databaseName, string tableName, string indexName, BsonArray columns)
+        public static void CreateIndex(string databaseName, string tableName, string indexName, BsonArray columns, bool isUnique)
         {
             var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-            var indexKeys = new IndexKeysDefinitionBuilder<BsonDocument>().Ascending((FieldDefinition<BsonDocument>)columns.Select(column => column.AsString));
-            collection?.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(indexKeys, new CreateIndexOptions { Name = indexName }));
 
-            XElement? metadata = _catalogManager?.LoadMetadata(); 
-            XElement? databaseMetadata = metadata?.Element(databaseName);
-            XElement? tableMetadata = databaseMetadata?.Element(tableName);
-            XElement? indexes = tableMetadata?.Element("indexes");
+            var indexKeysBuilder = new IndexKeysDefinitionBuilder<BsonDocument>();
+            var indexKeysDefinitions = new List<IndexKeysDefinition<BsonDocument>>();
 
-            _catalogManager?.CreateIndex(databaseName, tableName, indexName, columns.Select(column => column.AsString).ToList(), false); // Convert BsonArray to List<string>
+            foreach (var column in columns)
+            {
+                indexKeysDefinitions.Add(indexKeysBuilder.Ascending(column.AsString));
+            }
+
+            var indexKeys = Builders<BsonDocument>.IndexKeys.Combine(indexKeysDefinitions);
+
+            var indexOptions = new CreateIndexOptions { Name = indexName, Unique = isUnique };
+            collection?.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(indexKeys, indexOptions));
+
+            _catalogManager?.CreateIndex(databaseName, tableName, indexName, columns.Select(column => column.AsString).ToList(), isUnique);
         }
 
 
@@ -233,13 +263,15 @@ public static void CreateTable(
             }
             else if (listener.StatementType == StatementType.CreateTable)
             {
-                var stringColumns = new Dictionary<string, string>();
+                var columns = new List<Column>();
                 foreach (var column in listener.Columns)
                 {
-                    stringColumns[column.Key] = column.Value.ToString();
+                    // Assuming Column has properties Name and Value
+                    columns.Add(new Column() { Name = column.Key, Type = column.Value });
                 }
-                CreateTable(listener.DatabaseName, listener.TableName, stringColumns, listener.PrimaryKeyColumn, listener.UniqueKeyColumns,listener.ForeignKeyColumns);
+                CreateTable(listener.DatabaseName, listener.TableName, columns);
             }
+
             else if (listener.StatementType == StatementType.DropDatabase)
             {
                 DropDatabase(listener.DatabaseName);
@@ -250,7 +282,7 @@ public static void CreateTable(
             }
             else if (listener.StatementType == StatementType.CreateIndex)
             {
-                CreateIndex(listener.DatabaseName, listener.TableName, listener.IndexName, listener.IndexColumns);
+                CreateIndex(listener.DatabaseName, listener.TableName, listener.IndexName, listener.IndexColumns,_catalogManager.IsUniqueKey(listener.DatabaseName,listener.TableName,listener.ColumnName));
             }
             else if (listener.StatementType == StatementType.DropIndex)
             {

@@ -35,6 +35,8 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public FilterDefinition<BsonDocument> DeleteFilter { get; private set; }
     public Dictionary<string, string> ForeignKeyColumns { get; private set; } = new Dictionary<string, string>();
     public List<string> UniqueKeyColumns { get; private set; } = new List<string>();
+    
+    public bool IsUnique = false;
 
 
 
@@ -64,36 +66,35 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public override void EnterCreate_table_statement(abkr_grammar.Create_table_statementContext context)
     {
         StatementType = StatementType.CreateTable;
-        var databaseName = context.identifier()[0].GetText();
-        var tableName = context.identifier()[1].GetText();
+        DatabaseName = context.identifier()[0].GetText();
+        TableName = context.identifier()[1].GetText();
         var columnDefinitions = context.column_definition_list().column_definition();
-        Dictionary<string, string> columns = new Dictionary<string, string>();
-        Dictionary<string, string> foreignKeys = new Dictionary<string, string>();
-        List<string> uniqueKeys = new List<string>();
-        string primaryKey = "";
+        Columns = new Dictionary<string, object>();
+        ForeignKeyColumns = new Dictionary<string, string>();
+        UniqueKeyColumns = new List<string>();
 
         foreach (var columnDefinition in columnDefinitions)
         {
             var columnName = columnDefinition.identifier().GetText();
             var columnType = columnDefinition.data_type().GetText();
-            columns[columnName] = columnType;
+            Columns[columnName] = columnType;
 
             var columnConstraints = columnDefinition.column_constraint();
             foreach (var constraint in columnConstraints)
             {
                 if (constraint.UNIQUE() != null)
                 {
-                    uniqueKeys.Add(columnName);
+                    UniqueKeyColumns.Add(columnName);
                 }
                 else if (constraint.PRIMARY() != null)
                 {
-                    primaryKey = columnName;
+                    PrimaryKeyColumn = columnName;
                 }
                 else if (constraint.FOREIGN() != null)
                 {
                     var foreignTable = constraint.identifier()[0].GetText();
                     var foreignColumn = constraint.identifier()[1].GetText();
-                    foreignKeys[columnName] = $"{foreignTable}.{foreignColumn}";
+                    ForeignKeyColumns[columnName] = $"{foreignTable}.{foreignColumn}";
                 }
             }
         }

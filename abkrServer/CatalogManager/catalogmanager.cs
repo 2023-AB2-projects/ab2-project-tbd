@@ -206,7 +206,7 @@ namespace abkr.CatalogManager
         public void DropTable(string databaseName, string tableName)
         {
             var metadata = LoadMetadata();
-            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName) 
+            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName)
                 ?? throw new ArgumentException($"Database '{databaseName}' does not exist.");
 
             var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName")?.Value == tableName);
@@ -220,5 +220,30 @@ namespace abkr.CatalogManager
                 throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
             }
         }
+
+        public bool IsUniqueKey(string databaseName, string tableName, string columnName)
+        {
+            XElement? metadata = LoadMetadata();
+            XElement? databaseElement = metadata?.Elements("DataBase").FirstOrDefault(db => db.Attribute("dataBaseName")?.Value == databaseName);
+            XElement? tableElement = databaseElement?.Elements("Table").FirstOrDefault(tbl => tbl.Attribute("tableName")?.Value == tableName);
+
+            if (tableElement == null)
+            {
+                throw new Exception($"ERROR: Table {tableName} not found in database {databaseName}!");
+            }
+
+            XElement? columnAttribute = tableElement.Elements("Structure").Elements("Attribute")
+                .FirstOrDefault(attr => attr.Attribute("attributeName")?.Value == columnName);
+
+            if (columnAttribute == null)
+            {
+                throw new Exception($"ERROR: Column {columnName} not found in table {tableName}!");
+            }
+
+            var isUniqueAttribute = columnAttribute.Attribute("isUnique")?.Value;
+
+            return isUniqueAttribute == "true";
+        }
+
     }
 }

@@ -63,7 +63,8 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     }
     public override void EnterCreate_table_statement(abkr_grammar.Create_table_statementContext context)
     {
-        base.EnterCreate_table_statement(context);
+        StatementType = StatementType.CreateTable;
+        var databaseName = context.identifier()[0].GetText();
         var tableName = context.identifier()[1].GetText();
         var columnDefinitions = context.column_definition_list().column_definition();
         Dictionary<string, string> columns = new Dictionary<string, string>();

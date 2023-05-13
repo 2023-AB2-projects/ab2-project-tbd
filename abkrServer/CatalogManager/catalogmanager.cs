@@ -76,7 +76,7 @@ namespace abkr.CatalogManager
         }
 
 
-        public void CreateTable(string databaseName, string tableName, Dictionary<string, string> columns, string primaryKeyColumn, Dictionary<string, string> foreignKeys, List<string> uniqueKeys)
+        public void CreateTable(string databaseName, string tableName, Dictionary<string, object> columns, string primaryKeyColumn, Dictionary<string, string> foreignKeys, List<string> uniqueKeys)
         {
             var metadata = LoadMetadata();
             var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName)

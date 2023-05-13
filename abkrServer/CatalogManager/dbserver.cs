@@ -51,7 +51,26 @@ namespace abkr.CatalogManager
 
         public static void CreateTable(string databaseName, string tableName, List<Column> columns)
         {
-            var database = _client?.GetDatabase(databaseName);
+
+            if (string.IsNullOrEmpty(databaseName))
+            {
+                throw new ArgumentNullException(nameof(databaseName), "Database name cannot be null or empty.");
+            }
+
+            if (string.IsNullOrEmpty(tableName))
+            {
+                throw new ArgumentNullException(nameof(tableName), "Table name cannot be null or empty.");
+            }
+
+            if (columns == null || columns.Count == 0)
+            {
+                throw new ArgumentNullException(nameof(columns), "Columns cannot be null or empty.");
+            }
+
+            var database = (_client?.GetDatabase(databaseName)) 
+                ?? throw new Exception("Database connection not established.");
+
+            
             database?.CreateCollection(tableName);
             Console.WriteLine($"Creating table: {databaseName}.{tableName}");
 

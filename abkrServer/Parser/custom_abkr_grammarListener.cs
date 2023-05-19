@@ -45,10 +45,19 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public MyAbkrGrammarListener(string metadataFilePath)
     {
         metadataXml = new XmlDocument();
-        metadataXml.Load(metadataFilePath);
-
+        try
+        {
+            metadataXml.Load(metadataFilePath);
+        }
+        catch (XmlException ex)
+        {
+            Console.WriteLine("Invalid XML. Details: " + ex.Message);
+        }
+        catch (IOException ex)
+        {
+            Console.WriteLine("Problem reading file. Details: " + ex.Message);
+        }
     }
-
 
     // Override the listener methods to extract the required information
 
@@ -102,10 +111,10 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
     public override void EnterColumn_definition(abkr_grammar.Column_definitionContext context)
     {
-        string columnName = context.identifier().GetText();
-        Columns[columnName] = context.data_type().GetText();
+        ColumnName = context.identifier().GetText();
+        Columns[ColumnName] = context.data_type().GetText();
 
-        Console.WriteLine($"Column name: {columnName}, Data type: {Columns[columnName]}");
+        Console.WriteLine($"Column name: {ColumnName}, Data type: {Columns[ColumnName]}");
 
         if (context.column_constraint() != null)
         {
@@ -113,7 +122,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
             {
                 if (constraint.PRIMARY() != null)
                 {
-                    PrimaryKeyColumn = columnName;
+                    PrimaryKeyColumn = ColumnName;
                     Console.WriteLine($"Primary key found for column: {PrimaryKeyColumn}");
                     break;
                 }
@@ -123,15 +132,15 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
                 {
                     string foreignTable = constraint.identifier(0).GetText();
                     string foreignColumn = constraint.identifier(1).GetText();
-                    ForeignKeyColumns[columnName] = $"{foreignTable}.{foreignColumn}";
-                    Console.WriteLine($"Foreign key found for column: {columnName} referencing: {ForeignKeyColumns[columnName]}");
+                    ForeignKeyColumns[ColumnName] = $"{foreignTable}.{foreignColumn}";
+                    Console.WriteLine($"Foreign key found for column: {ColumnName} referencing: {ForeignKeyColumns[ColumnName]}");
                 }
 
                 // Handle unique keys
                 if (constraint.UNIQUE() != null)
                 {
-                    UniqueKeyColumns.Add(columnName);
-                    Console.WriteLine($"Unique key found for column: {columnName}");
+                    UniqueKeyColumns.Add(ColumnName);
+                    Console.WriteLine($"Unique key found for column: {ColumnName}");
                 }
             }
         }

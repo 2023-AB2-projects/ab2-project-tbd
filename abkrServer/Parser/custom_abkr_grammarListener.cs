@@ -89,21 +89,24 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
             Columns[columnName] = columnType;
 
             var columnConstraints = columnDefinition.column_constraint();
-            foreach (var constraint in columnConstraints)
+            if (columnConstraints.Any())  // Ensure there are constraints before iterating
             {
-                if (constraint.UNIQUE() != null)
+                foreach (var constraint in columnConstraints)
                 {
-                    UniqueKeyColumns.Add(columnName);
-                }
-                else if (constraint.PRIMARY() != null)
-                {
-                    PrimaryKeyColumn = columnName;
-                }
-                else if (constraint.FOREIGN() != null)
-                {
-                    var foreignTable = constraint.identifier()[0].GetText();
-                    var foreignColumn = constraint.identifier()[1].GetText();
-                    ForeignKeyColumns[columnName] = $"{foreignTable}.{foreignColumn}";
+                    if (constraint.UNIQUE() != null)
+                    {
+                        UniqueKeyColumns.Add(columnName);
+                    }
+                    else if (constraint.PRIMARY() != null)
+                    {
+                        PrimaryKeyColumn = columnName;
+                    }
+                    else if (constraint.FOREIGN() != null && constraint.identifier().Length >= 2)
+                    {
+                        var foreignTable = constraint.identifier()[0].GetText();
+                        var foreignColumn = constraint.identifier()[1].GetText();
+                        ForeignKeyColumns[columnName] = $"{foreignTable}.{foreignColumn}";
+                    }
                 }
             }
         }
@@ -120,24 +123,28 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         {
             foreach (var constraint in context.column_constraint())
             {
+                // Handle primary keys
                 if (constraint.PRIMARY() != null)
                 {
                     PrimaryKeyColumn = ColumnName;
                     Console.WriteLine($"Primary key found for column: {PrimaryKeyColumn}");
-                    break;
+                    break;  // Once primary key is found, no need to check for other constraints
                 }
 
                 // Handle foreign keys
                 if (constraint.FOREIGN() != null)
                 {
-                    string foreignTable = constraint.identifier(0).GetText();
-                    string foreignColumn = constraint.identifier(1).GetText();
-                    ForeignKeyColumns[ColumnName] = $"{foreignTable}.{foreignColumn}";
-                    Console.WriteLine($"Foreign key found for column: {ColumnName} referencing: {ForeignKeyColumns[ColumnName]}");
+                    string? foreignTable = constraint.identifier(0)?.GetText();
+                    string? foreignColumn = constraint.identifier(1)?.GetText();
+                    if (!string.IsNullOrEmpty(foreignTable) && !string.IsNullOrEmpty(foreignColumn))
+                    {
+                        ForeignKeyColumns[ColumnName] = $"{foreignTable}.{foreignColumn}";
+                        Console.WriteLine($"Foreign key found for column: {ColumnName} referencing: {ForeignKeyColumns[ColumnName]}");
+                    }
                 }
 
                 // Handle unique keys
-                if (constraint.UNIQUE() != null)
+                if (constraint.UNIQUE() != null && !string.IsNullOrEmpty(ColumnName))
                 {
                     UniqueKeyColumns.Add(ColumnName);
                     Console.WriteLine($"Unique key found for column: {ColumnName}");
@@ -145,9 +152,6 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
             }
         }
     }
-
-
-
 
 
     public override void EnterInsert_statement(abkr_grammar.Insert_statementContext context)
@@ -159,16 +163,20 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
         Columns.Clear();
         Values.Clear();
+        int valueCount = context.value_list().value().Length;
 
         int? columnCount = context.identifier_list().identifier().Length;
-        if (columnCount != 0)
+        if (columnCount != null && columnCount == valueCount)
         {
             for (int i = 0; i < columnCount; i++)
             {
-                Columns[context.identifier_list().identifier(i).GetText()] = null;
+                Columns[context.identifier_list().identifier(i).GetText()] = context.value_list().value(i).GetText();
             }
         }
-        int valueCount = context.value_list().value().Length;
+        else
+        {
+            throw new Exception("Mismatch between column count and value count");
+        }
         for (int i = 0; i < valueCount; i++)
         {
             Columns[context.identifier_list().identifier(i).GetText()] = context.value_list().value(i).GetText();

@@ -2,7 +2,15 @@ parser grammar abkr_grammar;
 
 options { tokenVocab=abkr_grammarLexer; }
 
-statement: create_database_statement | create_table_statement | drop_database_statement | drop_table_statement | create_index_statement | drop_index_statement | insert_statement | delete_statement;
+statement: create_database_statement 
+          | create_table_statement 
+          | drop_database_statement 
+          | drop_table_statement 
+          | create_index_statement 
+          | drop_index_statement 
+          | insert_statement 
+          | delete_statement
+          | select_statement;
 
 create_database_statement: CREATE DATABASE identifier;
 
@@ -39,3 +47,13 @@ delete_statement: DELETE FROM identifier DOT identifier WHERE identifier EQUALS 
 value_list: value (COMMA value)*;
 
 value: STRING | NUMBER;
+
+select_statement: SELECT column_list FROM identifier (DOT identifier)? where_clause?;
+
+column_list: ASTERISK | identifier_list;
+
+where_clause: WHERE condition;
+
+condition: identifier comparison_operator value (AND condition)?;
+
+comparison_operator: EQUALS | GREATER_THAN | GREATER_EQUALS | LESS_THAN | LESS_EQUALS;

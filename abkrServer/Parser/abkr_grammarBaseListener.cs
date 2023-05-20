@@ -239,6 +239,66 @@ public partial class abkr_grammarBaseListener : Iabkr_grammarListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitValue([NotNull] abkr_grammar.ValueContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammar.select_statement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterSelect_statement([NotNull] abkr_grammar.Select_statementContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammar.select_statement"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitSelect_statement([NotNull] abkr_grammar.Select_statementContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammar.column_list"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterColumn_list([NotNull] abkr_grammar.Column_listContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammar.column_list"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitColumn_list([NotNull] abkr_grammar.Column_listContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammar.where_clause"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterWhere_clause([NotNull] abkr_grammar.Where_clauseContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammar.where_clause"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitWhere_clause([NotNull] abkr_grammar.Where_clauseContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammar.condition"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterCondition([NotNull] abkr_grammar.ConditionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammar.condition"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitCondition([NotNull] abkr_grammar.ConditionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammar.comparison_operator"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterComparison_operator([NotNull] abkr_grammar.Comparison_operatorContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammar.comparison_operator"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitComparison_operator([NotNull] abkr_grammar.Comparison_operatorContext context) { }
 
 	/// <inheritdoc/>
 	/// <remarks>The default implementation does nothing.</remarks>

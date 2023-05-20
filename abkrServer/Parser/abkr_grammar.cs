@@ -38,33 +38,38 @@ public partial class abkr_grammar : Parser {
 	public const int
 		CREATE=1, DATABASE=2, TABLE=3, INDEX=4, UNIQUE=5, DROP=6, ON=7, INT=8, 
 		VARCHAR=9, PRIMARY=10, KEY=11, FOREIGN=12, REFERENCES=13, INSERT=14, INTO=15, 
-		VALUES=16, DELETE=17, FROM=18, WHERE=19, DOT=20, COMMA=21, LPAREN=22, 
-		RPAREN=23, EQUALS=24, IDENTIFIER=25, NUMBER=26, STRING=27, WS=28;
+		VALUES=16, DELETE=17, FROM=18, WHERE=19, SELECT=20, AND=21, ASTERISK=22, 
+		GREATER_THAN=23, GREATER_EQUALS=24, LESS_THAN=25, LESS_EQUALS=26, DOT=27, 
+		COMMA=28, LPAREN=29, RPAREN=30, EQUALS=31, IDENTIFIER=32, NUMBER=33, STRING=34, 
+		WS=35;
 	public const int
 		RULE_statement = 0, RULE_create_database_statement = 1, RULE_create_table_statement = 2, 
 		RULE_drop_database_statement = 3, RULE_drop_table_statement = 4, RULE_create_index_statement = 5, 
 		RULE_drop_index_statement = 6, RULE_column_definition_list = 7, RULE_column_definition = 8, 
 		RULE_column_constraint = 9, RULE_data_type = 10, RULE_identifier_list = 11, 
 		RULE_identifier = 12, RULE_insert_statement = 13, RULE_delete_statement = 14, 
-		RULE_value_list = 15, RULE_value = 16;
+		RULE_value_list = 15, RULE_value = 16, RULE_select_statement = 17, RULE_column_list = 18, 
+		RULE_where_clause = 19, RULE_condition = 20, RULE_comparison_operator = 21;
 	public static readonly string[] ruleNames = {
 		"statement", "create_database_statement", "create_table_statement", "drop_database_statement", 
 		"drop_table_statement", "create_index_statement", "drop_index_statement", 
 		"column_definition_list", "column_definition", "column_constraint", "data_type", 
 		"identifier_list", "identifier", "insert_statement", "delete_statement", 
-		"value_list", "value"
+		"value_list", "value", "select_statement", "column_list", "where_clause", 
+		"condition", "comparison_operator"
 	};
 
 	private static readonly string[] _LiteralNames = {
 		null, null, null, null, null, null, null, null, null, null, null, null, 
-		null, null, null, null, null, null, null, null, "'.'", "','", "'('", "')'", 
-		"'='"
+		null, null, null, null, null, null, null, null, null, null, "'*'", "'>'", 
+		"'>='", "'<'", "'<='", "'.'", "','", "'('", "')'", "'='"
 	};
 	private static readonly string[] _SymbolicNames = {
 		null, "CREATE", "DATABASE", "TABLE", "INDEX", "UNIQUE", "DROP", "ON", 
 		"INT", "VARCHAR", "PRIMARY", "KEY", "FOREIGN", "REFERENCES", "INSERT", 
-		"INTO", "VALUES", "DELETE", "FROM", "WHERE", "DOT", "COMMA", "LPAREN", 
-		"RPAREN", "EQUALS", "IDENTIFIER", "NUMBER", "STRING", "WS"
+		"INTO", "VALUES", "DELETE", "FROM", "WHERE", "SELECT", "AND", "ASTERISK", 
+		"GREATER_THAN", "GREATER_EQUALS", "LESS_THAN", "LESS_EQUALS", "DOT", "COMMA", 
+		"LPAREN", "RPAREN", "EQUALS", "IDENTIFIER", "NUMBER", "STRING", "WS"
 	};
 	public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
 
@@ -123,6 +128,9 @@ public partial class abkr_grammar : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public Delete_statementContext delete_statement() {
 			return GetRuleContext<Delete_statementContext>(0);
 		}
+		[System.Diagnostics.DebuggerNonUserCode] public Select_statementContext select_statement() {
+			return GetRuleContext<Select_statementContext>(0);
+		}
 		public StatementContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -145,63 +153,70 @@ public partial class abkr_grammar : Parser {
 		StatementContext _localctx = new StatementContext(Context, State);
 		EnterRule(_localctx, 0, RULE_statement);
 		try {
-			State = 42;
+			State = 53;
 			ErrorHandler.Sync(this);
 			switch ( Interpreter.AdaptivePredict(TokenStream,0,Context) ) {
 			case 1:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 34;
+				State = 44;
 				create_database_statement();
 				}
 				break;
 			case 2:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 35;
+				State = 45;
 				create_table_statement();
 				}
 				break;
 			case 3:
 				EnterOuterAlt(_localctx, 3);
 				{
-				State = 36;
+				State = 46;
 				drop_database_statement();
 				}
 				break;
 			case 4:
 				EnterOuterAlt(_localctx, 4);
 				{
-				State = 37;
+				State = 47;
 				drop_table_statement();
 				}
 				break;
 			case 5:
 				EnterOuterAlt(_localctx, 5);
 				{
-				State = 38;
+				State = 48;
 				create_index_statement();
 				}
 				break;
 			case 6:
 				EnterOuterAlt(_localctx, 6);
 				{
-				State = 39;
+				State = 49;
 				drop_index_statement();
 				}
 				break;
 			case 7:
 				EnterOuterAlt(_localctx, 7);
 				{
-				State = 40;
+				State = 50;
 				insert_statement();
 				}
 				break;
 			case 8:
 				EnterOuterAlt(_localctx, 8);
 				{
-				State = 41;
+				State = 51;
 				delete_statement();
+				}
+				break;
+			case 9:
+				EnterOuterAlt(_localctx, 9);
+				{
+				State = 52;
+				select_statement();
 				}
 				break;
 			}
@@ -247,11 +262,11 @@ public partial class abkr_grammar : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 44;
+			State = 55;
 			Match(CREATE);
-			State = 45;
+			State = 56;
 			Match(DATABASE);
-			State = 46;
+			State = 57;
 			identifier();
 			}
 		}
@@ -305,21 +320,21 @@ public partial class abkr_grammar : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 48;
+			State = 59;
 			Match(CREATE);
-			State = 49;
+			State = 60;
 			Match(TABLE);
-			State = 50;
+			State = 61;
 			identifier();
-			State = 51;
+			State = 62;
 			Match(DOT);
-			State = 52;
+			State = 63;
 			identifier();
-			State = 53;
+			State = 64;
 			Match(LPAREN);
-			State = 54;
+			State = 65;
 			column_definition_list();
-			State = 55;
+			State = 66;
 			Match(RPAREN);
 			}
 		}
@@ -364,11 +379,11 @@ public partial class abkr_grammar : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 57;
+			State = 68;
 			Match(DROP);
-			State = 58;
+			State = 69;
 			Match(DATABASE);
-			State = 59;
+			State = 70;
 			identifier();
 			}
 		}
@@ -417,15 +432,15 @@ public partial class abkr_grammar : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 61;
+			State = 72;
 			Match(DROP);
-			State = 62;
+			State = 73;
 			Match(TABLE);
-			State = 63;
+			State = 74;
 			identifier();
-			State = 64;
+			State = 75;
 			Match(DOT);
-			State = 65;
+			State = 76;
 			identifier();
 			}
 		}
@@ -481,31 +496,31 @@ public partial class abkr_grammar : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 67;
+			State = 78;
 			Match(CREATE);
-			State = 69;
+			State = 80;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			if (_la==UNIQUE) {
 				{
-				State = 68;
+				State = 79;
 				Match(UNIQUE);
 				}
 			}
 
-			State = 71;
+			State = 82;
 			Match(INDEX);
-			State = 72;
+			State = 83;
 			identifier();
-			State = 73;
+			State = 84;
 			Match(ON);
-			State = 74;
+			State = 85;
 			identifier();
-			State = 75;
+			State = 86;
 			Match(LPAREN);
-			State = 76;
+			State = 87;
 			identifier_list();
-			State = 77;
+			State = 88;
 			Match(RPAREN);
 			}
 		}
@@ -554,15 +569,15 @@ public partial class abkr_grammar : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 79;
+			State = 90;
 			Match(DROP);
-			State = 80;
+			State = 91;
 			Match(INDEX);
-			State = 81;
+			State = 92;
 			identifier();
-			State = 82;
+			State = 93;
 			Match(ON);
-			State = 83;
+			State = 94;
 			identifier();
 			}
 		}
@@ -613,21 +628,21 @@ public partial class abkr_grammar : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 85;
+			State = 96;
 			column_definition();
-			State = 90;
+			State = 101;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			while (_la==COMMA) {
 				{
 				{
-				State = 86;
+				State = 97;
 				Match(COMMA);
-				State = 87;
+				State = 98;
 				column_definition();
 				}
 				}
-				State = 92;
+				State = 103;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 			}
@@ -682,21 +697,21 @@ public partial class abkr_grammar : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 93;
+			State = 104;
 			identifier();
-			State = 94;
+			State = 105;
 			data_type();
-			State = 98;
+			State = 109;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 5152L) != 0)) {
 				{
 				{
-				State = 95;
+				State = 106;
 				column_constraint();
 				}
 				}
-				State = 100;
+				State = 111;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 			}
@@ -748,39 +763,39 @@ public partial class abkr_grammar : Parser {
 		Column_constraintContext _localctx = new Column_constraintContext(Context, State);
 		EnterRule(_localctx, 18, RULE_column_constraint);
 		try {
-			State = 111;
+			State = 122;
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
 			case PRIMARY:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 101;
+				State = 112;
 				Match(PRIMARY);
-				State = 102;
+				State = 113;
 				Match(KEY);
 				}
 				break;
 			case UNIQUE:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 103;
+				State = 114;
 				Match(UNIQUE);
 				}
 				break;
 			case FOREIGN:
 				EnterOuterAlt(_localctx, 3);
 				{
-				State = 104;
+				State = 115;
 				Match(FOREIGN);
-				State = 105;
+				State = 116;
 				Match(KEY);
-				State = 106;
+				State = 117;
 				Match(REFERENCES);
-				State = 107;
+				State = 118;
 				identifier();
-				State = 108;
+				State = 119;
 				Match(DOT);
-				State = 109;
+				State = 120;
 				identifier();
 				}
 				break;
@@ -827,26 +842,26 @@ public partial class abkr_grammar : Parser {
 		Data_typeContext _localctx = new Data_typeContext(Context, State);
 		EnterRule(_localctx, 20, RULE_data_type);
 		try {
-			State = 118;
+			State = 129;
 			ErrorHandler.Sync(this);
 			switch (TokenStream.LA(1)) {
 			case INT:
 				EnterOuterAlt(_localctx, 1);
 				{
-				State = 113;
+				State = 124;
 				Match(INT);
 				}
 				break;
 			case VARCHAR:
 				EnterOuterAlt(_localctx, 2);
 				{
-				State = 114;
+				State = 125;
 				Match(VARCHAR);
-				State = 115;
+				State = 126;
 				Match(LPAREN);
-				State = 116;
+				State = 127;
 				Match(NUMBER);
-				State = 117;
+				State = 128;
 				Match(RPAREN);
 				}
 				break;
@@ -901,21 +916,21 @@ public partial class abkr_grammar : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 120;
+			State = 131;
 			identifier();
-			State = 125;
+			State = 136;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			while (_la==COMMA) {
 				{
 				{
-				State = 121;
+				State = 132;
 				Match(COMMA);
-				State = 122;
+				State = 133;
 				identifier();
 				}
 				}
-				State = 127;
+				State = 138;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 			}
@@ -958,7 +973,7 @@ public partial class abkr_grammar : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 128;
+			State = 139;
 			Match(IDENTIFIER);
 			}
 		}
@@ -1023,37 +1038,37 @@ public partial class abkr_grammar : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 130;
+			State = 141;
 			Match(INSERT);
-			State = 131;
+			State = 142;
 			Match(INTO);
-			State = 132;
+			State = 143;
 			identifier();
-			State = 133;
+			State = 144;
 			Match(DOT);
-			State = 134;
+			State = 145;
 			identifier();
-			State = 139;
+			State = 150;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			if (_la==LPAREN) {
 				{
-				State = 135;
+				State = 146;
 				Match(LPAREN);
-				State = 136;
+				State = 147;
 				identifier_list();
-				State = 137;
+				State = 148;
 				Match(RPAREN);
 				}
 			}
 
-			State = 141;
+			State = 152;
 			Match(VALUES);
-			State = 142;
+			State = 153;
 			Match(LPAREN);
-			State = 143;
+			State = 154;
 			value_list();
-			State = 144;
+			State = 155;
 			Match(RPAREN);
 			}
 		}
@@ -1107,23 +1122,23 @@ public partial class abkr_grammar : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 146;
+			State = 157;
 			Match(DELETE);
-			State = 147;
+			State = 158;
 			Match(FROM);
-			State = 148;
+			State = 159;
 			identifier();
-			State = 149;
+			State = 160;
 			Match(DOT);
-			State = 150;
+			State = 161;
 			identifier();
-			State = 151;
+			State = 162;
 			Match(WHERE);
-			State = 152;
+			State = 163;
 			identifier();
-			State = 153;
+			State = 164;
 			Match(EQUALS);
-			State = 154;
+			State = 165;
 			value();
 			}
 		}
@@ -1174,21 +1189,21 @@ public partial class abkr_grammar : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 156;
+			State = 167;
 			value();
-			State = 161;
+			State = 172;
 			ErrorHandler.Sync(this);
 			_la = TokenStream.LA(1);
 			while (_la==COMMA) {
 				{
 				{
-				State = 157;
+				State = 168;
 				Match(COMMA);
-				State = 158;
+				State = 169;
 				value();
 				}
 				}
-				State = 163;
+				State = 174;
 				ErrorHandler.Sync(this);
 				_la = TokenStream.LA(1);
 			}
@@ -1233,7 +1248,7 @@ public partial class abkr_grammar : Parser {
 		try {
 			EnterOuterAlt(_localctx, 1);
 			{
-			State = 164;
+			State = 175;
 			_la = TokenStream.LA(1);
 			if ( !(_la==NUMBER || _la==STRING) ) {
 			ErrorHandler.RecoverInline(this);
@@ -1255,56 +1270,381 @@ public partial class abkr_grammar : Parser {
 		return _localctx;
 	}
 
+	public partial class Select_statementContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SELECT() { return GetToken(abkr_grammar.SELECT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public Column_listContext column_list() {
+			return GetRuleContext<Column_listContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode FROM() { return GetToken(abkr_grammar.FROM, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext[] identifier() {
+			return GetRuleContexts<IdentifierContext>();
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier(int i) {
+			return GetRuleContext<IdentifierContext>(i);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(abkr_grammar.DOT, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public Where_clauseContext where_clause() {
+			return GetRuleContext<Where_clauseContext>(0);
+		}
+		public Select_statementContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_select_statement; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+			if (typedListener != null) typedListener.EnterSelect_statement(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+			if (typedListener != null) typedListener.ExitSelect_statement(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public Select_statementContext select_statement() {
+		Select_statementContext _localctx = new Select_statementContext(Context, State);
+		EnterRule(_localctx, 34, RULE_select_statement);
+		int _la;
+		try {
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 177;
+			Match(SELECT);
+			State = 178;
+			column_list();
+			State = 179;
+			Match(FROM);
+			State = 180;
+			identifier();
+			State = 183;
+			ErrorHandler.Sync(this);
+			_la = TokenStream.LA(1);
+			if (_la==DOT) {
+				{
+				State = 181;
+				Match(DOT);
+				State = 182;
+				identifier();
+				}
+			}
+
+			State = 186;
+			ErrorHandler.Sync(this);
+			_la = TokenStream.LA(1);
+			if (_la==WHERE) {
+				{
+				State = 185;
+				where_clause();
+				}
+			}
+
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class Column_listContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ASTERISK() { return GetToken(abkr_grammar.ASTERISK, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public Identifier_listContext identifier_list() {
+			return GetRuleContext<Identifier_listContext>(0);
+		}
+		public Column_listContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_column_list; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+			if (typedListener != null) typedListener.EnterColumn_list(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+			if (typedListener != null) typedListener.ExitColumn_list(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public Column_listContext column_list() {
+		Column_listContext _localctx = new Column_listContext(Context, State);
+		EnterRule(_localctx, 36, RULE_column_list);
+		try {
+			State = 190;
+			ErrorHandler.Sync(this);
+			switch (TokenStream.LA(1)) {
+			case ASTERISK:
+				EnterOuterAlt(_localctx, 1);
+				{
+				State = 188;
+				Match(ASTERISK);
+				}
+				break;
+			case IDENTIFIER:
+				EnterOuterAlt(_localctx, 2);
+				{
+				State = 189;
+				identifier_list();
+				}
+				break;
+			default:
+				throw new NoViableAltException(this);
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class Where_clauseContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode WHERE() { return GetToken(abkr_grammar.WHERE, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ConditionContext condition() {
+			return GetRuleContext<ConditionContext>(0);
+		}
+		public Where_clauseContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_where_clause; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+			if (typedListener != null) typedListener.EnterWhere_clause(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+			if (typedListener != null) typedListener.ExitWhere_clause(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public Where_clauseContext where_clause() {
+		Where_clauseContext _localctx = new Where_clauseContext(Context, State);
+		EnterRule(_localctx, 38, RULE_where_clause);
+		try {
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 192;
+			Match(WHERE);
+			State = 193;
+			condition();
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class ConditionContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier() {
+			return GetRuleContext<IdentifierContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public Comparison_operatorContext comparison_operator() {
+			return GetRuleContext<Comparison_operatorContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ValueContext value() {
+			return GetRuleContext<ValueContext>(0);
+		}
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode AND() { return GetToken(abkr_grammar.AND, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ConditionContext condition() {
+			return GetRuleContext<ConditionContext>(0);
+		}
+		public ConditionContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_condition; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+			if (typedListener != null) typedListener.EnterCondition(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+			if (typedListener != null) typedListener.ExitCondition(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public ConditionContext condition() {
+		ConditionContext _localctx = new ConditionContext(Context, State);
+		EnterRule(_localctx, 40, RULE_condition);
+		int _la;
+		try {
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 195;
+			identifier();
+			State = 196;
+			comparison_operator();
+			State = 197;
+			value();
+			State = 200;
+			ErrorHandler.Sync(this);
+			_la = TokenStream.LA(1);
+			if (_la==AND) {
+				{
+				State = 198;
+				Match(AND);
+				State = 199;
+				condition();
+				}
+			}
+
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
+	public partial class Comparison_operatorContext : ParserRuleContext {
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode EQUALS() { return GetToken(abkr_grammar.EQUALS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode GREATER_THAN() { return GetToken(abkr_grammar.GREATER_THAN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode GREATER_EQUALS() { return GetToken(abkr_grammar.GREATER_EQUALS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LESS_THAN() { return GetToken(abkr_grammar.LESS_THAN, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LESS_EQUALS() { return GetToken(abkr_grammar.LESS_EQUALS, 0); }
+		public Comparison_operatorContext(ParserRuleContext parent, int invokingState)
+			: base(parent, invokingState)
+		{
+		}
+		public override int RuleIndex { get { return RULE_comparison_operator; } }
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void EnterRule(IParseTreeListener listener) {
+			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+			if (typedListener != null) typedListener.EnterComparison_operator(this);
+		}
+		[System.Diagnostics.DebuggerNonUserCode]
+		public override void ExitRule(IParseTreeListener listener) {
+			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+			if (typedListener != null) typedListener.ExitComparison_operator(this);
+		}
+	}
+
+	[RuleVersion(0)]
+	public Comparison_operatorContext comparison_operator() {
+		Comparison_operatorContext _localctx = new Comparison_operatorContext(Context, State);
+		EnterRule(_localctx, 42, RULE_comparison_operator);
+		int _la;
+		try {
+			EnterOuterAlt(_localctx, 1);
+			{
+			State = 202;
+			_la = TokenStream.LA(1);
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 2273312768L) != 0)) ) {
+			ErrorHandler.RecoverInline(this);
+			}
+			else {
+				ErrorHandler.ReportMatch(this);
+			    Consume();
+			}
+			}
+		}
+		catch (RecognitionException re) {
+			_localctx.exception = re;
+			ErrorHandler.ReportError(this, re);
+			ErrorHandler.Recover(this, re);
+		}
+		finally {
+			ExitRule();
+		}
+		return _localctx;
+	}
+
 	private static int[] _serializedATN = {
-		4,1,28,167,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,7,
+		4,1,35,205,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,7,
 		7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,14,
-		2,15,7,15,2,16,7,16,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,3,0,43,8,0,1,1,1,1,
-		1,1,1,1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,3,1,3,1,3,1,3,1,4,1,4,1,
-		4,1,4,1,4,1,4,1,5,1,5,3,5,70,8,5,1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,6,1,
-		6,1,6,1,6,1,6,1,6,1,7,1,7,1,7,5,7,89,8,7,10,7,12,7,92,9,7,1,8,1,8,1,8,
-		5,8,97,8,8,10,8,12,8,100,9,8,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,3,
-		9,112,8,9,1,10,1,10,1,10,1,10,1,10,3,10,119,8,10,1,11,1,11,1,11,5,11,124,
-		8,11,10,11,12,11,127,9,11,1,12,1,12,1,13,1,13,1,13,1,13,1,13,1,13,1,13,
-		1,13,1,13,3,13,140,8,13,1,13,1,13,1,13,1,13,1,13,1,14,1,14,1,14,1,14,1,
-		14,1,14,1,14,1,14,1,14,1,14,1,15,1,15,1,15,5,15,160,8,15,10,15,12,15,163,
-		9,15,1,16,1,16,1,16,0,0,17,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,
-		32,0,1,1,0,26,27,165,0,42,1,0,0,0,2,44,1,0,0,0,4,48,1,0,0,0,6,57,1,0,0,
-		0,8,61,1,0,0,0,10,67,1,0,0,0,12,79,1,0,0,0,14,85,1,0,0,0,16,93,1,0,0,0,
-		18,111,1,0,0,0,20,118,1,0,0,0,22,120,1,0,0,0,24,128,1,0,0,0,26,130,1,0,
-		0,0,28,146,1,0,0,0,30,156,1,0,0,0,32,164,1,0,0,0,34,43,3,2,1,0,35,43,3,
-		4,2,0,36,43,3,6,3,0,37,43,3,8,4,0,38,43,3,10,5,0,39,43,3,12,6,0,40,43,
-		3,26,13,0,41,43,3,28,14,0,42,34,1,0,0,0,42,35,1,0,0,0,42,36,1,0,0,0,42,
-		37,1,0,0,0,42,38,1,0,0,0,42,39,1,0,0,0,42,40,1,0,0,0,42,41,1,0,0,0,43,
-		1,1,0,0,0,44,45,5,1,0,0,45,46,5,2,0,0,46,47,3,24,12,0,47,3,1,0,0,0,48,
-		49,5,1,0,0,49,50,5,3,0,0,50,51,3,24,12,0,51,52,5,20,0,0,52,53,3,24,12,
-		0,53,54,5,22,0,0,54,55,3,14,7,0,55,56,5,23,0,0,56,5,1,0,0,0,57,58,5,6,
-		0,0,58,59,5,2,0,0,59,60,3,24,12,0,60,7,1,0,0,0,61,62,5,6,0,0,62,63,5,3,
-		0,0,63,64,3,24,12,0,64,65,5,20,0,0,65,66,3,24,12,0,66,9,1,0,0,0,67,69,
-		5,1,0,0,68,70,5,5,0,0,69,68,1,0,0,0,69,70,1,0,0,0,70,71,1,0,0,0,71,72,
-		5,4,0,0,72,73,3,24,12,0,73,74,5,7,0,0,74,75,3,24,12,0,75,76,5,22,0,0,76,
-		77,3,22,11,0,77,78,5,23,0,0,78,11,1,0,0,0,79,80,5,6,0,0,80,81,5,4,0,0,
-		81,82,3,24,12,0,82,83,5,7,0,0,83,84,3,24,12,0,84,13,1,0,0,0,85,90,3,16,
-		8,0,86,87,5,21,0,0,87,89,3,16,8,0,88,86,1,0,0,0,89,92,1,0,0,0,90,88,1,
-		0,0,0,90,91,1,0,0,0,91,15,1,0,0,0,92,90,1,0,0,0,93,94,3,24,12,0,94,98,
-		3,20,10,0,95,97,3,18,9,0,96,95,1,0,0,0,97,100,1,0,0,0,98,96,1,0,0,0,98,
-		99,1,0,0,0,99,17,1,0,0,0,100,98,1,0,0,0,101,102,5,10,0,0,102,112,5,11,
-		0,0,103,112,5,5,0,0,104,105,5,12,0,0,105,106,5,11,0,0,106,107,5,13,0,0,
-		107,108,3,24,12,0,108,109,5,20,0,0,109,110,3,24,12,0,110,112,1,0,0,0,111,
-		101,1,0,0,0,111,103,1,0,0,0,111,104,1,0,0,0,112,19,1,0,0,0,113,119,5,8,
-		0,0,114,115,5,9,0,0,115,116,5,22,0,0,116,117,5,26,0,0,117,119,5,23,0,0,
-		118,113,1,0,0,0,118,114,1,0,0,0,119,21,1,0,0,0,120,125,3,24,12,0,121,122,
-		5,21,0,0,122,124,3,24,12,0,123,121,1,0,0,0,124,127,1,0,0,0,125,123,1,0,
-		0,0,125,126,1,0,0,0,126,23,1,0,0,0,127,125,1,0,0,0,128,129,5,25,0,0,129,
-		25,1,0,0,0,130,131,5,14,0,0,131,132,5,15,0,0,132,133,3,24,12,0,133,134,
-		5,20,0,0,134,139,3,24,12,0,135,136,5,22,0,0,136,137,3,22,11,0,137,138,
-		5,23,0,0,138,140,1,0,0,0,139,135,1,0,0,0,139,140,1,0,0,0,140,141,1,0,0,
-		0,141,142,5,16,0,0,142,143,5,22,0,0,143,144,3,30,15,0,144,145,5,23,0,0,
-		145,27,1,0,0,0,146,147,5,17,0,0,147,148,5,18,0,0,148,149,3,24,12,0,149,
-		150,5,20,0,0,150,151,3,24,12,0,151,152,5,19,0,0,152,153,3,24,12,0,153,
-		154,5,24,0,0,154,155,3,32,16,0,155,29,1,0,0,0,156,161,3,32,16,0,157,158,
-		5,21,0,0,158,160,3,32,16,0,159,157,1,0,0,0,160,163,1,0,0,0,161,159,1,0,
-		0,0,161,162,1,0,0,0,162,31,1,0,0,0,163,161,1,0,0,0,164,165,7,0,0,0,165,
-		33,1,0,0,0,9,42,69,90,98,111,118,125,139,161
+		2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,7,20,2,21,7,21,
+		1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,3,0,54,8,0,1,1,1,1,1,1,1,1,1,2,1,2,
+		1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,3,1,3,1,3,1,3,1,4,1,4,1,4,1,4,1,4,1,4,1,
+		5,1,5,3,5,81,8,5,1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,5,1,6,1,6,1,6,1,6,1,6,1,
+		6,1,7,1,7,1,7,5,7,100,8,7,10,7,12,7,103,9,7,1,8,1,8,1,8,5,8,108,8,8,10,
+		8,12,8,111,9,8,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,1,9,3,9,123,8,9,1,10,
+		1,10,1,10,1,10,1,10,3,10,130,8,10,1,11,1,11,1,11,5,11,135,8,11,10,11,12,
+		11,138,9,11,1,12,1,12,1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,3,13,
+		151,8,13,1,13,1,13,1,13,1,13,1,13,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,
+		14,1,14,1,14,1,15,1,15,1,15,5,15,171,8,15,10,15,12,15,174,9,15,1,16,1,
+		16,1,17,1,17,1,17,1,17,1,17,1,17,3,17,184,8,17,1,17,3,17,187,8,17,1,18,
+		1,18,3,18,191,8,18,1,19,1,19,1,19,1,20,1,20,1,20,1,20,1,20,3,20,201,8,
+		20,1,21,1,21,1,21,0,0,22,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,
+		34,36,38,40,42,0,2,1,0,33,34,2,0,23,26,31,31,203,0,53,1,0,0,0,2,55,1,0,
+		0,0,4,59,1,0,0,0,6,68,1,0,0,0,8,72,1,0,0,0,10,78,1,0,0,0,12,90,1,0,0,0,
+		14,96,1,0,0,0,16,104,1,0,0,0,18,122,1,0,0,0,20,129,1,0,0,0,22,131,1,0,
+		0,0,24,139,1,0,0,0,26,141,1,0,0,0,28,157,1,0,0,0,30,167,1,0,0,0,32,175,
+		1,0,0,0,34,177,1,0,0,0,36,190,1,0,0,0,38,192,1,0,0,0,40,195,1,0,0,0,42,
+		202,1,0,0,0,44,54,3,2,1,0,45,54,3,4,2,0,46,54,3,6,3,0,47,54,3,8,4,0,48,
+		54,3,10,5,0,49,54,3,12,6,0,50,54,3,26,13,0,51,54,3,28,14,0,52,54,3,34,
+		17,0,53,44,1,0,0,0,53,45,1,0,0,0,53,46,1,0,0,0,53,47,1,0,0,0,53,48,1,0,
+		0,0,53,49,1,0,0,0,53,50,1,0,0,0,53,51,1,0,0,0,53,52,1,0,0,0,54,1,1,0,0,
+		0,55,56,5,1,0,0,56,57,5,2,0,0,57,58,3,24,12,0,58,3,1,0,0,0,59,60,5,1,0,
+		0,60,61,5,3,0,0,61,62,3,24,12,0,62,63,5,27,0,0,63,64,3,24,12,0,64,65,5,
+		29,0,0,65,66,3,14,7,0,66,67,5,30,0,0,67,5,1,0,0,0,68,69,5,6,0,0,69,70,
+		5,2,0,0,70,71,3,24,12,0,71,7,1,0,0,0,72,73,5,6,0,0,73,74,5,3,0,0,74,75,
+		3,24,12,0,75,76,5,27,0,0,76,77,3,24,12,0,77,9,1,0,0,0,78,80,5,1,0,0,79,
+		81,5,5,0,0,80,79,1,0,0,0,80,81,1,0,0,0,81,82,1,0,0,0,82,83,5,4,0,0,83,
+		84,3,24,12,0,84,85,5,7,0,0,85,86,3,24,12,0,86,87,5,29,0,0,87,88,3,22,11,
+		0,88,89,5,30,0,0,89,11,1,0,0,0,90,91,5,6,0,0,91,92,5,4,0,0,92,93,3,24,
+		12,0,93,94,5,7,0,0,94,95,3,24,12,0,95,13,1,0,0,0,96,101,3,16,8,0,97,98,
+		5,28,0,0,98,100,3,16,8,0,99,97,1,0,0,0,100,103,1,0,0,0,101,99,1,0,0,0,
+		101,102,1,0,0,0,102,15,1,0,0,0,103,101,1,0,0,0,104,105,3,24,12,0,105,109,
+		3,20,10,0,106,108,3,18,9,0,107,106,1,0,0,0,108,111,1,0,0,0,109,107,1,0,
+		0,0,109,110,1,0,0,0,110,17,1,0,0,0,111,109,1,0,0,0,112,113,5,10,0,0,113,
+		123,5,11,0,0,114,123,5,5,0,0,115,116,5,12,0,0,116,117,5,11,0,0,117,118,
+		5,13,0,0,118,119,3,24,12,0,119,120,5,27,0,0,120,121,3,24,12,0,121,123,
+		1,0,0,0,122,112,1,0,0,0,122,114,1,0,0,0,122,115,1,0,0,0,123,19,1,0,0,0,
+		124,130,5,8,0,0,125,126,5,9,0,0,126,127,5,29,0,0,127,128,5,33,0,0,128,
+		130,5,30,0,0,129,124,1,0,0,0,129,125,1,0,0,0,130,21,1,0,0,0,131,136,3,
+		24,12,0,132,133,5,28,0,0,133,135,3,24,12,0,134,132,1,0,0,0,135,138,1,0,
+		0,0,136,134,1,0,0,0,136,137,1,0,0,0,137,23,1,0,0,0,138,136,1,0,0,0,139,
+		140,5,32,0,0,140,25,1,0,0,0,141,142,5,14,0,0,142,143,5,15,0,0,143,144,
+		3,24,12,0,144,145,5,27,0,0,145,150,3,24,12,0,146,147,5,29,0,0,147,148,
+		3,22,11,0,148,149,5,30,0,0,149,151,1,0,0,0,150,146,1,0,0,0,150,151,1,0,
+		0,0,151,152,1,0,0,0,152,153,5,16,0,0,153,154,5,29,0,0,154,155,3,30,15,
+		0,155,156,5,30,0,0,156,27,1,0,0,0,157,158,5,17,0,0,158,159,5,18,0,0,159,
+		160,3,24,12,0,160,161,5,27,0,0,161,162,3,24,12,0,162,163,5,19,0,0,163,
+		164,3,24,12,0,164,165,5,31,0,0,165,166,3,32,16,0,166,29,1,0,0,0,167,172,
+		3,32,16,0,168,169,5,28,0,0,169,171,3,32,16,0,170,168,1,0,0,0,171,174,1,
+		0,0,0,172,170,1,0,0,0,172,173,1,0,0,0,173,31,1,0,0,0,174,172,1,0,0,0,175,
+		176,7,0,0,0,176,33,1,0,0,0,177,178,5,20,0,0,178,179,3,36,18,0,179,180,
+		5,18,0,0,180,183,3,24,12,0,181,182,5,27,0,0,182,184,3,24,12,0,183,181,
+		1,0,0,0,183,184,1,0,0,0,184,186,1,0,0,0,185,187,3,38,19,0,186,185,1,0,
+		0,0,186,187,1,0,0,0,187,35,1,0,0,0,188,191,5,22,0,0,189,191,3,22,11,0,
+		190,188,1,0,0,0,190,189,1,0,0,0,191,37,1,0,0,0,192,193,5,19,0,0,193,194,
+		3,40,20,0,194,39,1,0,0,0,195,196,3,24,12,0,196,197,3,42,21,0,197,200,3,
+		32,16,0,198,199,5,21,0,0,199,201,3,40,20,0,200,198,1,0,0,0,200,201,1,0,
+		0,0,201,41,1,0,0,0,202,203,7,1,0,0,203,43,1,0,0,0,13,53,80,101,109,122,
+		129,136,150,172,183,186,190,200
 	};
 
 	public static readonly ATN _ATN =

@@ -200,4 +200,54 @@ public interface Iabkr_grammarListener : IParseTreeListener {
 	/// </summary>
 	/// <param name="context">The parse tree.</param>
 	void ExitValue([NotNull] abkr_grammar.ValueContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammar.select_statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterSelect_statement([NotNull] abkr_grammar.Select_statementContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammar.select_statement"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitSelect_statement([NotNull] abkr_grammar.Select_statementContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammar.column_list"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterColumn_list([NotNull] abkr_grammar.Column_listContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammar.column_list"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitColumn_list([NotNull] abkr_grammar.Column_listContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammar.where_clause"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterWhere_clause([NotNull] abkr_grammar.Where_clauseContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammar.where_clause"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitWhere_clause([NotNull] abkr_grammar.Where_clauseContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammar.condition"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterCondition([NotNull] abkr_grammar.ConditionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammar.condition"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitCondition([NotNull] abkr_grammar.ConditionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by <see cref="abkr_grammar.comparison_operator"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterComparison_operator([NotNull] abkr_grammar.Comparison_operatorContext context);
+	/// <summary>
+	/// Exit a parse tree produced by <see cref="abkr_grammar.comparison_operator"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitComparison_operator([NotNull] abkr_grammar.Comparison_operatorContext context);
 }

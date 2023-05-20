@@ -19,6 +19,13 @@ VALUES: V A L U E S;
 DELETE: D E L E T E;
 FROM: F R O M;
 WHERE: W H E R E;
+SELECT: S E L E C T;
+AND: A N D;
+ASTERISK: '*';
+GREATER_THAN: '>';
+GREATER_EQUALS: '>=';
+LESS_THAN: '<';
+LESS_EQUALS: '<=';
 
 fragment A: 'A' | 'a';
 fragment B: 'B' | 'b';

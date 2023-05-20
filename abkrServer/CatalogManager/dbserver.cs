@@ -3,7 +3,7 @@ using MongoDB.Bson;
 using Antlr4.Runtime;
 using Antlr4.Runtime.Tree;
 using System.Xml.Linq;
-
+using System.Diagnostics.CodeAnalysis;
 
 namespace abkr.CatalogManager
 {
@@ -301,7 +301,7 @@ namespace abkr.CatalogManager
             }
             else if (listener.StatementType == StatementType.CreateIndex)
             {
-                CreateIndex(listener.DatabaseName, listener.TableName, listener.IndexName, listener.IndexColumns,_catalogManager.IsUniqueKey(listener.DatabaseName,listener.TableName,listener.ColumnName));
+                CreateIndex(listener.DatabaseName, listener.TableName, listener.IndexName, listener.IndexColumns, _catalogManager.IsUniqueKey(listener.DatabaseName,listener.TableName,listener.ColumnName));
             }
             else if (listener.StatementType == StatementType.DropIndex)
             {

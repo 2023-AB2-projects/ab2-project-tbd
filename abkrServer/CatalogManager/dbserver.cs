@@ -253,6 +253,49 @@ namespace abkr.CatalogManager
         }
 
 
+        private static void HandleSelectStatement(string databaseName, string tableName, FilterDefinition<BsonDocument> filter, string[] selectedColumns)
+        {
+            if (string.IsNullOrEmpty(databaseName) || string.IsNullOrEmpty(tableName))
+            {
+                throw new Exception("Database or table name missing in SELECT statement");
+            }
+
+            var _database = _client?.GetDatabase(databaseName);
+            var _collection = _database?.GetCollection<BsonDocument>(tableName);
+
+            List<BsonDocument> documents;
+
+            if (filter != null)
+            {
+                documents = _collection.Find(filter).ToList();
+            }
+            else
+            {
+                documents = _collection.Find(new BsonDocument()).ToList();
+            }
+
+            foreach (BsonDocument document in documents)
+            {
+                // If specific columns are selected
+                if (selectedColumns.Length > 0)
+                {
+                    foreach (string column in selectedColumns)
+                    {
+                        Console.WriteLine($"{column}: {document[column]}");
+                    }
+                }
+                // If all columns are selected
+                else
+                {
+                    foreach (BsonElement element in document)
+                    {
+                        Console.WriteLine($"{element.Name}: {element.Value}");
+                    }
+                }
+            }
+        }
+
+
         public static Task ExecuteStatementAsync(string sql)
         {
             Console.WriteLine("ExecuteStatementAsync called");
@@ -339,6 +382,11 @@ namespace abkr.CatalogManager
                 PrintAllDocuments(listener.DatabaseName, listener.TableName);
                 Delete(listener.DatabaseName, listener.TableName, listener.DeleteFilter);
                 PrintAllDocuments(listener.DatabaseName, listener.TableName);
+            }
+            else if(listener.StatementType == StatementType.Select)
+            {
+
+                HandleSelectStatement(listener.DatabaseName,listener.TableName,listener.SelectFilter,listener.SelectedColumns);
             }
 
             return Task.CompletedTask;

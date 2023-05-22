@@ -42,7 +42,7 @@ identifier: IDENTIFIER;
 
 insert_statement: INSERT INTO identifier DOT identifier ( LPAREN identifier_list RPAREN )? VALUES LPAREN value_list RPAREN;
 
-delete_statement: DELETE FROM identifier DOT identifier WHERE identifier EQUALS value;
+delete_statement: DELETE FROM identifier DOT identifier where_clause;
 
 value_list: value (COMMA value)*;
 

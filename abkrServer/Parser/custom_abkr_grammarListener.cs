@@ -15,6 +15,7 @@ public enum StatementType
     DropIndex,
     Insert,
     Delete,
+    Select,
     Unknown
 }
 
@@ -35,8 +36,12 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public FilterDefinition<BsonDocument> DeleteFilter { get; private set; }
     public Dictionary<string, string> ForeignKeyColumns { get; private set; } = new Dictionary<string, string>();
     public List<string> UniqueKeyColumns { get; private set; } = new List<string>();
-    
+
     public bool IsUnique = false;
+    public string[] SelectedColumns { get; private set; }
+    public string SelectCondition { get; private set; }
+    public FilterDefinition<BsonDocument> SelectFilter { get; private set; }
+
 
 
 
@@ -223,21 +228,104 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         DatabaseName = context.identifier(0).GetText();
         TableName = context.identifier(1).GetText();
 
-        string columnName = context.identifier(2).GetText();
-        string columnValue = context.value().GetText();
-
-        if (columnName == GetPrimaryKeyColumnName(DatabaseName, TableName))
+        // Handle where clause
+        var whereClauseContext = context.where_clause();
+        if (whereClauseContext != null)
         {
-            columnName = "_id";
-        }
-        else
-        {
-            columnName = "value." + columnName;
-        }
+            var identifier = whereClauseContext.condition().identifier().GetText();
+            var comparisonOperator = whereClauseContext.condition().comparison_operator().GetText();
+            var value = GetValueFromValue(whereClauseContext.condition().value());
 
-        DeleteFilter = Builders<BsonDocument>.Filter.Eq(columnName, columnValue);
+            var builder = Builders<BsonDocument>.Filter;
+
+            if(identifier == GetPrimaryKeyColumnName(DatabaseName, TableName))
+            {
+                identifier = "_id";
+            }
+
+            switch (comparisonOperator)
+            {
+                case "EQUALS":
+                    DeleteFilter = builder.Eq(identifier, value);
+                    break;
+                case "GREATER_THAN":
+                    DeleteFilter = builder.Gt(identifier, value);
+                    break;
+                case "GREATER_EQUALS":
+                    DeleteFilter = builder.Gte(identifier, value);
+                    break;
+                case "LESS_THAN":
+                    DeleteFilter = builder.Lt(identifier, value);
+                    break;
+                case "LESS_EQUALS":
+                    DeleteFilter = builder.Lte(identifier, value);
+                    break;
+            }
+        }
     }
 
+
+    public override void EnterSelect_statement(abkr_grammar.Select_statementContext context)
+    {
+        StatementType = StatementType.Select;
+
+        if (context.identifier().Length == 2)
+        {
+            DatabaseName = context.identifier()[0].GetText();
+            TableName = context.identifier()[1].GetText();
+        }
+        else if (context.identifier().Length == 1)
+        {
+            TableName = context.identifier()[0].GetText();
+        }
+
+        // Handle column list
+        var columnListContext = context.column_list();
+        if (columnListContext.ASTERISK() != null)
+        {
+            // Select all columns
+            SelectedColumns = new string[0];  // Or any indicator of "all columns"
+        }
+        else if (columnListContext.identifier_list() != null)
+        {
+            var columnIdentifiers = columnListContext.identifier_list().identifier();
+            SelectedColumns = columnIdentifiers.Select(c => c.GetText()).ToArray();
+        }
+
+        var whereClauseContext = context.where_clause();
+        if (whereClauseContext != null)
+        {
+            var identifier = whereClauseContext.condition().identifier().GetText();
+            var comparisonOperator = whereClauseContext.condition().comparison_operator().GetText();
+            var value = GetValueFromValue(whereClauseContext.condition().value());
+
+            var builder = Builders<BsonDocument>.Filter;
+
+            if (identifier == GetPrimaryKeyColumnName(DatabaseName, TableName))
+            {
+                identifier = "_id";
+            }
+
+            switch (comparisonOperator)
+            {
+                case "EQUALS":
+                    SelectFilter = builder.Eq(identifier, value);
+                    break;
+                case "GREATER_THAN":
+                    SelectFilter = builder.Gt(identifier, value);
+                    break;
+                case "GREATER_EQUALS":
+                    SelectFilter = builder.Gte(identifier, value);
+                    break;
+                case "LESS_THAN":
+                    SelectFilter = builder.Lt(identifier, value);
+                    break;
+                case "LESS_EQUALS":
+                    SelectFilter = builder.Lte(identifier, value);
+                    break;
+            }
+        }
+    }
 
 
 

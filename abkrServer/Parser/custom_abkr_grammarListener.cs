@@ -112,6 +112,10 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
                         var foreignColumn = constraint.identifier()[1].GetText();
                         ForeignKeyColumns[columnName] = $"{foreignTable}.{foreignColumn}";
                     }
+                    else if (constraint.FOREIGN() != null)
+                    {
+                        ForeignKeyColumns[columnName] = constraint.identifier()[0].GetText();
+                    }
                 }
             }
         }

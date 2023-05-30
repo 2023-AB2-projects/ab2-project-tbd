@@ -79,7 +79,7 @@ namespace abkr.CatalogManager
         public void CreateTable(
             string databaseName,
             string tableName,
-            Dictionary<string, object> columns,
+            List<Column> columns,
             string primaryKeyColumn,
             Dictionary<string, string> foreignKeys,
             List<string> uniqueKeys)
@@ -105,62 +105,77 @@ namespace abkr.CatalogManager
             var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName)
                 ?? throw new ArgumentException($"Database '{databaseName}' does not exist.");
 
+            Console.WriteLine($"CatalogManagar.CreateTable: Creating table '{tableName}' in database '{databaseName}'.");
+
             // Check if the table already exists
-            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName")?.Value == tableName);
+            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName").Value == tableName);
             if (tableElement != null)
             {
                 throw new ArgumentException($"Table '{tableName}' already exists in database '{databaseName}'.");
             }
 
+            Console.WriteLine("Proceeding.");
+
             // If the table doesn't exist, create a new one
             tableElement = new XElement("Table", new XAttribute("tableName", tableName));
 
+
             // Create a new structure element
             var structureElement = new XElement("Structure");
-
+            int i = 0;
             // Iterate through the provided columns
             foreach (var column in columns)
             {
+                Console.WriteLine($"CatalogManager.CreateTable: Adding column '{column.Name}' to table '{tableName}' in iteration {i++}.");
                 XElement attribute = new XElement("Attribute");
-                attribute.SetAttributeValue("attributeName", column.Key);
+                attribute.SetAttributeValue("attributeName", column.Name);
 
                 // Ensure the column type isn't null
-                if (column.Value == null)
+                if (column.Type == null)
                 {
-                    throw new ArgumentException($"Column '{column.Key}' does not have a type.", nameof(columns));
+                    throw new ArgumentException($"Column '{column.Name}' does not have a type.", nameof(columns));
                 }
 
-                attribute.SetAttributeValue("type", column.Value);
+                attribute.SetAttributeValue("type", column.Type);
 
                 // Check if the column is the primary key
-                if (column.Key == primaryKeyColumn && !string.IsNullOrEmpty(primaryKeyColumn))
+                if (column.IsPrimaryKey)
                 {
                     attribute.SetAttributeValue("isPrimaryKey", "true");
-                    Console.WriteLine($"Primary key attribute added for column: {column.Key}");
+                    Console.WriteLine($"Primary key attribute added for column: {column.Name}");
                 }
 
                 // Check if the column is a foreign key
-                if (foreignKeys.Count() != 0 && foreignKeys.ContainsKey(column.Key))
+                if (column.ForeignKeyReference!=null)
                 {
                     attribute.SetAttributeValue("isForeignKey", "true");
-                    attribute.SetAttributeValue("references", foreignKeys[column.Key]);
-                    Console.WriteLine($"Foreign key attribute added for column: {column.Key}");
+                    attribute.SetAttributeValue("references", column.ForeignKeyReference);
+                    Console.WriteLine($"Foreign key attribute added for column: {column.Name}");
                 }
 
                 // Check if the column is a unique key
-                if (uniqueKeys.Count() != 0 && uniqueKeys.Contains(column.Key))
+                if (column.IsUnique)
                 {
                     attribute.SetAttributeValue("isUnique", "true");
-                    Console.WriteLine($"Unique key attribute added for column: {column.Key}");
+                    Console.WriteLine($"Unique key attribute added for column: {column.Name}");
                 }
 
                 structureElement.Add(attribute);
+            }
+
+            Console.WriteLine("CatalogManager.CreateTable: Adding primary key element.");
+
+            if (string.IsNullOrEmpty(primaryKeyColumn))
+            {
+                throw new ArgumentNullException(nameof(primaryKeyColumn), "Primary key column cannot be null or empty.");
             }
 
             var primaryKeyElement = new XElement("primaryKey", new XAttribute("name", primaryKeyColumn));
             tableElement.Add(structureElement);
             tableElement.Add(primaryKeyElement); // Add primary key element to table
             databaseElement.Add(tableElement);
+
+            Console.WriteLine("CatalogManager.CreateTable: Saving metadata.");
 
             SaveMetadata(metadata);
         }

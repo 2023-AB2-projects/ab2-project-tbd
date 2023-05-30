@@ -62,8 +62,24 @@ namespace abkr.CatalogManager
                 var columns = new List<Column>();
                 foreach (var column in listener.Columns)
                 {
-                    columns.Add(new Column() { Name = column.Key, Type = column.Value });
+                    var columnName = column.Key;
+                    var columnType = column.Value;
+                    var isUnique = listener.UniqueKeyColumns.Contains(columnName);
+                    var isPrimaryKey = columnName == listener.PrimaryKeyColumn;
+                    var foreignKeyReference = listener.ForeignKeyColumns.TryGetValue(columnName, out var foreignKey) ? foreignKey : null;
+
+                    var newColumn = new Column()
+                    {
+                        Name = columnName,
+                        Type = columnType,
+                        IsUnique = isUnique,
+                        IsPrimaryKey = isPrimaryKey,
+                        ForeignKeyReference = foreignKeyReference
+                    };
+
+                    columns.Add(newColumn);
                 }
+
                 RecordManager.CreateTable(listener.DatabaseName, listener.TableName, columns, _catalogManager, _client);
             }
 

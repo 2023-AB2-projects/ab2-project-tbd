@@ -44,12 +44,13 @@ namespace abkr.CatalogManager
             database?.CreateCollection(tableName);
             Console.WriteLine($"Creating table: {databaseName}.{tableName}");
 
-            var columnsDictionary = columns?.ToDictionary(column => column.Name, column => column.Type);
-            var primaryKeyColumn = columns.FirstOrDefault(column => column.IsPrimaryKey)?.Name;
+            //var columnsDictionary = columns?.ToDictionary(column => column.Name, column => column.Type);
+            var primaryKeyColumn = columns.FirstOrDefault(column => column.IsPrimaryKey)?.Name
+                ??throw new Exception("RecordManager.CreateTable: Primary key not found.");
             var uniqueKeys = columns.Where(column => column.IsUnique).Select(column => column.Name).ToList();
             var foreignKeys = columns?.Where(column => !string.IsNullOrEmpty(column.ForeignKeyReference))?.ToDictionary(column => column.Name, column => column.ForeignKeyReference);
 
-            _catalogManager?.CreateTable(databaseName, tableName, columnsDictionary, primaryKeyColumn, foreignKeys, uniqueKeys);
+            _catalogManager?.CreateTable(databaseName, tableName, columns, primaryKeyColumn, foreignKeys, uniqueKeys);
 
             // Create index files for unique keys
             foreach (var uniqueKey in uniqueKeys)

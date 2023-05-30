@@ -85,18 +85,18 @@ namespace abkr.CatalogManager
             List<string> uniqueKeys)
         {
             // First, check the databaseName, tableName, and columns aren't null or empty
-            //if (string.IsNullOrEmpty(databaseName))
-            //{
-            //    throw new ArgumentNullException(nameof(databaseName), "Database name cannot be null or empty.");
-            //}
-            //if (string.IsNullOrEmpty(tableName))
-            //{
-            //    throw new ArgumentNullException(nameof(tableName), "Table name cannot be null or empty.");
-            //}
-            //if (columns == null || columns.Count == 0)
-            //{
-            //    throw new ArgumentException("Columns dictionary cannot be null or empty.", nameof(columns));
-            //}
+            if (string.IsNullOrEmpty(databaseName))
+            {
+                throw new ArgumentNullException(nameof(databaseName), "Database name cannot be null or empty.");
+            }
+            if (string.IsNullOrEmpty(tableName))
+            {
+                throw new ArgumentNullException(nameof(tableName), "Table name cannot be null or empty.");
+            }
+            if (columns == null || columns.Count == 0)
+            {
+                throw new ArgumentException("Columns dictionary cannot be null or empty.", nameof(columns));
+            }
 
             // Load the existing metadata
             var metadata = LoadMetadata();

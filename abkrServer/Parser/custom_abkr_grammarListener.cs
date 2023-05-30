@@ -4,7 +4,7 @@ using Antlr4.Runtime.Misc;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using System.Xml;
-
+[Serializable]
 public enum StatementType
 {
     CreateDatabase,
@@ -21,14 +21,14 @@ public enum StatementType
 
 public class MyAbkrGrammarListener : abkr_grammarBaseListener
 {
-    public StatementType StatementType { get; private set; } = StatementType.Unknown;
-    public string DatabaseName { get; private set; }
-    public string TableName { get; private set; }
-    public string IndexName { get; private set; }
+    [NotNull]public StatementType StatementType { get; private set; } = StatementType.Unknown;
+    public string? DatabaseName { get; private set; }
+    public string? TableName { get; private set; }
+    public string? IndexName { get; private set; }
     public Dictionary<string, object> Columns { get; private set; } = new Dictionary<string, object>();
     public BsonArray IndexColumns { get; private set; } = new BsonArray();
     public List<object> Values { get; private set; } = new List<object>();
-    public string ColumnName { get; private set; }
+    public string? ColumnName { get; private set; }
     public object ColumnValue { get; private set; }
     public Dictionary<string, object> RowData { get; private set; }
     public string PrimaryKeyColumn { get; private set; }
@@ -134,7 +134,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
             {
                 // Handle primary keys
                 if (constraint.PRIMARY() != null)
-                {
+                {             
                     PrimaryKeyColumn = ColumnName;
                     Console.WriteLine($"Primary key found for column: {PrimaryKeyColumn}");
                     break;  // Once primary key is found, no need to check for other constraints

@@ -81,22 +81,22 @@ namespace abkr.CatalogManager
             string tableName,
             Dictionary<string, object> columns,
             string primaryKeyColumn,
-            Dictionary<string, string> foreignKeys = null,
-            List<string> uniqueKeys = null)
+            Dictionary<string, string> foreignKeys,
+            List<string> uniqueKeys)
         {
             // First, check the databaseName, tableName, and columns aren't null or empty
-            if (string.IsNullOrEmpty(databaseName))
-            {
-                throw new ArgumentNullException(nameof(databaseName), "Database name cannot be null or empty.");
-            }
-            if (string.IsNullOrEmpty(tableName))
-            {
-                throw new ArgumentNullException(nameof(tableName), "Table name cannot be null or empty.");
-            }
-            if (columns == null || columns.Count == 0)
-            {
-                throw new ArgumentException("Columns dictionary cannot be null or empty.", nameof(columns));
-            }
+            //if (string.IsNullOrEmpty(databaseName))
+            //{
+            //    throw new ArgumentNullException(nameof(databaseName), "Database name cannot be null or empty.");
+            //}
+            //if (string.IsNullOrEmpty(tableName))
+            //{
+            //    throw new ArgumentNullException(nameof(tableName), "Table name cannot be null or empty.");
+            //}
+            //if (columns == null || columns.Count == 0)
+            //{
+            //    throw new ArgumentException("Columns dictionary cannot be null or empty.", nameof(columns));
+            //}
 
             // Load the existing metadata
             var metadata = LoadMetadata();
@@ -140,7 +140,7 @@ namespace abkr.CatalogManager
                 }
 
                 // Check if the column is a foreign key
-                if (foreignKeys != null && foreignKeys.ContainsKey(column.Key))
+                if (foreignKeys.Count() != 0 && foreignKeys.ContainsKey(column.Key))
                 {
                     attribute.SetAttributeValue("isForeignKey", "true");
                     attribute.SetAttributeValue("references", foreignKeys[column.Key]);
@@ -148,7 +148,7 @@ namespace abkr.CatalogManager
                 }
 
                 // Check if the column is a unique key
-                if (uniqueKeys != null && uniqueKeys.Contains(column.Key))
+                if (uniqueKeys.Count() != 0 && uniqueKeys.Contains(column.Key))
                 {
                     attribute.SetAttributeValue("isUnique", "true");
                     Console.WriteLine($"Unique key attribute added for column: {column.Key}");

@@ -47,21 +47,21 @@ namespace abkr.CatalogManager
             var columnsDictionary = columns?.ToDictionary(column => column.Name, column => column.Type);
             var primaryKeyColumn = columns.FirstOrDefault(column => column.IsPrimaryKey)?.Name;
             var uniqueKeys = columns.Where(column => column.IsUnique).Select(column => column.Name).ToList();
-            var foreignKeys = columns
-                .Where(column => !string.IsNullOrEmpty(column.ForeignKeyReference))
-                .ToDictionary(column => column.Name, column => column.ForeignKeyReference);
+            var foreignKeys = columns?.Where(column => !string.IsNullOrEmpty(column.ForeignKeyReference))?.ToDictionary(column => column.Name, column => column.ForeignKeyReference);
 
             _catalogManager?.CreateTable(databaseName, tableName, columnsDictionary, primaryKeyColumn, foreignKeys, uniqueKeys);
 
             // Create index files for unique keys
             foreach (var uniqueKey in uniqueKeys)
             {
+                Console.WriteLine($"Creating unique key:{uniqueKey}");
                 CreateIndex(databaseName, tableName, $"{uniqueKey}_unique", new BsonArray(new[] { uniqueKey }), true, _client, _catalogManager);
             }
 
             // If there's a foreign key column, create an index for it.
             foreach (var foreignKey in foreignKeys)
             {
+                Console.WriteLine($"Creating foreign key:{foreignKey.Key}");
                 CreateIndex(databaseName, tableName, $"{foreignKey.Key}_fk", new BsonArray(new[] { foreignKey.Key }), false, _client, _catalogManager);
             }
         }

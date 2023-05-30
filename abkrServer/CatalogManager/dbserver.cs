@@ -10,10 +10,10 @@ namespace abkr.CatalogManager
 
     public class DatabaseServer
     {
-        static private IMongoClient? _client;
-        static public IMongoClient? MongoClient => _client;
+        [NotNull] static private IMongoClient _client;
+        [NotNull] static public IMongoClient MongoClient => _client;
         
-        static private CatalogManager? _catalogManager;
+        [NotNull] static private CatalogManager _catalogManager;
 
 
         public DatabaseServer(string connectionString, string metadataFileName)
@@ -62,8 +62,6 @@ namespace abkr.CatalogManager
                 var columns = new List<Column>();
                 foreach (var column in listener.Columns)
                 {
-                    // Assuming Column has properties Name and Value
-                    Console.WriteLine("Column: " + column.Key + " " + column.Value);
                     columns.Add(new Column() { Name = column.Key, Type = column.Value });
                 }
                 RecordManager.CreateTable(listener.DatabaseName, listener.TableName, columns, _catalogManager, _client);

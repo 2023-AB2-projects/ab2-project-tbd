@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace abkr.CatalogManager
 {
+    [Serializable]
     public class Column
     {
         public string? Name { get; set; }

@@ -170,6 +170,25 @@ namespace abkr.CatalogManager
             Console.WriteLine($"Deleted count: {deleteResult.DeletedCount}");
         }
 
+        public static void DeleteParent(string parentId, IMongoClient _client)
+        {
+            var parentCollection = _client?.GetDatabase("YourDatabase").GetCollection<BsonDocument>("parent");
+            var childCollection = _client?.GetDatabase("YourDatabase").GetCollection<BsonDocument>("child");
+
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", parentId);
+            var childFilter = Builders<BsonDocument>.Filter.Eq("parentId", parentId);
+
+            // Check if any child documents reference the parent document
+            if (childCollection.CountDocuments(childFilter) > 0)
+            {
+                throw new Exception($"Cannot delete parent document with id {parentId} because it has child documents.");
+            }
+
+            // If no child documents reference it, it's safe to delete
+            parentCollection.DeleteOne(filter);
+        }
+
+
         public static void CreateIndex(string databaseName, string tableName, string indexName, BsonArray columns, bool isUnique, IMongoClient _client, CatalogManager _catalogManager)
         {
             var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);

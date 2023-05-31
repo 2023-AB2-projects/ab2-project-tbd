@@ -161,6 +161,23 @@ namespace abkr.CatalogManager
         }
 
 
+        public static void InsertChild(BsonDocument childDocument, IMongoClient _client)
+        {
+            var parentCollection = _client?.GetDatabase("YourDatabase").GetCollection<BsonDocument>("parent");
+            var childCollection = _client?.GetDatabase("YourDatabase").GetCollection<BsonDocument>("child");
+
+            var parentId = childDocument["parentId"].AsString;
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", parentId);
+
+            // Check if the parent document exists
+            if (parentCollection.CountDocuments(filter) == 0)
+            {
+                throw new Exception($"Cannot insert child document because parent document with id {parentId} does not exist.");
+            }
+
+            // If the parent document exists, it's safe to insert the child document
+            childCollection.InsertOne(childDocument);
+        }
 
 
         public static void Delete(string databaseName, string tableName, FilterDefinition<BsonDocument> filter, IMongoClient _client, CatalogManager _catalogManager)

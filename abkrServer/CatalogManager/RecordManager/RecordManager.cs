@@ -144,19 +144,20 @@ namespace abkr.CatalogManager
             var indexList = _catalogManager.GetIndexes(databaseName, tableName);
             foreach (var index in indexList)
             {
-                var filter = Builders<BsonDocument>.Filter.Eq(index.ColumnName, row[index.ColumnName]);
-                var existingDocument = collection.Find(filter).FirstOrDefault();
-
-                if (existingDocument != null)
+                // Iterate through columns in the index
+                foreach (var column in index.Columns)
                 {
-                    if (index.IsUnique)
+                    if (!row.ContainsKey(column))
                     {
-                        throw new Exception($"Insert failed. Unique key constraint violated on column '{index.ColumnName}' in table '{tableName}' in database '{databaseName}'.");
+                        throw new ArgumentException($"Column '{column}' is part of index '{index.Name}' but it is not present in the row data.");
                     }
 
-                    if (index.IsPrimaryKey)
+                    var filter = Builders<BsonDocument>.Filter.Eq(column, row[column]);
+                    var existingDocument = collection.Find(filter).FirstOrDefault();
+
+                    if (existingDocument != null && index.IsUnique)
                     {
-                        throw new Exception($"Insert failed. Primary key constraint violated on column '{index.ColumnName}' in table '{tableName}' in database '{databaseName}'.");
+                        throw new Exception($"Insert failed. Unique index constraint violated on column '{column}' in table '{tableName}' in database '{databaseName}'.");
                     }
                 }
             }
@@ -169,6 +170,7 @@ namespace abkr.CatalogManager
 
             collection.InsertOne(document);
         }
+
 
         public static void Delete(string databaseName, string tableName, string primaryKeyName, object primaryKeyValue, IMongoClient _client, CatalogManager _catalogManager)
         {

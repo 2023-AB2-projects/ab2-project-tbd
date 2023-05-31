@@ -133,11 +133,16 @@ namespace abkr.CatalogManager
                     var primaryKeyValue = rowData[primaryKeyColumn];
                     Console.WriteLine(primaryKeyColumn + " = " + primaryKeyValue);
                     rowData.Remove(primaryKeyColumn);
+                    string rowDataString = "";
+                    foreach (KeyValuePair<string,object> i in rowData)
+                    {
+                        rowDataString += i.Key + "#" + i.Value + "#";
+                    }
 
                     var document = new BsonDocument
             {
                 { "_id", BsonValue.Create(primaryKeyValue) },
-                { "value", new BsonDocument(rowData.ToDictionary(kvp => kvp.Key, kvp => BsonValue.Create(kvp.Value))) }
+                { "value", BsonValue.Create(rowDataString) }
             };
 
                     documents.Add(document);

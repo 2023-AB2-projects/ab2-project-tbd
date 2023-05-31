@@ -53,10 +53,16 @@ namespace abkr.CatalogManager
             _catalogManager?.CreateTable(databaseName, tableName, columns, primaryKeyColumn, foreignKeys, uniqueKeys);
 
             // Create index files for unique keys
-            foreach (var uniqueKey in uniqueKeys)
+            foreach (var column in columns)
             {
-                Console.WriteLine($"Creating unique key:{uniqueKey}");
-                CreateIndex(databaseName, tableName, $"{uniqueKey}_unique", new BsonArray(new[] { uniqueKey }), true, _client, _catalogManager);
+                if (column.IsUnique)
+                {
+                    CreateUniqueIndex(databaseName, tableName, column.Name, _client, _catalogManager);
+                }
+                else
+                {
+                    CreateNonUniqueIndex(databaseName, tableName, column.Name, primaryKeyColumn, _client, _catalogManager);
+                }
             }
 
             // If there's a foreign key column, create an index for it.
@@ -65,6 +71,17 @@ namespace abkr.CatalogManager
                 Console.WriteLine($"Creating foreign key:{foreignKey.Key}");
                 CreateIndex(databaseName, tableName, $"{foreignKey.Key}_fk", new BsonArray(new[] { foreignKey.Key }), false, _client, _catalogManager);
             }
+        }
+
+        public static void CreateUniqueIndex(string databaseName, string tableName, string indexColumnName, IMongoClient _client, CatalogManager _catalogManager)
+        {
+            var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+
+            var indexKeys = Builders<BsonDocument>.IndexKeys.Ascending(indexColumnName);
+            var indexOptions = new CreateIndexOptions { Name = indexColumnName, Unique = true };
+            collection?.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(indexKeys, indexOptions));
+
+            _catalogManager?.CreateIndex(databaseName, tableName, indexColumnName, new List<string> { indexColumnName }, true);
         }
 
         public static void CreateNonUniqueIndex(string databaseName, string tableName, string indexColumnName, string primaryKeyName, IMongoClient _client, CatalogManager _catalogManager)
@@ -94,13 +111,16 @@ namespace abkr.CatalogManager
             foreach (var pair in nonUniqueIndex)
             {
                 var indexDocument = new BsonDocument
-        {
-            { "IndexColumnValue", pair.Key },
-            { "PrimaryKeys", new BsonArray(pair.Value) }
-        };
+    {
+        { "IndexColumnValue", pair.Key },
+        { "PrimaryKeys", new BsonArray(pair.Value) }
+    };
                 nonUniqueIndexCollection?.InsertOne(indexDocument);
             }
+
+            _catalogManager?.CreateIndex(databaseName, tableName, indexColumnName, new List<string> { indexColumnName }, false);
         }
+
 
         public static void DropDatabase(string databaseName, IMongoClient _client, CatalogManager _catalogManager)
         {
@@ -117,92 +137,58 @@ namespace abkr.CatalogManager
             _catalogManager?.DropTable(databaseName, tableName);
         }
 
-        public static void Insert(string databaseName, string tableName, string primaryKeyColumn, List<Dictionary<string, object>> rowsData, IMongoClient _client, CatalogManager _catalogManager)
+        public static void Insert(string databaseName, string tableName, Dictionary<string, object> row, IMongoClient _client, CatalogManager _catalogManager)
         {
-            Console.WriteLine($"Inserting rows into {databaseName}.{tableName}");
-            var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName)
-                ?? throw new Exception("ERROR: Table not found! Null ref");
+            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
 
-            List<BsonDocument> documents = new();
-
-            try
+            var indexList = _catalogManager.GetIndexes(databaseName, tableName);
+            foreach (var index in indexList)
             {
-                foreach (var rowData in rowsData)
+                var filter = Builders<BsonDocument>.Filter.Eq(index.ColumnName, row[index.ColumnName]);
+                var existingDocument = collection.Find(filter).FirstOrDefault();
+
+                if (existingDocument != null)
                 {
-                    Console.WriteLine("Row data:");
-                    var primaryKeyValue = rowData[primaryKeyColumn];
-                    Console.WriteLine(primaryKeyColumn + " = " + primaryKeyValue);
-                    rowData.Remove(primaryKeyColumn);
-                    string rowDataString = "";
-                    foreach (KeyValuePair<string,object> i in rowData)
+                    if (index.IsUnique)
                     {
-                        rowDataString += i.Key + "#" + i.Value + "#";
+                        throw new Exception($"Insert failed. Unique key constraint violated on column '{index.ColumnName}' in table '{tableName}' in database '{databaseName}'.");
                     }
 
-                    var document = new BsonDocument
-            {
-                { "_id", BsonValue.Create(primaryKeyValue) },
-                { "value", BsonValue.Create(rowDataString) }
-            };
-
-                    documents.Add(document);
+                    if (index.IsPrimaryKey)
+                    {
+                        throw new Exception($"Insert failed. Primary key constraint violated on column '{index.ColumnName}' in table '{tableName}' in database '{databaseName}'.");
+                    }
                 }
-                Console.WriteLine("Row data:");
-                foreach (var doc in documents)
+            }
+
+            var document = new BsonDocument();
+            foreach (var pair in row)
+            {
+                document[pair.Key] = BsonValue.Create(pair.Value);
+            }
+
+            collection.InsertOne(document);
+        }
+
+        public static void Delete(string databaseName, string tableName, string primaryKeyName, object primaryKeyValue, IMongoClient _client, CatalogManager _catalogManager)
+        {
+            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+
+            var foreignKeyReferences = _catalogManager.GetForeignKeyReferences(databaseName, tableName);
+            foreach (var reference in foreignKeyReferences)
+            {
+                var refCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(reference.TableName);
+                var filter = Builders<BsonDocument>.Filter.Eq(reference.ColumnName, primaryKeyValue);
+                var existingDocument = refCollection.Find(filter).FirstOrDefault();
+
+                if (existingDocument != null)
                 {
-                    Console.WriteLine(doc.ToString());
+                    throw new Exception($"Delete failed. Foreign key constraint violated in table '{reference.TableName}' in database '{databaseName}' on column '{reference.ColumnName}'.");
                 }
-                collection.InsertMany(documents);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine("Error during Insert operation: " + ex.Message);
-            }
-        }
-
-
-        public static void InsertChild(BsonDocument childDocument, IMongoClient _client)
-        {
-            var parentCollection = _client?.GetDatabase("YourDatabase").GetCollection<BsonDocument>("parent");
-            var childCollection = _client?.GetDatabase("YourDatabase").GetCollection<BsonDocument>("child");
-
-            var parentId = childDocument["parentId"].AsString;
-            var filter = Builders<BsonDocument>.Filter.Eq("_id", parentId);
-
-            // Check if the parent document exists
-            if (parentCollection.CountDocuments(filter) == 0)
-            {
-                throw new Exception($"Cannot insert child document because parent document with id {parentId} does not exist.");
             }
 
-            // If the parent document exists, it's safe to insert the child document
-            childCollection.InsertOne(childDocument);
-        }
-
-
-        public static void Delete(string databaseName, string tableName, FilterDefinition<BsonDocument> filter, IMongoClient _client, CatalogManager _catalogManager)
-        {
-            var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-            var deleteResult = collection.DeleteMany(filter);
-            Console.WriteLine($"Deleted count: {deleteResult.DeletedCount}");
-        }
-
-        public static void DeleteParent(string parentId, IMongoClient _client)
-        {
-            var parentCollection = _client?.GetDatabase("YourDatabase").GetCollection<BsonDocument>("parent");
-            var childCollection = _client?.GetDatabase("YourDatabase").GetCollection<BsonDocument>("child");
-
-            var filter = Builders<BsonDocument>.Filter.Eq("_id", parentId);
-            var childFilter = Builders<BsonDocument>.Filter.Eq("parentId", parentId);
-
-            // Check if any child documents reference the parent document
-            if (childCollection.CountDocuments(childFilter) > 0)
-            {
-                throw new Exception($"Cannot delete parent document with id {parentId} because it has child documents.");
-            }
-
-            // If no child documents reference it, it's safe to delete
-            parentCollection.DeleteOne(filter);
+            var deleteFilter = Builders<BsonDocument>.Filter.Eq(primaryKeyName, primaryKeyValue);
+            collection.DeleteOne(deleteFilter);
         }
 
 

@@ -1,4 +1,5 @@
-﻿using MongoDB.Bson;
+﻿using abkrServer.CatalogManager.RecordManager;
+using MongoDB.Bson;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -42,6 +43,97 @@ namespace abkr.CatalogManager
             metadata.Save(_metadataFilePath);
             Console.WriteLine($"Metadata saved to {_metadataFilePath}");
         }
+
+        public List<Index> GetIndexes(string databaseName, string tableName)
+        {
+            var indexes = new List<Index>();
+            var metadata = LoadMetadata();
+            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName);
+
+            if (databaseElement == null)
+            {
+                throw new ArgumentException($"Database '{databaseName}' does not exist.");
+            }
+
+            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName")?.Value == tableName);
+            if (tableElement == null)
+            {
+                throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
+            }
+
+            var indexFilesElement = tableElement.Element("IndexFiles");
+            if (indexFilesElement != null)
+            {
+                foreach (var indexElement in indexFilesElement.Elements("IndexFile"))
+                {
+                    var indexName = indexElement.Attribute("indexName")?.Value;
+                    var isUnique = bool.Parse(indexElement.Attribute("isUnique")?.Value ?? "false");
+
+                    var index = new Index(indexName)
+                    {
+                        IsUnique = isUnique
+                    };
+
+                    var indexAttributesElement = indexElement.Element("IndexAttributes");
+                    if (indexAttributesElement != null)
+                    {
+                        foreach (var attribute in indexAttributesElement.Elements("IAttribute"))
+                        {
+                            index.Columns.Add(attribute.Value);
+                        }
+                    }
+
+                    indexes.Add(index);
+                }
+            }
+
+            return indexes;
+        }
+
+
+        public List<ForeignKey> GetForeignKeyReferences(string databaseName, string tableName)
+        {
+            var foreignKeys = new List<ForeignKey>();
+            var metadata = LoadMetadata();
+
+            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName)
+                ?? throw new ArgumentException($"Database '{databaseName}' does not exist.");
+
+            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName")?.Value == tableName)
+                ?? throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
+
+            var structureElement = tableElement.Element("Structure");
+            if (structureElement != null)
+            {
+                foreach (var attributeElement in structureElement.Elements("Attribute"))
+                {
+                    var isForeignKey = attributeElement.Attribute("isForeignKey")?.Value == "true";
+                    if (isForeignKey)
+                    {
+                        var attributeName = attributeElement.Attribute("attributeName")?.Value;
+                        var references = attributeElement.Attribute("references")?.Value;
+                        if (!string.IsNullOrEmpty(attributeName) && !string.IsNullOrEmpty(references))
+                        {
+                            // Assumes the references string is in format "referencedTable:referencedColumn"
+                            var splitReferences = references.Split(':');
+                            if (splitReferences.Length == 2)
+                            {
+                                foreignKeys.Add(new ForeignKey
+                                {
+                                    TableName = tableName,
+                                    ColumnName = attributeName,
+                                    ReferencedTable = splitReferences[0],
+                                    ReferencedColumn = splitReferences[1]
+                                });
+                            }
+                        }
+                    }
+                }
+            }
+
+            return foreignKeys;
+        }
+
 
         public void CreateDatabase(string databaseName)
         {

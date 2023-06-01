@@ -167,8 +167,13 @@ namespace abkr.CatalogManager
                 var indexDocument = new BsonDocument();
                 indexDocument["_id"] = index.Name;
 
+                var filter = Builders<BsonDocument>.Filter.Eq("_id", index.Name);
+
+                var prevDoc=indexCollection.Find(filter).FirstOrDefault();
+                indexCollection.DeleteOne(filter);
+
                 var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
-                indexDocument["value"] = string.Join("#", indexValues);
+                indexDocument["value"] = prevDoc.GetValue("value")+string.Join("&", indexValues);
 
                 indexCollection.InsertOne(indexDocument);
             }
@@ -183,21 +188,13 @@ namespace abkr.CatalogManager
 
             foreach (var index in indexes)
             {
-                if (index.IsUnique)
+                var filter=Builders<BsonDocument>.Filter.Eq("_id", index.Name);
+                var indexDocument = indexCollection.Find(filter).FirstOrDefault();
+                var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
+                var indexValue = string.Join("&", indexValues);
+                if (indexDocument.GetValue("value").AsString.Contains(indexValue))
                 {
-
-                    var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
-                    if (true)
-                    {
-
-                    }
-
-                    var indexFilter = Builders<BsonDocument>.Filter.Eq("value", concatenatedIndexValues);
-                    var existingIndexDocument = indexCollection.Find(indexFilter).FirstOrDefault();
-
-                    // Returns true if the unique value exists, false otherwise
-                    if (existingIndexDocument != null)
-                        return true;
+                    return true;
                 }
             }
             return false;

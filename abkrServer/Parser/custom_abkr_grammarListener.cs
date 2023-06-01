@@ -105,6 +105,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
                     else if (constraint.PRIMARY() != null)
                     {
                         PrimaryKeyColumn = columnName;
+                        UniqueKeyColumns.Add(columnName);
                     }
                     else if (constraint.FOREIGN() != null && constraint.identifier().Length >= 2)
                     {

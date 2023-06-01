@@ -234,7 +234,9 @@ namespace abkr.CatalogManager
                 if (column.IsPrimaryKey)
                 {
                     attribute.SetAttributeValue("isPrimaryKey", "true");
+                    attribute.SetAttributeValue("isUnique", "true");
                     Console.WriteLine($"Primary key attribute added for column: {column.Name}");
+                    Console.WriteLine($"Unique key attribute added for primary key: {column.Name}");
                 }
 
                 // Check if the column is a foreign key

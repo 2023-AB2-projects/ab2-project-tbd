@@ -142,34 +142,39 @@ namespace abkr.CatalogManager
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
 
             var indexList = _catalogManager.GetIndexes(databaseName, tableName);
+
             foreach (var index in indexList)
             {
-                // Iterate through columns in the index
                 foreach (var column in index.Columns)
                 {
                     if (!row.ContainsKey(column))
                     {
                         throw new ArgumentException($"Column '{column}' is part of index '{index.Name}' but it is not present in the row data.");
                     }
+                }
+            }
 
-                    var filter = Builders<BsonDocument>.Filter.Eq(column, row[column]);
-                    var existingDocument = collection.Find(filter).FirstOrDefault();
-
-                    if (existingDocument != null && index.IsUnique)
-                    {
-                        throw new Exception($"Insert failed. Unique index constraint violated on column '{column}' in table '{tableName}' in database '{databaseName}'.");
-                    }
+            foreach (var index in indexList.Where(index => index.IsUnique))
+            {
+                var filter = Builders<BsonDocument>.Filter.Eq("_id", Convert.ToInt32(row[index.Columns[0]]));
+                var existingDocument = collection.Find(filter).FirstOrDefault();
+                if (existingDocument != null)
+                {
+                    throw new Exception($"Insert failed. Unique index constraint violated on column '{index.Columns[0]}' in table '{tableName}' in database '{databaseName}'.");
                 }
             }
 
             var document = new BsonDocument();
-            foreach (var pair in row)
-            {
-                document[pair.Key] = BsonValue.Create(pair.Value);
-            }
+            var id = row.Keys.First();
+            document["_id"] = Convert.ToInt32(row[id]);
+            var otherValues = row.Where(kvp => kvp.Key != id).Select(kvp => kvp.Value.ToString());
+            document["value"] = string.Join("#", otherValues);
 
             collection.InsertOne(document);
         }
+
+
+
 
 
         public static void Delete(string databaseName, string tableName,  FilterDefinition<BsonDocument> Filter, IMongoClient _client, CatalogManager _catalogManager)

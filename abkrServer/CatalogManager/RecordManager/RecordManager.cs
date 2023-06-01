@@ -137,121 +137,128 @@ namespace abkr.CatalogManager
             _catalogManager?.DropTable(databaseName, tableName);
         }
 
-        public static void InsertWithCustomIndex(string databaseName, string tableName, Dictionary<string, object> row, IMongoClient _client)
+        public static void Insert(string databaseName, string tableName, Dictionary<string, object> row, IMongoClient _client, CatalogManager _catalogManager)
         {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-            var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
 
-            var idKey = row.Keys.First();
-            var idValue = Convert.ToInt32(row[idKey]);
-
-            var otherValues = row.Where(kvp => kvp.Key != idKey).Select(kvp => kvp.Value.ToString());
-            var concatenatedValues = string.Join("#", otherValues);
-
-            // Check if any document already has these exact values in index collection
-            var indexFilter = Builders<BsonDocument>.Filter.Eq("_id", idValue);
-            var existingIndexDocument = indexCollection.Find(indexFilter).FirstOrDefault();
-
-            if (existingIndexDocument != null)
+            if (CheckUnique(databaseName, tableName, row, _client, _catalogManager))
             {
                 throw new Exception($"Insert failed. Unique index constraint violated in table '{tableName}' in database '{databaseName}'.");
             }
 
-            // Now insert the data into main collection
+            // Insert data into the main collection
             var document = new BsonDocument();
-            document["_id"] = idValue;
-            document["value"] = concatenatedValues;
-
+            var idKey = row.Keys.First();
+            document["_id"] = Convert.ToInt32(row[idKey]);
+            var otherValues = row.Where(kvp => kvp.Key != idKey).Select(kvp => kvp.Value.ToString());
+            document["value"] = string.Join("#", otherValues);
             collection.InsertOne(document);
 
-            // And into index collection
-            var indexDocument = new BsonDocument();
-            indexDocument["_id"] = idValue;
-            indexDocument["value"] = concatenatedValues;
+            // Insert data into index collections
+            var indexes = _catalogManager.GetIndexes(databaseName, tableName);
+            foreach (var index in indexes)
+            {
+                // Skip if the index is the primary key, as MongoDB automatically creates an index for it
+                if (index.Name == idKey)
+                    continue;
 
-            indexCollection.InsertOne(indexDocument);
+                var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
+
+                var indexDocument = new BsonDocument();
+                indexDocument["_id"] = index.Name;
+
+                var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
+                indexDocument["value"] = string.Join("#", indexValues);
+
+                indexCollection.InsertOne(indexDocument);
+            }
         }
+
+
 
         public static bool CheckUnique(string databaseName, string tableName, Dictionary<string, object> row, IMongoClient _client, CatalogManager _catalogManager)
         {
-            var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
-
-            var idKey = row.Keys.First();
-            var idValue = Convert.ToInt32(row[idKey]);
-
             var indexes = _catalogManager.GetIndexes(databaseName, tableName);
-
-            var otherValues = row.Where(kvp => kvp.Key != idKey).Select(kvp => kvp.Value.ToString());
-            var concatenatedValues = string.Join("#", otherValues);
-
-            // Check if any document already has these exact values in index collection
-            var indexFilter = Builders<BsonDocument>.Filter.Eq("value", concatenatedValues);
-            var existingIndexDocument = indexCollection.Find(indexFilter).FirstOrDefault();
-
-            // Returns true if the unique value exists, false otherwise
-            return existingIndexDocument != null;
-        }
-
-
-
-        public static void Insert(string databaseName, string tableName, Dictionary<string, object> row, IMongoClient _client, CatalogManager _catalogManager)
-        {
-            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
             var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
 
-            var idKey = row.Keys.First();
-            var idValue = Convert.ToInt32(row[idKey]);
-
-            var indexList = _catalogManager.GetIndexes(databaseName, tableName);
-
-            foreach (var index in indexList)
+            foreach (var index in indexes)
             {
-                foreach (var column in index.Columns)
+                if (index.IsUnique)
                 {
-                    if (!row.ContainsKey(column))
+
+                    var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
+                    if (true)
                     {
-                        throw new ArgumentException($"Column '{column}' is part of index '{index.Name}' but it is not present in the row data.");
+
                     }
+
+                    var indexFilter = Builders<BsonDocument>.Filter.Eq("value", concatenatedIndexValues);
+                    var existingIndexDocument = indexCollection.Find(indexFilter).FirstOrDefault();
+
+                    // Returns true if the unique value exists, false otherwise
+                    if (existingIndexDocument != null)
+                        return true;
                 }
             }
-            var filter = Builders<BsonDocument>.Filter.Eq("_id", Convert.ToInt32(row[indexList.FirstOrDefault(index => index.IsUnique).Columns[0]]));
-            var existingDocument = collection.Find(filter);
-            var frequency= new Dictionary<string, int>();
-
-            foreach (var kvp in existingDocument.ToList())
-            {
-                
-                var values=kvp.Values.ToList();
-                foreach(var value in values)
-                {
-                    if (frequency.ContainsKey(value.ToString()))
-                    {
-                        frequency[value.ToString()]++;
-                    }
-                    else
-                    {
-                        frequency[value.ToString()] = 1;
-                    }
-                }
-                if ()
-                //if (existingDocument != null)
-                //{
-                //    throw new Exception($"Insert failed. Unique index constraint violated on column '{index.Columns[0]}' in table '{tableName}' in database '{databaseName}'.");
-                //}
-            }
-
-            var document = new BsonDocument();
-            var id = row.Keys.First();
-            document["_id"] = Convert.ToInt32(row[id]);
-            var otherValues = row.Where(kvp => kvp.Key != id).Select(kvp => kvp.Value.ToString());
-            document["value"] = string.Join("#", otherValues);
-
-            collection.InsertOne(document);
+            return false;
         }
 
 
 
+        //public static void Insert(string databaseName, string tableName, Dictionary<string, object> row, IMongoClient _client, CatalogManager _catalogManager)
+        //{
+        //    var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+        //    var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
 
+        //    var idKey = row.Keys.First();
+        //    var idValue = Convert.ToInt32(row[idKey]);
+
+        //    var indexList = _catalogManager.GetIndexes(databaseName, tableName);
+
+        //    foreach (var index in indexList)
+        //    {
+        //        foreach (var column in index.Columns)
+        //        {
+        //            if (!row.ContainsKey(column))
+        //            {
+        //                throw new ArgumentException($"Column '{column}' is part of index '{index.Name}' but it is not present in the row data.");
+        //            }
+        //        }
+        //    }
+        //    var filter = Builders<BsonDocument>.Filter.Eq("_id", Convert.ToInt32(row[indexList.FirstOrDefault(index => index.IsUnique).Columns[0]]));
+        //    var existingDocument = collection.Find(filter);
+        //    var frequency= new Dictionary<string, int>();
+
+        //    foreach (var kvp in existingDocument.ToList())
+        //    {
+                
+        //        var values=kvp.Values.ToList();
+        //        foreach(var value in values)
+        //        {
+        //            if (frequency.ContainsKey(value.ToString()))
+        //            {
+        //                frequency[value.ToString()]++;
+        //            }
+        //            else
+        //            {
+        //                frequency[value.ToString()] = 1;
+        //            }
+        //        }
+        //        if ()
+        //        //if (existingDocument != null)
+        //        //{
+        //        //    throw new Exception($"Insert failed. Unique index constraint violated on column '{index.Columns[0]}' in table '{tableName}' in database '{databaseName}'.");
+        //        //}
+        //    }
+
+        //    var document = new BsonDocument();
+        //    var id = row.Keys.First();
+        //    document["_id"] = Convert.ToInt32(row[id]);
+        //    var otherValues = row.Where(kvp => kvp.Key != id).Select(kvp => kvp.Value.ToString());
+        //    document["value"] = string.Join("#", otherValues);
+
+        //    collection.InsertOne(document);
+        //}
 
         public static void Delete(string databaseName, string tableName,  FilterDefinition<BsonDocument> Filter, IMongoClient _client, CatalogManager _catalogManager)
         {

@@ -21,7 +21,7 @@ namespace abkr.ServerLogger
 
         public void LogMessage(string message)
         {
-            Console.WriteLine(message);
+            Console.WriteLine(DateTime.Now+": "+message);
             File.AppendAllText(_logFilePath, message + Environment.NewLine);
         }
 

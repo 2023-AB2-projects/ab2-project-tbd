@@ -229,40 +229,39 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public override void EnterDelete_statement(abkr_grammar.Delete_statementContext context)
     {
         StatementType = StatementType.Delete;
+
         DatabaseName = context.identifier(0).GetText();
         TableName = context.identifier(1).GetText();
 
-        // Handle where clause
+        // You get the where clause context here
         var whereClauseContext = context.where_clause();
         if (whereClauseContext != null)
         {
-            var identifier = whereClauseContext.condition().identifier().GetText();
-            var comparisonOperator = whereClauseContext.condition().comparison_operator().GetText();
-            var value = GetValueFromValue(whereClauseContext.condition().value());
+            // Now you can extract information from the where clause using its context
+            var fieldName = whereClauseContext.condition().identifier().GetText();
+            var operatorText = whereClauseContext.condition().comparison_operator().GetText();
+            var value = ExtractValue(whereClauseContext.condition().value());
 
-            var builder = Builders<BsonDocument>.Filter;
+            // Based on the operator, you can form the FilterDefinition for delete operation
+            if (operatorText == "EQUALS")
+                DeleteFilter = Builders<BsonDocument>.Filter.Eq(fieldName, value);
 
-            if(identifier == GetPrimaryKeyColumnName(DatabaseName, TableName))
-            {
-                identifier = "_id";
-            }
-
-            switch (comparisonOperator)
+            switch (operatorText)
             {
                 case "EQUALS":
-                    DeleteFilter = builder.Eq(identifier, value);
+                    DeleteFilter = Builders<BsonDocument>.Filter.Eq(fieldName, value);
                     break;
                 case "GREATER_THAN":
-                    DeleteFilter = builder.Gt(identifier, value);
+                    DeleteFilter = Builders<BsonDocument>.Filter.Gt(fieldName, value);
                     break;
                 case "GREATER_EQUALS":
-                    DeleteFilter = builder.Gte(identifier, value);
+                    DeleteFilter = Builders<BsonDocument>.Filter.Gte(fieldName, value);
                     break;
                 case "LESS_THAN":
-                    DeleteFilter = builder.Lt(identifier, value);
+                    DeleteFilter = Builders<BsonDocument>.Filter.Lt(fieldName, value);
                     break;
                 case "LESS_EQUALS":
-                    DeleteFilter = builder.Lte(identifier, value);
+                    DeleteFilter = Builders<BsonDocument>.Filter.Lte(fieldName, value);
                     break;
             }
         }
@@ -273,15 +272,8 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     {
         StatementType = StatementType.Select;
 
-        if (context.identifier().Length == 2)
-        {
-            DatabaseName = context.identifier()[0].GetText();
-            TableName = context.identifier()[1].GetText();
-        }
-        else if (context.identifier().Length == 1)
-        {
-            TableName = context.identifier()[0].GetText();
-        }
+        DatabaseName = context.identifier(0).GetText();
+        TableName = context.identifier(1).GetText();
 
         // Handle column list
         var columnListContext = context.column_list();
@@ -296,41 +288,88 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
             SelectedColumns = columnIdentifiers.Select(c => c.GetText()).ToArray();
         }
 
+        // You get the where clause context here
         var whereClauseContext = context.where_clause();
         if (whereClauseContext != null)
         {
-            var identifier = whereClauseContext.condition().identifier().GetText();
-            var comparisonOperator = whereClauseContext.condition().comparison_operator().GetText();
-            var value = GetValueFromValue(whereClauseContext.condition().value());
+            // Now you can extract information from the where clause using its context
+            var fieldName = whereClauseContext.condition().identifier().GetText();
+            var operatorText = whereClauseContext.condition().comparison_operator().GetText();
+            var value = ExtractValue(whereClauseContext.condition().value());
 
-            var builder = Builders<BsonDocument>.Filter;
+            // Based on the operator, you can form the FilterDefinition for select 
 
-            if (identifier == GetPrimaryKeyColumnName(DatabaseName, TableName))
-            {
-                identifier = "_id";
-            }
-
-            switch (comparisonOperator)
+            switch (operatorText)
             {
                 case "EQUALS":
-                    SelectFilter = builder.Eq(identifier, value);
+                    SelectFilter = Builders<BsonDocument>.Filter.Eq(fieldName, value);
                     break;
                 case "GREATER_THAN":
-                    SelectFilter = builder.Gt(identifier, value);
+                    SelectFilter = Builders<BsonDocument>.Filter.Gt(fieldName, value);
                     break;
                 case "GREATER_EQUALS":
-                    SelectFilter = builder.Gte(identifier, value);
+                    SelectFilter = Builders<BsonDocument>.Filter.Gte(fieldName, value);
                     break;
                 case "LESS_THAN":
-                    SelectFilter = builder.Lt(identifier, value);
+                    SelectFilter = Builders<BsonDocument>.Filter.Lt(fieldName, value);
                     break;
                 case "LESS_EQUALS":
-                    SelectFilter = builder.Lte(identifier, value);
+                    SelectFilter = Builders<BsonDocument>.Filter.Lte(fieldName, value);
                     break;
             }
         }
     }
 
+    private object ExtractValue(abkr_grammar.ValueContext context)
+    {
+        // You extract the value here based on its type
+        if (context.NUMBER() != null)
+            return int.Parse(context.NUMBER().GetText());
+
+        if (context.STRING() != null)
+            return context.STRING().GetText();
+
+        // Add cases for other types as well
+        return null;
+    }
+
+    public override void EnterWhere_clause(abkr_grammar.Where_clauseContext context)
+    {
+        var identifier = context.condition().identifier().GetText();
+        var comparisonOperator = context.condition().comparison_operator().GetText();
+        var value = GetValueFromValue(context.condition().value());
+
+        var builder = Builders<BsonDocument>.Filter;
+
+        if (identifier == GetPrimaryKeyColumnName(DatabaseName, TableName))
+        {
+            identifier = "_id";
+        }
+
+        switch (comparisonOperator)
+        {
+            case "EQUALS":
+                DeleteFilter = builder.Eq(identifier, value);
+                SelectFilter = builder.Eq(identifier, value);
+                break;
+            case "GREATER_THAN":
+                DeleteFilter = builder.Gt(identifier, value);
+                SelectFilter = builder.Gt(identifier, value);
+                break;
+            case "GREATER_EQUALS":
+                DeleteFilter = builder.Gte(identifier, value);
+                SelectFilter = builder.Gte(identifier, value);
+                break;
+            case "LESS_THAN":
+                DeleteFilter = builder.Lt(identifier, value);
+                SelectFilter = builder.Lt(identifier, value);
+                break;
+            case "LESS_EQUALS":
+                DeleteFilter = builder.Lte(identifier, value);
+                SelectFilter = builder.Lte(identifier, value);
+                break;
+        }
+    }
 
 
     private string GetPrimaryKeyColumnName(string databaseName, string tableName)

@@ -172,7 +172,7 @@ namespace abkr.CatalogManager
         }
 
 
-        public static void Delete(string databaseName, string tableName, string primaryKeyName, object primaryKeyValue, IMongoClient _client, CatalogManager _catalogManager)
+        public static void Delete(string databaseName, string tableName,  FilterDefinition<BsonDocument> Filter, IMongoClient _client, CatalogManager _catalogManager)
         {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
 
@@ -180,8 +180,7 @@ namespace abkr.CatalogManager
             foreach (var reference in foreignKeyReferences)
             {
                 var refCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(reference.TableName);
-                var filter = Builders<BsonDocument>.Filter.Eq(reference.ColumnName, primaryKeyValue);
-                var existingDocument = refCollection.Find(filter).FirstOrDefault();
+                var existingDocument = refCollection.Find(Filter).FirstOrDefault();
 
                 if (existingDocument != null)
                 {
@@ -189,9 +188,9 @@ namespace abkr.CatalogManager
                 }
             }
 
-            var deleteFilter = Builders<BsonDocument>.Filter.Eq(primaryKeyName, primaryKeyValue);
-            collection.DeleteOne(deleteFilter);
+            collection.DeleteOne(Filter);
         }
+
 
 
         public static void CreateIndex(string databaseName, string tableName, string indexName, BsonArray columns, bool isUnique, IMongoClient _client, CatalogManager _catalogManager)

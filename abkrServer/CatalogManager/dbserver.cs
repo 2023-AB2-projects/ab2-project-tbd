@@ -102,14 +102,14 @@ namespace abkr.CatalogManager
             else if (listener.StatementType == StatementType.Insert)
             {
                 Dictionary<string, object> rowData = new Dictionary<string, object>();
-                string? primaryKeyColumn = null;
+                //string? primaryKeyColumn = null;
 
                 Console.WriteLine("Before calling Insert method...");
                 Console.WriteLine("Columns: " + string.Join(", ", listener.Columns.Keys));
                 Console.WriteLine("Values: " + string.Join(", ", listener.Columns.Values));
 
-                primaryKeyColumn = _catalogManager?.GetPrimaryKeyColumn(listener.DatabaseName, listener.TableName)
-                        ?? throw new Exception("ERROR: Primary key not found!");
+                //primaryKeyColumn = _catalogManager?.GetPrimaryKeyColumn(listener.DatabaseName, listener.TableName)
+                //        ?? throw new Exception("ERROR: Primary key not found!");
 
                 // Iterate through the listener.Columns dictionary
                 foreach (var column in listener.Columns)
@@ -119,7 +119,7 @@ namespace abkr.CatalogManager
 
                 Console.WriteLine("Row data: " + string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}")));
 
-                RecordManager.Insert(listener.DatabaseName, listener.TableName, primaryKeyColumn, new List<Dictionary<string, object>> { rowData }, _client, _catalogManager);
+                RecordManager.Insert(listener.DatabaseName, listener.TableName, rowData, _client, _catalogManager);
 
                 Console.WriteLine("After calling Insert method...");
 

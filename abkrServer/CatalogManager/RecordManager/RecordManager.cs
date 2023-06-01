@@ -170,12 +170,24 @@ namespace abkr.CatalogManager
                 var filter = Builders<BsonDocument>.Filter.Eq("_id", index.Name);
 
                 var prevDoc=indexCollection.Find(filter).FirstOrDefault();
-                indexCollection.DeleteOne(filter);
 
                 var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
-                indexDocument["value"] = prevDoc.GetValue("value")+string.Join("&", indexValues);
+                var indexValue = string.Join("&", indexValues);
 
-                indexCollection.InsertOne(indexDocument);
+                if (prevDoc == null)
+                {
+                    // This is the first document for this index
+                    indexDocument["value"] = indexValue;
+                }
+                else
+                {
+                    // This is not the first document, concatenate the new values
+                    indexDocument["value"] = prevDoc.GetValue("value") + "#" + indexValue;
+                }
+
+
+                var replaceFilter = Builders<BsonDocument>.Filter.Eq("_id", indexDocument["_id"]);
+                indexCollection.ReplaceOne(replaceFilter, indexDocument, new ReplaceOptions { IsUpsert = true });
             }
         }
 
@@ -190,12 +202,21 @@ namespace abkr.CatalogManager
             {
                 var filter=Builders<BsonDocument>.Filter.Eq("_id", index.Name);
                 var indexDocument = indexCollection.Find(filter).FirstOrDefault();
-                var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
-                var indexValue = string.Join("&", indexValues);
-                if (indexDocument.GetValue("value").AsString.Contains(indexValue))
+                if (indexDocument != null)
                 {
-                    return true;
+                    var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
+                    var indexValue = string.Join("&", indexValues);
+                    if (indexDocument.GetValue("value").AsString.Contains(indexValue))
+                    {
+                        return true;
+                    }
                 }
+                //var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
+                //var indexValue = string.Join("&", indexValues);
+                //if (indexDocument.GetValue("value").AsString.Contains(indexValue))
+                //{
+                //    return true;
+                //}
             }
             return false;
         }

@@ -145,12 +145,14 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
                 // Handle foreign keys
                 if (constraint.FOREIGN() != null)
                 {
-                    string? foreignTable = constraint.identifier(0)?.GetText();
-                    string? foreignColumn = constraint.identifier(1)?.GetText();
-                    if (!string.IsNullOrEmpty(foreignTable) && !string.IsNullOrEmpty(foreignColumn))
+                    string? databaseName = constraint.identifier(0)?.GetText();
+                    string? foreignTable = constraint.identifier(1)?.GetText();
+                    string? foreignColumn = constraint.identifier(2)?.GetText();
+                    if (!string.IsNullOrEmpty(databaseName) && !string.IsNullOrEmpty(foreignTable) && !string.IsNullOrEmpty(foreignColumn))
                     {
-                        ForeignKeyColumns[ColumnName] = $"{foreignTable}.{foreignColumn}";
-                        Console.WriteLine($"Foreign key found for column: {ColumnName} referencing: {ForeignKeyColumns[ColumnName]}");
+                        ForeignKeyColumns[ColumnName] = $"{databaseName}.{foreignTable}";
+                        ForeignColumn= foreignColumn;
+                        Console.WriteLine($"Foreign key found for column: {ColumnName} referencing: {ForeignKeyColumns[ColumnName]}:{ForeignColumn}");
                     }
                 }
 

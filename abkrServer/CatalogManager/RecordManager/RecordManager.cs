@@ -46,7 +46,7 @@ namespace abkr.CatalogManager
 
             //var columnsDictionary = columns?.ToDictionary(column => column.Name, column => column.Type);
             var primaryKeyColumn = columns.FirstOrDefault(column => column.IsPrimaryKey)?.Name
-                ??throw new Exception("RecordManager.CreateTable: Primary key not found.");
+                ?? throw new Exception("RecordManager.CreateTable: Primary key not found.");
             var uniqueKeys = columns.Where(column => column.IsUnique).Select(column => column.Name).ToList();
             var foreignKeys = columns?.Where(column => !string.IsNullOrEmpty(column.ForeignKeyReference))?.ToDictionary(column => column.Name, column => column.ForeignKeyReference);
 
@@ -55,13 +55,15 @@ namespace abkr.CatalogManager
             // Create index files for unique keys
             foreach (var column in columns)
             {
-                if (column.IsUnique)
+                if (column.IsUnique && !column.IsPrimaryKey)
                 {
-                    CreateUniqueIndex(databaseName, tableName, column.Name, _client, _catalogManager);
+                    Console.WriteLine("RecordManager: Creating unique index");
+                    _catalogManager?.CreateIndex(databaseName, tableName, column.Name, new List<string> { column.Name }, true);
                 }
                 else
                 {
-                    CreateNonUniqueIndex(databaseName, tableName, column.Name, primaryKeyColumn, _client, _catalogManager);
+                    Console.WriteLine("RecordManager: Creating nonunique index");
+                    _catalogManager?.CreateIndex(databaseName, tableName, column.Name, new List<string> { column.Name }, false);
                 }
             }
 
@@ -73,52 +75,33 @@ namespace abkr.CatalogManager
             }
         }
 
-        public static void CreateUniqueIndex(string databaseName, string tableName, string indexColumnName, IMongoClient _client, CatalogManager _catalogManager)
+        public static void CreateIndex(string databaseName, string tableName, string indexName, BsonArray columns, bool isUnique, IMongoClient _client, CatalogManager _catalogManager)
         {
             var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
 
-            var indexKeys = Builders<BsonDocument>.IndexKeys.Ascending(indexColumnName);
-            var indexOptions = new CreateIndexOptions { Name = indexColumnName, Unique = true };
+            var indexKeysBuilder = new IndexKeysDefinitionBuilder<BsonDocument>();
+            var indexKeysDefinitions = new List<IndexKeysDefinition<BsonDocument>>();
+
+            foreach (var column in columns)
+            {
+                indexKeysDefinitions.Add(indexKeysBuilder.Ascending(column.AsString));
+            }
+
+            var indexKeys = Builders<BsonDocument>.IndexKeys.Combine(indexKeysDefinitions);
+
+            var indexOptions = new CreateIndexOptions { Name = indexName, Unique = isUnique };
             collection?.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(indexKeys, indexOptions));
 
-            _catalogManager?.CreateIndex(databaseName, tableName, indexColumnName, new List<string> { indexColumnName }, true);
+            _catalogManager?.CreateIndex(databaseName, tableName, indexName, columns.Select(column => column.AsString).ToList(), isUnique);
         }
 
-        public static void CreateNonUniqueIndex(string databaseName, string tableName, string indexColumnName, string primaryKeyName, IMongoClient _client, CatalogManager _catalogManager)
+
+        public static void DropIndex(string databaseName, string tableName, string indexName, IMongoClient _client, CatalogManager _catalogManager)
         {
-            var database = _client?.GetDatabase(databaseName);
-            var collection = database?.GetCollection<BsonDocument>(tableName);
+            var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+            collection?.Indexes.DropOne(indexName);
 
-            var nonUniqueIndexCollection = database?.GetCollection<BsonDocument>(tableName + "_" + indexColumnName + "_NonUniqueIndex");
-            nonUniqueIndexCollection?.DeleteMany(new BsonDocument()); // Clear the non-unique index collection if it already exists
-
-            var nonUniqueIndex = new Dictionary<string, List<string>>();
-
-            var cursor = collection.Find(new BsonDocument()).ToCursor();
-            foreach (var document in cursor.ToEnumerable())
-            {
-                var indexColumnValue = document[indexColumnName].AsString;
-                var primaryKeyValue = document[primaryKeyName].AsString;
-
-                if (!nonUniqueIndex.ContainsKey(indexColumnValue))
-                {
-                    nonUniqueIndex[indexColumnValue] = new List<string>();
-                }
-
-                nonUniqueIndex[indexColumnValue].Add(primaryKeyValue);
-            }
-
-            foreach (var pair in nonUniqueIndex)
-            {
-                var indexDocument = new BsonDocument
-    {
-        { "IndexColumnValue", pair.Key },
-        { "PrimaryKeys", new BsonArray(pair.Value) }
-    };
-                nonUniqueIndexCollection?.InsertOne(indexDocument);
-            }
-
-            _catalogManager?.CreateIndex(databaseName, tableName, indexColumnName, new List<string> { indexColumnName }, false);
+            _catalogManager?.DropIndex(databaseName, tableName, indexName);
         }
 
 
@@ -134,6 +117,7 @@ namespace abkr.CatalogManager
             Console.WriteLine($"Dropping table: {databaseName}.{tableName}");
             var database = _client.GetDatabase(databaseName);
             database.DropCollection(tableName);
+            database.DropCollection(tableName + "_index");
             _catalogManager?.DropTable(databaseName, tableName);
         }
 
@@ -169,7 +153,7 @@ namespace abkr.CatalogManager
 
                 var filter = Builders<BsonDocument>.Filter.Eq("_id", index.Name);
 
-                var prevDoc=indexCollection.Find(filter).FirstOrDefault();
+                var prevDoc = indexCollection.Find(filter).FirstOrDefault();
 
                 var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
                 var indexValue = string.Join("&", indexValues);
@@ -200,16 +184,23 @@ namespace abkr.CatalogManager
 
             foreach (var index in indexes)
             {
-                var filter=Builders<BsonDocument>.Filter.Eq("_id", index.Name);
-                var indexDocument = indexCollection.Find(filter).FirstOrDefault();
-                if (indexDocument != null)
+                if (index.IsUnique)
                 {
-                    var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
-                    var indexValue = string.Join("&", indexValues);
-                    if (indexDocument.GetValue("value").AsString.Contains(indexValue))
+                    var filter = Builders<BsonDocument>.Filter.Eq("_id", index.Name);
+                    var indexDocument = indexCollection.Find(filter).FirstOrDefault();
+                    if (indexDocument != null)
                     {
-                        return true;
+                        var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
+                        var indexValue = string.Join("&", indexValues);
+                        if (indexDocument.GetValue("value").AsString.Contains(indexValue))
+                        {
+                            return true;
+                        }
                     }
+                }
+                else
+                {
+                    continue;
                 }
                 //var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
                 //var indexValue = string.Join("&", indexValues);
@@ -249,7 +240,7 @@ namespace abkr.CatalogManager
 
         //    foreach (var kvp in existingDocument.ToList())
         //    {
-                
+
         //        var values=kvp.Values.ToList();
         //        foreach(var value in values)
         //        {
@@ -278,7 +269,7 @@ namespace abkr.CatalogManager
         //    collection.InsertOne(document);
         //}
 
-        public static void Delete(string databaseName, string tableName,  FilterDefinition<BsonDocument> Filter, IMongoClient _client, CatalogManager _catalogManager)
+        public static void Delete(string databaseName, string tableName, FilterDefinition<BsonDocument> Filter, IMongoClient _client, CatalogManager _catalogManager)
         {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
 
@@ -299,33 +290,6 @@ namespace abkr.CatalogManager
 
 
 
-        public static void CreateIndex(string databaseName, string tableName, string indexName, BsonArray columns, bool isUnique, IMongoClient _client, CatalogManager _catalogManager)
-        {
-            var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-
-            var indexKeysBuilder = new IndexKeysDefinitionBuilder<BsonDocument>();
-            var indexKeysDefinitions = new List<IndexKeysDefinition<BsonDocument>>();
-
-            foreach (var column in columns)
-            {
-                indexKeysDefinitions.Add(indexKeysBuilder.Ascending(column.AsString));
-            }
-
-            var indexKeys = Builders<BsonDocument>.IndexKeys.Combine(indexKeysDefinitions);
-
-            var indexOptions = new CreateIndexOptions { Name = indexName, Unique = isUnique };
-            collection?.Indexes.CreateOne(new CreateIndexModel<BsonDocument>(indexKeys, indexOptions));
-
-            _catalogManager?.CreateIndex(databaseName, tableName, indexName, columns.Select(column => column.AsString).ToList(), isUnique);
-        }
-
-
-        public static void DropIndex(string databaseName, string tableName, string indexName, IMongoClient _client, CatalogManager _catalogManager)
-        {
-            var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-            collection?.Indexes.DropOne(indexName);
-
-            _catalogManager?.DropIndex(databaseName, tableName, indexName);
-        }
+       
     }
 }

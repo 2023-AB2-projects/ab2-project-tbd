@@ -2,6 +2,7 @@
 
 namespace abkrServer.CatalogManager.RecordManager
 {
+    [Serializable]
     public class ForeignKey
     {
         [NotNull] public string TableName { get; set; }

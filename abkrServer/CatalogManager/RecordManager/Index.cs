@@ -1,5 +1,6 @@
 ﻿namespace abkr.CatalogManager
 {
+    [Serializable]
     public class Index
     {
         public string Name { get; set; }

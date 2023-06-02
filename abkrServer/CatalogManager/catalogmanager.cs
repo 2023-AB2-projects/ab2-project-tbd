@@ -240,8 +240,28 @@ namespace abkr.CatalogManager
                 }
 
                 // Check if the column is a foreign key
-                if (column.ForeignKeyReference!=null)
+                if (column.ForeignKeyReference != null)
                 {
+                    // Split the ForeignKeyReference to get the table and column names
+                    var splitReferences = column.ForeignKeyReference.Split(':');
+                    if (splitReferences.Length != 2)
+                    {
+                        throw new ArgumentException($"ForeignKeyReference for column '{column.Name}' must be in format 'tableName:columnName'.", nameof(columns));
+                    }
+
+                    string foreignTable = splitReferences[0];
+                    string foreignColumn = splitReferences[1];
+
+                    // Check if the referenced column in the foreign table is unique
+                    if (!IsForeignKeyUnique(databaseName, foreignTable, foreignColumn))
+                    {
+                        throw new ArgumentException($"ForeignKeyReference for column '{column.Name}' references a non-unique column '{foreignColumn}' in table '{foreignTable}'.", nameof(columns));
+                    }
+
+                    // Check if the types are consistent
+                    CheckTypeConsistency(databaseName, foreignTable, foreignColumn, column.Type.ToString());
+
+
                     attribute.SetAttributeValue("isForeignKey", "true");
                     attribute.SetAttributeValue("references", column.ForeignKeyReference);
                     Console.WriteLine($"Foreign key attribute added for column: {column.Name}");
@@ -364,6 +384,44 @@ namespace abkr.CatalogManager
             else
             {
                 throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
+            }
+        }
+
+        public bool IsForeignKeyUnique(string databaseName, string foreignTable, string foreignColumn)
+        {
+            XElement metadata = LoadMetadata();
+            XElement? databaseElement = metadata?.Elements("DataBase").FirstOrDefault(db => db.Attribute("dataBaseName")?.Value == databaseName)
+                ??throw new Exception($"CatalogManager.IsForeignKeyUnique: Database {databaseName} not found.");
+
+            XElement? foreignTableElement = (databaseElement?.Elements("Table").FirstOrDefault(tbl => tbl.Attribute("tableName")?.Value == foreignTable)
+                ??throw new Exception($"CatalogManager.IsForeignKeyUnique: {foreignTable} not found in {databaseName}")) ?? throw new Exception($"ERROR: Table {foreignTable} not found in database {databaseName}!");
+            
+            XElement? foreignColumnAttribute = foreignTableElement.Elements("Structure").Elements("Attribute")
+                .FirstOrDefault(attr => attr.Attribute("attributeName")?.Value == foreignColumn) 
+                ?? throw new Exception($"CatalogManager.IsForeignKeyUnique: Column {foreignColumn} not found in table {foreignTable}!");
+            var isUniqueAttribute = foreignColumnAttribute.Attribute("isUnique")?.Value;
+
+            return isUniqueAttribute == "true";
+        }
+
+        public void CheckTypeConsistency(string databaseName, string foreignTable, string foreignColumn, string type)
+        {
+            XElement metadata = LoadMetadata();
+
+            XElement? databaseElement = metadata?.Elements("DataBase").FirstOrDefault(db => db.Attribute("dataBaseName")?.Value == databaseName)
+                ??throw new Exception($"CatalogManager.CheckTypeConsistency: Database {databaseName} not found.");
+
+            XElement? foreignTableElement = databaseElement?.Elements("Table").FirstOrDefault(tbl => tbl.Attribute("tableName")?.Value == foreignTable)
+                ??throw new Exception($"CatalogManager.CheckTypeConsistency: Table {foreignTable} not found in {databaseName}");
+
+            XElement? foreignColumnAttribute = foreignTableElement.Elements("Structure").Elements("Attribute")
+                .FirstOrDefault(attr => attr.Attribute("attributeName")?.Value == foreignColumn) 
+                ?? throw new Exception($"CatalogManager.CheckTypeConsistency: Column {foreignColumn} not found in table {foreignTable}!");
+
+            var foreignColumnType = foreignColumnAttribute.Attribute("type")?.Value;
+            if (foreignColumnType != type)
+            {
+                throw new Exception($"CatalogManager.CheckTypeConsistency: Type mismatch. Expected type for column {foreignColumn} in table {foreignTable} is {foreignColumnType} but received {type}!");
             }
         }
 

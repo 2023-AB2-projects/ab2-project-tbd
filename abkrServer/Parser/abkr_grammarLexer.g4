@@ -56,6 +56,7 @@ fragment Z: 'Z' | 'z';
 
 DOT: '.';
 COMMA: ',';
+COLON: ':';
 LPAREN: '(';
 RPAREN: ')';
 EQUALS: '=';

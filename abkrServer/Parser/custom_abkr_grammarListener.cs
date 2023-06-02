@@ -41,6 +41,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public string[] SelectedColumns { get; private set; }
     public string SelectCondition { get; private set; }
     public FilterDefinition<BsonDocument> SelectFilter { get; private set; }
+    public string ForeignColumn { get; private set; }
 
 
 

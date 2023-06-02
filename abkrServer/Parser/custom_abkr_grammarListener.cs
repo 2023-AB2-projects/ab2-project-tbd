@@ -81,90 +81,104 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public override void EnterCreate_table_statement(abkr_grammar.Create_table_statementContext context)
     {
         StatementType = StatementType.CreateTable;
+        SetDatabaseAndTableName(context);
+        ProcessColumnDefinitions(context.column_definition_list().column_definition());
+    }
+
+    private void SetDatabaseAndTableName(abkr_grammar.Create_table_statementContext context)
+    {
         DatabaseName = context.identifier()[0].GetText();
         TableName = context.identifier()[1].GetText();
-        var columnDefinitions = context.column_definition_list().column_definition();
+    }
+
+    private void ProcessColumnDefinitions(IEnumerable<abkr_grammar.Column_definitionContext> columnDefinitions)
+    {
         Columns = new Dictionary<string, object>();
         ForeignKeyColumns = new Dictionary<string, string>();
         UniqueKeyColumns = new List<string>();
 
         foreach (var columnDefinition in columnDefinitions)
         {
-            var columnName = columnDefinition.identifier().GetText();
-            var columnType = columnDefinition.data_type().GetText();
-            Columns[columnName] = columnType;
-
-            var columnConstraints = columnDefinition.column_constraint();
-            if (columnConstraints.Any())  // Ensure there are constraints before iterating
-            {
-                foreach (var constraint in columnConstraints)
-                {
-                    if (constraint.UNIQUE() != null)
-                    {
-                        UniqueKeyColumns.Add(columnName);
-                    }
-                    else if (constraint.PRIMARY() != null)
-                    {
-                        PrimaryKeyColumn = columnName;
-                        UniqueKeyColumns.Add(columnName);
-                    }
-                    else if (constraint.FOREIGN() != null && constraint.identifier().Length >= 2)
-                    {
-                        var foreignTable = constraint.identifier()[0].GetText();
-                        var foreignColumn = constraint.identifier()[1].GetText();
-                        ForeignKeyColumns[columnName] = $"{foreignTable}.{foreignColumn}";
-                    }
-                    else if (constraint.FOREIGN() != null)
-                    {
-                        ForeignKeyColumns[columnName] = constraint.identifier()[0].GetText();
-                    }
-                }
-            }
+            AddColumn(columnDefinition);
+            ProcessColumnConstraints(columnDefinition.column_constraint());
         }
     }
 
-    public override void EnterColumn_definition(abkr_grammar.Column_definitionContext context)
+    private void AddColumn(abkr_grammar.Column_definitionContext columnDefinition)
     {
-        ColumnName = context.identifier().GetText();
-        Columns[ColumnName] = context.data_type().GetText();
+        var columnName = columnDefinition.identifier().GetText();
+        ColumnName = columnName;
+        var columnType = columnDefinition.data_type().GetText();
+        Columns[columnName] = columnType;
+    }
 
-        Console.WriteLine($"Column name: {ColumnName}, Data type: {Columns[ColumnName]}");
-
-        if (context.column_constraint() != null)
+    private void ProcessColumnConstraints(IEnumerable<abkr_grammar.Column_constraintContext> columnConstraints)
+    {
+        if (columnConstraints == null)
         {
-            foreach (var constraint in context.column_constraint())
-            {
-                // Handle primary keys
-                if (constraint.PRIMARY() != null)
-                {             
-                    PrimaryKeyColumn = ColumnName;
-                    Console.WriteLine($"Primary key found for column: {PrimaryKeyColumn}");
-                    break;  // Once primary key is found, no need to check for other constraints
-                }
+            return;
+        }
 
-                // Handle foreign keys
-                if (constraint.FOREIGN() != null)
-                {
-                    string? databaseName = constraint.identifier(0)?.GetText();
-                    string? foreignTable = constraint.identifier(1)?.GetText();
-                    string? foreignColumn = constraint.identifier(2)?.GetText();
-                    if (!string.IsNullOrEmpty(databaseName) && !string.IsNullOrEmpty(foreignTable) && !string.IsNullOrEmpty(foreignColumn))
-                    {
-                        ForeignKeyColumns[ColumnName] = $"{foreignTable}.{foreignColumn}";
-                        ForeignColumn= foreignColumn;
-                        Console.WriteLine($"Foreign key found for column: {ColumnName} referencing: {ForeignKeyColumns[ColumnName]}");
-                    }
-                }
-
-                // Handle unique keys
-                if (constraint.UNIQUE() != null && !string.IsNullOrEmpty(ColumnName))
-                {
-                    UniqueKeyColumns.Add(ColumnName);
-                    Console.WriteLine($"Unique key found for column: {ColumnName}");
-                }
-            }
+        foreach (var constraint in columnConstraints)
+        {
+            ProcessConstraint(constraint);
         }
     }
+
+    private void ProcessConstraint(abkr_grammar.Column_constraintContext constraint)
+    {
+
+        if (IsPrimaryKey(constraint))
+        {
+            AddPrimaryKey(ColumnName);
+        }
+
+        if (IsForeignKey(constraint))
+        {
+            AddForeignKey(constraint, ColumnName);
+        }
+
+        if (IsUniqueKey(constraint))
+        {
+            AddUniqueKey(ColumnName);
+        }
+    }
+
+    private bool IsPrimaryKey(abkr_grammar.Column_constraintContext constraint)
+    {
+        return constraint.PRIMARY() != null;
+    }
+
+    private void AddPrimaryKey(string columnName)
+    {
+        PrimaryKeyColumn = columnName;
+        UniqueKeyColumns.Add(columnName);
+    }
+
+    private bool IsForeignKey(abkr_grammar.Column_constraintContext constraint)
+    {
+        return constraint.FOREIGN() != null && constraint.identifier().Length > 2;
+    }
+
+    private void AddForeignKey(abkr_grammar.Column_constraintContext constraint, string columnName)
+    {
+        var foreignTable = constraint.identifier()[0].GetText();
+        var foreignColumn = constraint.identifier()[1].GetText();
+        var foreignAlias = constraint.identifier()[2].GetText();
+        ForeignKeyColumns[columnName] = $"{foreignTable}.{foreignColumn}:{foreignAlias}";
+    }
+
+
+    private bool IsUniqueKey(abkr_grammar.Column_constraintContext constraint)
+    {
+        return constraint.UNIQUE() != null;
+    }
+
+    private void AddUniqueKey(string columnName)
+    {
+        UniqueKeyColumns.Add(columnName);
+    }
+
 
 
     public override void EnterInsert_statement(abkr_grammar.Insert_statementContext context)

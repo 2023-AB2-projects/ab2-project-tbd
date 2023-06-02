@@ -73,6 +73,11 @@ namespace abkr.CatalogManager
                         Console.WriteLine($"DatabaseServer.ExecuteStatement: Column {columnName} is a foreign key reference to {foreignKeyReference}");
                     }
 
+                    if (isPrimaryKey)
+                    {
+                        isUnique = true;
+                    }
+
                     var newColumn = new Column()
                     {
                         Name = columnName,

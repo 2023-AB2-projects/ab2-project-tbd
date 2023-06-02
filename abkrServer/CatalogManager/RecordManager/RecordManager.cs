@@ -98,8 +98,7 @@ namespace abkr.CatalogManager
 
         public static void DropIndex(string databaseName, string tableName, string indexName, IMongoClient _client, CatalogManager _catalogManager)
         {
-            var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-            collection?.Indexes.DropOne(indexName);
+            var indexCollection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName+ "_index");
 
             _catalogManager?.DropIndex(databaseName, tableName, indexName);
         }

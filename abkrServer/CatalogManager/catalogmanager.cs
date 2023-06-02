@@ -249,13 +249,20 @@ namespace abkr.CatalogManager
                         throw new ArgumentException($"ForeignKeyReference for column '{column.Name}' must be in format 'tableName:columnName'.", nameof(columns));
                     }
 
-                    string foreignTable = splitReferences[0];
+                    string foreignTable = splitReferences[0].Split('.')[1];
                     string foreignColumn = splitReferences[1];
 
                     // Check if the referenced column in the foreign table is unique
                     if (!IsForeignKeyUnique(databaseName, foreignTable, foreignColumn))
                     {
-                        throw new ArgumentException($"ForeignKeyReference for column '{column.Name}' references a non-unique column '{foreignColumn}' in table '{foreignTable}'.", nameof(columns));
+
+                        //throw new ArgumentException($"ForeignKeyReference for column '{column.Name}' references a column '{foreignColumn}' " +
+                        //    $"in table '{foreignTable}' with a cotradiction in UNIQUE CONSTRAINT.", nameof(columns));
+                        column.IsUnique = false;
+                    }
+                    else
+                    {
+                        column.IsUnique= true;
                     }
 
                     // Check if the types are consistent
@@ -263,7 +270,7 @@ namespace abkr.CatalogManager
 
 
                     attribute.SetAttributeValue("isForeignKey", "true");
-                    attribute.SetAttributeValue("references", column.ForeignKeyReference);
+                    attribute.SetAttributeValue("references", column.ForeignKeyReference.ToString());
                     Console.WriteLine($"Foreign key attribute added for column: {column.Name}");
                 }
 

@@ -150,9 +150,9 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
                     string? foreignColumn = constraint.identifier(2)?.GetText();
                     if (!string.IsNullOrEmpty(databaseName) && !string.IsNullOrEmpty(foreignTable) && !string.IsNullOrEmpty(foreignColumn))
                     {
-                        ForeignKeyColumns[ColumnName] = $"{databaseName}.{foreignTable}";
+                        ForeignKeyColumns[ColumnName] = $"{foreignTable}.{foreignColumn}";
                         ForeignColumn= foreignColumn;
-                        Console.WriteLine($"Foreign key found for column: {ColumnName} referencing: {ForeignKeyColumns[ColumnName]}:{ForeignColumn}");
+                        Console.WriteLine($"Foreign key found for column: {ColumnName} referencing: {ForeignKeyColumns[ColumnName]}");
                     }
                 }
 

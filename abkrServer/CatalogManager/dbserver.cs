@@ -68,6 +68,11 @@ namespace abkr.CatalogManager
                     var isPrimaryKey = columnName == listener.PrimaryKeyColumn;
                     var foreignKeyReference = listener.ForeignKeyColumns.TryGetValue(columnName, out var foreignKey) ? foreignKey : null;
 
+                    if(foreignKeyReference != null)
+                    {
+                        Console.WriteLine($"DatabaseServer.ExecuteStatement: Column {columnName} is a foreign key reference to {foreignKeyReference}");
+                    }
+
                     var newColumn = new Column()
                     {
                         Name = columnName,

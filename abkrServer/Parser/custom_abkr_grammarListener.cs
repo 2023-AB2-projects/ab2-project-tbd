@@ -1,6 +1,7 @@
 ﻿using abkr.CatalogManager;
 using abkr.grammarParser;
 using abkr.ServerLogger;
+using abkrServer.CatalogManager.RecordManager;
 using Antlr4.Runtime.Misc;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -34,16 +35,16 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public Dictionary<string, object> RowData { get; private set; }
     public string PrimaryKeyColumn { get; private set; }
     public object PrimaryKeyValue { get; private set; }
-    public FilterDefinition<BsonDocument> DeleteFilter { get; private set; }
     public List<ForeignKey> ForeignKeyColumns { get; private set; } = new List<ForeignKey>();
     public List<string> UniqueKeyColumns { get; private set; } = new List<string>();
     public string[] SelectedColumns { get; private set; }
     public string SelectCondition { get; private set; }
-    public FilterDefinition<BsonDocument> SelectFilter { get; private set; }
     public string ForeignColumn { get; private set; }
 
     private CatalogManager CatalogManager { get; set; }
     private Logger Logger { get; set; }
+    public string Operator { get; set;}
+
 
 
 
@@ -259,27 +260,11 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         var whereClauseContext = context.where_clause();
         if (whereClauseContext != null)
         {
-            var fieldName = whereClauseContext.condition().identifier().GetText();
-            var operatorText = whereClauseContext.condition().comparison_operator().GetText();
-            var value = ExtractValue(whereClauseContext.condition().value());
-
-            DeleteFilter = CreateFilter(fieldName, operatorText, value);
+            ColumnName = whereClauseContext.condition().identifier().GetText();
+            Operator = whereClauseContext.condition().comparison_operator().GetText();
+            ColumnValue = ExtractValue(whereClauseContext.condition().value());
         }
     }
-
-    private FilterDefinition<BsonDocument> CreateFilter(string fieldName, string operatorText, object value)
-    {
-        return operatorText switch
-        {
-            "EQUALS" => Builders<BsonDocument>.Filter.Eq(fieldName, value),
-            "GREATER_THAN" => Builders<BsonDocument>.Filter.Gt(fieldName, value),
-            "GREATER_EQUALS" => Builders<BsonDocument>.Filter.Gte(fieldName, value),
-            "LESS_THAN" => Builders<BsonDocument>.Filter.Lt(fieldName, value),
-            "LESS_EQUALS" => Builders<BsonDocument>.Filter.Lte(fieldName, value),
-            _ => throw new InvalidOperationException($"Unknown operator '{operatorText}'")
-        };
-    }
-
 
     public override void EnterSelect_statement(abkr_grammar.Select_statementContext context)
     {
@@ -301,11 +286,9 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         var whereClauseContext = context.where_clause();
         if (whereClauseContext != null)
         {
-            var fieldName = whereClauseContext.condition().identifier().GetText();
-            var operatorText = whereClauseContext.condition().comparison_operator().GetText();
-            var value = ExtractValue(whereClauseContext.condition().value());
-
-            SelectFilter = CreateFilter(fieldName, operatorText, value);
+            ColumnName = whereClauseContext.condition().identifier().GetText();
+            Operator = whereClauseContext.condition().comparison_operator().GetText();
+            ColumnValue = ExtractValue(whereClauseContext.condition().value());
         }
     }
 
@@ -321,30 +304,6 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
         // Add cases for other types as well
         return null;
-    }
-
-    public override void EnterWhere_clause(abkr_grammar.Where_clauseContext context)
-    {
-        var identifier = context.condition().identifier().GetText();
-        var comparisonOperator = context.condition().comparison_operator().GetText();
-        var value = GetValueFromValue(context.condition().value());
-
-        if (identifier == GetPrimaryKeyColumnName(DatabaseName, TableName))
-        {
-            identifier = "_id";
-        }
-
-        var filter = CreateFilter(identifier, comparisonOperator, value);
-
-        switch (StatementType)
-        {
-            case StatementType.Delete:
-                DeleteFilter = filter;
-                break;
-            case StatementType.Select:
-                SelectFilter = filter;
-                break;
-        }
     }
 
 

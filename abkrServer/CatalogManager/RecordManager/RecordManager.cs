@@ -139,14 +139,25 @@ namespace abkr.CatalogManager
         {
             var referencedTable = foreignKey.ReferencedTable;
             var foreignKeyValue = row[foreignKey.ColumnName];
+            logger.LogMessage($"RecordManager.CheckForeignKey: foreignKeyValue is {foreignKeyValue} for column {foreignKey.ColumnName}");
 
-            var referencedCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(referencedTable);
-            var filter = Builders<BsonDocument>.Filter.Eq("_id", foreignKeyValue);
-            var count = referencedCollection.CountDocuments(filter);
-
-            if (count == 0)
+            if (foreignKey.ReferencedColumn.Item2)
             {
-                throw new Exception($"RecordManager.Insert failed. Foreign key constraint violated on column '{foreignKey.ColumnName}' in table '{foreignKey.TableName}' in database '{databaseName}'. Referenced record not found in table '{referencedTable}' for column '{foreignKey.ReferencedColumn}'.");
+                var referencedCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(referencedTable);
+                var filter = Builders<BsonDocument>.Filter.Eq("_id", Convert.ToInt32(foreignKeyValue));
+                _ = referencedCollection.Find(filter).FirstOrDefault()
+                    ?? throw new Exception($"RecordManager.CheckForeignKey failed. Foreign key constraint violated on column '{foreignKey.ColumnName}' in table '{foreignKey.TableName}' in database '{databaseName}'. Referenced record not found in table '{referencedTable}' for column '{foreignKey.ReferencedColumn}'.");
+            }
+            else
+            {
+                var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(referencedTable + "_index");
+                var filter = Builders<BsonDocument>.Filter.Eq("_id", foreignKey.ReferencedColumn.Item1);
+                var count = indexCollection.Find(filter).FirstOrDefault().GetValue("value").AsString.Split('#');
+                logger.LogMessage($"Count: {count.Length}");
+                if (!count.Contains(foreignKeyValue.ToString()))
+                {
+                    throw new Exception($"RecordManager.CheckForeignKey failed. Foreign key constraint violated on column '{foreignKey.ColumnName}' in table '{foreignKey.TableName}' in database '{databaseName}'. Referenced record not found in table '{referencedTable}' for column '{foreignKey.ReferencedColumn}'.");
+                }
             }
         }
 
@@ -205,19 +216,22 @@ namespace abkr.CatalogManager
         {
             var indexes = _catalogManager.GetIndexes(databaseName, tableName);
             var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
+            logger.LogMessage($"RecordManager.CheckUnique: indexCollection is {indexCollection} for table {tableName}");
 
             foreach (var index in indexes)
             {
-                if (index.IsUnique)
+                if (index.IsUnique && (index.Name != _catalogManager.GetPrimaryKeyColumn(databaseName, tableName)))
                 {
                     var filter = Builders<BsonDocument>.Filter.Eq("_id", index.Name);
                     var indexDocument = indexCollection.Find(filter).FirstOrDefault();
+                    logger.LogMessage($"RecordManager.CheckUnique: indexDocument is {indexDocument} for index {index.Name}");
 
                     var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
                     var indexValue = string.Join("&", indexValues);
 
                     if (indexDocument != null && indexDocument.GetValue("value").AsString.Contains(indexValue))
                     {
+                        logger.LogMessage($"RecordManager.CheckUnique: Unique constraint violated on column '{index.Name}' with already existing value of {row[index.Name]} in table '{tableName}' in database '{databaseName}'.");
                         return false; // uniqueness constraint is violated
                     }
                 }

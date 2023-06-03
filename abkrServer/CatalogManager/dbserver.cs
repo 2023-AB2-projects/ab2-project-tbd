@@ -67,19 +67,26 @@ namespace abkr.CatalogManager
                     var isUnique = listener.UniqueKeyColumns.Contains(columnName);
                     var isPrimaryKey = columnName == listener.PrimaryKeyColumn;
                     var foreignKeyReference = listener.ForeignKeyColumns.TryGetValue(columnName, out var foreignKey) ? foreignKey : null;
+                    ForeignKey? foreignKeyRef;
 
                     if (foreignKeyReference != null)
                     {
                         Console.WriteLine($"DatabaseServer.ExecuteStatement: Column {columnName} is a foreign key reference to {foreignKeyReference}");
+                        isUnique = _catalogManager.IsForeignKeyUnique(listener.DatabaseName, listener.ForeignKeyColumns.FirstOrDefault().Key, foreignKeyReference);
+                        foreignKeyRef = new ForeignKey(listener.TableName, columnName, listener.ForeignKeyColumns.FirstOrDefault().Key, foreignKeyReference, isUnique);
                     }
-                    ForeignKey? foreignKey =;
+                    else
+                    {
+                        foreignKeyRef = null;
+                    }
+                    
 
                     if (isPrimaryKey)
                     {
                         isUnique = true;
                     }
 
-                    var newColumn = new Column(columnName, columnType, isUnique, isPrimaryKey, foreignKeyReference);
+                    var newColumn = new Column(columnName, columnType, isUnique, isPrimaryKey, foreignKeyRef);
 
                     columns.Add(newColumn);
                 }

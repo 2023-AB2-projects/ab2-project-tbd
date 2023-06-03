@@ -47,10 +47,8 @@ namespace abkr.CatalogManager
             //var columnsDictionary = columns?.ToDictionary(column => column.Name, column => column.Type);
             var primaryKeyColumn = columns.FirstOrDefault(column => column.IsPrimaryKey)?.Name
                 ?? throw new Exception("RecordManager.CreateTable: Primary key not found.");
-            var uniqueKeys = columns.Where(column => column.IsUnique).Select(column => column.Name).ToList();
-            var foreignKeys = columns?.Where(column => !string.IsNullOrEmpty(column.ForeignKeyReference))?.ToDictionary(column => column.Name, column => column.ForeignKeyReference);
 
-            _catalogManager?.CreateTable(databaseName, tableName, columns, primaryKeyColumn, foreignKeys, uniqueKeys);
+            _catalogManager?.CreateTable(databaseName, tableName, columns, primaryKeyColumn);
 
             // Create index files for unique keys
             foreach (var column in columns)
@@ -65,13 +63,6 @@ namespace abkr.CatalogManager
                     Console.WriteLine("RecordManager: Creating nonunique index");
                     _catalogManager?.CreateIndex(databaseName, tableName, column.Name, new List<string> { column.Name }, false);
                 }
-            }
-
-            // If there's a foreign key column, create an index for it.
-            foreach (var foreignKey in foreignKeys)
-            {
-                Console.WriteLine($"Creating foreign key:{foreignKey.Key}");
-                _catalogManager.CreateIndex(databaseName, tableName, foreignKey.Key, new List<string> { foreignKey.Key }, false);
             }
         }
 

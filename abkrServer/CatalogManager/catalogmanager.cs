@@ -152,9 +152,7 @@ namespace abkr.CatalogManager
             string databaseName,
             string tableName,
             List<Column> columns,
-            string primaryKeyColumn,
-            Dictionary<string, string> foreignKeys,
-            List<string> uniqueKeys)
+            string primaryKeyColumn)
         {
             // First, check the databaseName, tableName, and columns aren't null or empty
             if (string.IsNullOrEmpty(databaseName))

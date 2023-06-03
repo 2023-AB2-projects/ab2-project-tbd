@@ -172,7 +172,10 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         var foreignAlias = constraint.identifier()[2].GetText();
         var isUnique = CatalogManager.IsForeignKeyUnique(databaseName, foreignTable, foreignAlias);
 
-        var fk = new ForeignKey(TableName, columnName, foreignTable, foreignAlias, isUnique );
+        var pk = CatalogManager.GetPrimaryKeyColumn(databaseName, foreignTable);
+        var ispk = pk == foreignAlias;
+
+        var fk = new ForeignKey(TableName, columnName, foreignTable, (foreignAlias, ispk), isUnique );
         ForeignKeyColumns.Add(fk);
     }
 

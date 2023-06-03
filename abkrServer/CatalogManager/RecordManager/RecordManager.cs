@@ -12,7 +12,7 @@ namespace abkr.CatalogManager
 {
     internal class RecordManager
     {
-        public static Logger logger = new Logger("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/server_logger.txt");
+        public static Logger logger = new("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/server_logger.txt");
 
 
         public static void CreateDatabase(string databaseName, IMongoClient _client, CatalogManager _catalogManager)
@@ -48,24 +48,16 @@ namespace abkr.CatalogManager
             logger.LogMessage($"Creating table: {databaseName}.{tableName}");
 
             //var columnsDictionary = columns?.ToDictionary(column => column.Name, column => column.Type);
-            var primaryKeyColumn = columns.FirstOrDefault(column => column.IsPrimaryKey)?.Name
-                ?? throw new Exception("RecordManager.CreateTable: Primary key not found.");
+            //var primaryKeyColumn = columns.FirstOrDefault(column => column.IsPrimaryKey)?.Name
+            //    ?? throw new Exception("RecordManager.CreateTable: Primary key not found.");
 
-            _catalogManager?.CreateTable(databaseName, tableName, columns, primaryKeyColumn);
+            _catalogManager?.CreateTable(databaseName, tableName, columns);
 
             // Create index files for unique keys
             foreach (var column in columns)
             {
-                if (column.IsUnique && !column.IsPrimaryKey)
-                {
-                    logger.LogMessage("RecordManager: Creating unique index");
-                    _catalogManager?.CreateIndex(databaseName, tableName, column.Name, new List<string> { column.Name }, true);
-                }
-                else
-                {
-                    logger.LogMessage("RecordManager: Creating nonunique index");
-                    _catalogManager?.CreateIndex(databaseName, tableName, column.Name, new List<string> { column.Name }, false);
-                }
+                logger.LogMessage($"RecordManager: Creating {(column.IsUnique ? "unique" : "nonunique")} index");
+                _catalogManager?.CreateIndex(databaseName, tableName, column.Name, new List<string> { column.Name }, column.IsUnique);
             }
         }
 
@@ -118,9 +110,32 @@ namespace abkr.CatalogManager
         {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
 
+            // Check if the unique constraint is violated
             if (CheckUnique(databaseName, tableName, row, _client, _catalogManager))
             {
                 throw new Exception($"Insert failed. Unique index constraint violated in table '{tableName}' in database '{databaseName}'.");
+            }
+
+            // Check if the foreign key constraint is violated
+            var foreignKeys = _catalogManager.GetForeignKeyReferences(databaseName, tableName);
+            foreach (var foreignKey in foreignKeys)
+            {
+                var referencedTable = foreignKey.ReferencedTable;
+                var referencedColumn = foreignKey.ReferencedColumn;
+                var foreignKeyValue = row[foreignKey.ColumnName];
+
+                var referencedCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(referencedTable+"_index");
+                var filter = Builders<BsonDocument>.Filter.Eq("_id", referencedColumn);
+                var docs = referencedCollection.Find(filter);
+                if(docs.CountDocuments() <= 0 || docs.CountDocuments() > 1)
+                {
+                    throw new Exception($"RecordManager.Insert failed. Foreign key constraint violated on column '{foreignKey.ColumnName}' in table '{tableName}' in database '{databaseName}'. Referenced record corrupted in table '{referencedTable}' for column '{referencedColumn}'.");
+                }
+                var result = docs.FirstOrDefault().Values.ToString().Split('#');
+                if (!result.Contains(foreignKeyValue.ToString()))
+                {
+                    throw new Exception($"RecordManager.Insert failed. Foreign key constraint violated on column '{foreignKey.ColumnName}' in table '{tableName}' in database '{databaseName}'. Referenced record not found in table '{referencedTable}' for column '{referencedColumn}'.");
+                }
             }
 
             // Insert data into the main collection
@@ -167,8 +182,6 @@ namespace abkr.CatalogManager
                 indexCollection.ReplaceOne(replaceFilter, indexDocument, new ReplaceOptions { IsUpsert = true });
             }
         }
-
-
 
         public static bool CheckUnique(string databaseName, string tableName, Dictionary<string, object> row, IMongoClient _client, CatalogManager _catalogManager)
         {

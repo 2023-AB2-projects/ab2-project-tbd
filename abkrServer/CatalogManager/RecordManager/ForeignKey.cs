@@ -5,10 +5,10 @@
         public string TableName { get; }
         public string ColumnName { get; }
         public string ReferencedTable { get; }
-        public string ReferencedColumn { get; }
+        public (string, bool) ReferencedColumn { get; }
         public bool IsUnique { get; }
 
-        public ForeignKey(string tableName, string columnName, string referencedTable, string referencedColumn, bool isUnique)
+        public ForeignKey(string tableName, string columnName, string referencedTable, (string, bool) referencedColumn, bool isUnique)
         {
             TableName = tableName;
             ColumnName = columnName;

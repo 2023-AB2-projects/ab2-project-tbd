@@ -155,8 +155,7 @@ namespace abkr.CatalogManager
         public void CreateTable(
             string databaseName,
             string tableName,
-            List<Column> columns,
-            string primaryKeyColumn)
+            List<Column> columns)
         {
             // First, check the databaseName, tableName, and columns aren't null or empty
             if (string.IsNullOrEmpty(databaseName))
@@ -179,7 +178,7 @@ namespace abkr.CatalogManager
             var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName)
                 ?? throw new ArgumentException($"Database '{databaseName}' does not exist.");
 
-            Console.WriteLine($"CatalogManagar.CreateTable: Creating table '{tableName}' in database '{databaseName}'.");
+            logger.LogMessage($"CatalogManagar.CreateTable: Creating table '{tableName}' in database '{databaseName}'.");
 
             // Check if the table already exists
             var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName").Value == tableName);
@@ -188,19 +187,17 @@ namespace abkr.CatalogManager
                 throw new ArgumentException($"Table '{tableName}' already exists in database '{databaseName}'.");
             }
 
-            logger.LogMessage("Proceeding.");
-
             // If the table doesn't exist, create a new one
             tableElement = new XElement("Table", new XAttribute("tableName", tableName));
 
 
             // Create a new structure element
             var structureElement = new XElement("Structure");
-            int i = 0;
+
             // Iterate through the provided columns
             foreach (var column in columns)
             {
-                logger.LogMessage($"CatalogManager.CreateTable: Adding column '{column.Name}' to table '{tableName}' in iteration {i++}.");
+                //logger.LogMessage($"CatalogManager.CreateTable: Adding column '{column.Name}' to table '{tableName}' in iteration {i++}.");
                 XElement attribute = new XElement("Attribute");
                 attribute.SetAttributeValue("attributeName", column.Name);
 
@@ -265,12 +262,12 @@ namespace abkr.CatalogManager
 
             logger.LogMessage("CatalogManager.CreateTable: Adding primary key element.");
 
-            if (string.IsNullOrEmpty(primaryKeyColumn))
+            if (columns.Where(c=>c.IsPrimaryKey)==null)
             {
-                throw new ArgumentNullException(nameof(primaryKeyColumn), "Primary key column cannot be null or empty.");
+                throw new ArgumentNullException("Primary key column cannot be null or empty.");
             }
 
-            var primaryKeyElement = new XElement("primaryKey", new XAttribute("name", primaryKeyColumn));
+            var primaryKeyElement = new XElement("primaryKey", new XAttribute("name", columns.Where(c => c.IsPrimaryKey).FirstOrDefault().Name));
             tableElement.Add(structureElement);
             tableElement.Add(primaryKeyElement); // Add primary key element to table
             databaseElement.Add(tableElement);

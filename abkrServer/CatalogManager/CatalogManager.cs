@@ -374,7 +374,7 @@ namespace abkr.CatalogManager
                 ??throw new Exception($"CatalogManager.IsForeignKeyUnique: Database {databaseName} not found.");
 
             XElement? foreignTableElement = (databaseElement?.Elements("Table").FirstOrDefault(tbl => tbl.Attribute("tableName")?.Value == foreignTable)
-                ??throw new Exception($"CatalogManager.IsForeignKeyUnique: {foreignTable} not found in {databaseName}")) ?? throw new Exception($"ERROR: Table {foreignTable} not found in database {databaseName}!");
+                ??throw new Exception($"CatalogManager.IsForeignKeyUnique: Table {foreignTable} not found in database {databaseName}")) ?? throw new Exception($"ERROR: Table {foreignTable} not found in database {databaseName}!");
             
             XElement? foreignColumnAttribute = foreignTableElement.Elements("Structure").Elements("Attribute")
                 .FirstOrDefault(attr => attr.Attribute("attributeName")?.Value == foreignColumn) 

@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using MongoDB.Bson;
 using abkrServer.CatalogManager.RecordManager;
 using abkr.ServerLogger;
+using static OfficeOpenXml.ExcelErrorValue;
 
 namespace abkr.CatalogManager
 {
@@ -295,27 +296,82 @@ namespace abkr.CatalogManager
         //    collection.InsertOne(document);
         //}
 
-        public static void Delete(string databaseName, string tableName, FilterDefinition<BsonDocument> Filter, IMongoClient _client, CatalogManager _catalogManager)
+        public static void Delete(string databaseName, string tableName, string columnName, string op, object columnValue, IMongoClient _client, CatalogManager _catalogManager)
         {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+            var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
+            var primaryKey = _catalogManager.GetPrimaryKeyColumn(databaseName, tableName);
+            var isPrimaryKey = columnName == primaryKey;
 
-            var foreignKeyReferences = _catalogManager.GetForeignKeyReferences(databaseName, tableName);
-            foreach (var reference in foreignKeyReferences)
+            var posInMainCollection = _catalogManager.GetColumnLineNumber(databaseName, tableName, columnName)
+                ?? throw new NullReferenceException($"RecordManager.Delete: Column {columnName} not found table {tableName} in database {databaseName}.");
+
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", columnName);
+            var values = indexCollection.Find(filter).FirstOrDefault().GetValue("value").AsString.Split('#');
+
+            var filteredValues = FilteredValues(columnName, op, columnValue, values);
+            if(!filteredValues.Any())
             {
-                var refCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(reference.TableName);
-                var existingDocument = refCollection.Find(Filter).FirstOrDefault();
-
-                if (existingDocument != null)
-                {
-                    throw new Exception($"Delete failed. Foreign key constraint violated in table '{reference.TableName}' in database '{databaseName}' on column '{reference.ColumnName}'.");
-                }
+                throw new Exception($"Delete failed. No records found in table '{tableName}' in database '{databaseName}'.");
             }
 
-            collection.DeleteOne(Filter);
+            if (isPrimaryKey)
+            {
+                var foreignKeyReferences = _catalogManager.GetForeignKeyReferences(databaseName, tableName);
+                foreach (var reference in foreignKeyReferences)
+                {
+                    foreach (var value in filteredValues)
+                    {
+                        var row = collection.Find(Builders<BsonDocument>.Filter.Eq("_id", value)).FirstOrDefault();
+                        if (row != null)
+                        {
+                            throw new Exception($"Delete failed. Foreign key constraint violated on column '{reference.ReferencedColumn.Item1}' in table '{reference.ReferencedTable}' in database '{databaseName}'.");
+                        }
+                        Delete(databaseName, reference.ReferencedTable, reference.ReferencedColumn.Item1, "=", value, _client, _catalogManager);
+
+                    }
+                }
+            }
+            
+
+
+            var indexes = _catalogManager.GetIndexes(databaseName, tableName);
+            foreach (var index in indexes)
+            {
+                var indexDocumentFilter = Builders<BsonDocument>.Filter.Eq("_id", index.Name);
+                var indexDocument = indexCollection.Find(indexDocumentFilter).FirstOrDefault();
+                if (indexDocument != null)
+                {
+                    var indexValues = indexDocument["value"].AsString.Split('#').ToList();
+                    var rowIndexValues = index.Columns.Select(columnName => row[columnName].ToString());
+                    var rowIndexValue = string.Join("&", rowIndexValues);
+                    indexValues.Remove(rowIndexValue);
+                    indexDocument["value"] = string.Join("#", indexValues);
+                    indexCollection.ReplaceOne(indexDocumentFilter, indexDocument);
+                }
+            }
         }
 
+        private static IEnumerable<string> FilteredValues(string columnName, string op, object columnValue, string[] values)
+        {
+            switch (op)
+            {
+                //EQUALS | GREATER_THAN | GREATER_EQUALS | LESS_THAN | LESS_EQUALS;
 
+                case "EQUALS":
+                    return values.Where(v=> v==columnValue.ToString());
+                case "GREATER_THAN":
+                    return values.Where(v => Convert.ToInt32(v) > Convert.ToInt32(columnValue.ToString()));
+                case "GREATER_EQUALS":
+                    return values.Where(v => Convert.ToInt32(v) >= Convert.ToInt32(columnValue.ToString()));
+                case "LESS_THAN":
+                    return values.Where(v => Convert.ToInt32(v) < Convert.ToInt32(columnValue.ToString()));
+                case "LESS_EQUALS":
+                    return values.Where(v => Convert.ToInt32(v) <= Convert.ToInt32(columnValue.ToString()));
+                default:
+                    throw new ArgumentException($"Unsupported operator: {op}");
+            }
+        }
 
-       
     }
 }

@@ -71,7 +71,7 @@ namespace abkr.CatalogManager
             foreach (var foreignKey in foreignKeys)
             {
                 Console.WriteLine($"Creating foreign key:{foreignKey.Key}");
-                CreateIndex(databaseName, tableName, $"{foreignKey.Key}_fk", new BsonArray(new[] { foreignKey.Key }), false, _client, _catalogManager);
+                _catalogManager.CreateIndex(databaseName, tableName, foreignKey.Key, new List<string> { foreignKey.Key }, false);
             }
         }
 

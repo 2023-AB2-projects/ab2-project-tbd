@@ -1,17 +1,15 @@
 ﻿namespace abkr.CatalogManager
-{
-    [Serializable]
+{ 
     public class Index
     {
-        public string Name { get; set; }
+        public string Name { get; }
         public bool IsUnique { get; set; }
-        public List<string> Columns { get; set; }
+        public List<string> Columns { get; } = new();
 
-        public Index(string name)
+        public Index(string name, bool isUnique)
         {
             Name = name;
-            Columns = new List<string>();
+            IsUnique = isUnique;
         }
     }
-
 }

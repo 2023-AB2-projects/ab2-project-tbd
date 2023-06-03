@@ -9,11 +9,20 @@ namespace abkr.CatalogManager
     [Serializable]
     public class Column
     {
-        public string? Name { get; set; }
-        public object ?Type { get; set; }
+        public string Name { get; }
+        public object Type { get; }  // Assuming you've defined a ColumnType enum
         public bool IsPrimaryKey { get; set; }
         public bool IsUnique { get; set; }
-        public string? ForeignKeyReference { get; set; } // Name of the foreign key reference if it exists
+        public ForeignKey? ForeignKeyReference { get; set; }
+
+        public Column(string name, object type, bool isPrimaryKey, bool isUnique, ForeignKey? foreignKeyReference)
+        {
+            Name = name;
+            Type = type;
+            IsPrimaryKey = isPrimaryKey;
+            IsUnique = isUnique;
+            ForeignKeyReference = foreignKeyReference;
+        }
     }
 
 }

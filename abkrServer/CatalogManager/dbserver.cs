@@ -12,7 +12,7 @@ namespace abkr.CatalogManager
     {
         [NotNull] static private IMongoClient _client;
         [NotNull] static public IMongoClient MongoClient => _client;
-        
+
         [NotNull] static private CatalogManager _catalogManager;
 
 
@@ -24,7 +24,7 @@ namespace abkr.CatalogManager
             if (!File.Exists(metadataFilePath))
             {
                 XElement emptyMetadata = new XElement("metadata");
-                File.WriteAllText(metadataFilePath, emptyMetadata.ToString()+"\n");
+                File.WriteAllText(metadataFilePath, emptyMetadata.ToString() + "\n");
             }
 
             _catalogManager = new CatalogManager(metadataFilePath);
@@ -66,27 +66,19 @@ namespace abkr.CatalogManager
                     var columnType = column.Value;
                     var isUnique = listener.UniqueKeyColumns.Contains(columnName);
                     var isPrimaryKey = columnName == listener.PrimaryKeyColumn;
-                    var foreignKeyReference = listener.ForeignKeyColumns.TryGetValue(columnName, out var foreignKey) ? foreignKey : null;
-                    ForeignKey? foreignKeyRef;
-
+                    var foreignKeyReference = listener.ForeignKeyColumns.Where(fk => fk.ColumnName == columnName).FirstOrDefault();
                     if (foreignKeyReference != null)
                     {
                         Console.WriteLine($"DatabaseServer.ExecuteStatement: Column {columnName} is a foreign key reference to {foreignKeyReference}");
-                        isUnique = _catalogManager.IsForeignKeyUnique(listener.DatabaseName, listener.ForeignKeyColumns.FirstOrDefault().Key, foreignKeyReference);
-                        foreignKeyRef = new ForeignKey(listener.TableName, columnName, listener.ForeignKeyColumns.FirstOrDefault().Key, foreignKeyReference, isUnique);
                     }
-                    else
-                    {
-                        foreignKeyRef = null;
-                    }
-                    
+
 
                     if (isPrimaryKey)
                     {
                         isUnique = true;
                     }
 
-                    var newColumn = new Column(columnName, columnType, isUnique, isPrimaryKey, foreignKeyRef);
+                    var newColumn = new Column(columnName, columnType, isUnique, isPrimaryKey, foreignKeyReference);
 
                     columns.Add(newColumn);
                 }

@@ -34,14 +34,14 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public string PrimaryKeyColumn { get; private set; }
     public object PrimaryKeyValue { get; private set; }
     public FilterDefinition<BsonDocument> DeleteFilter { get; private set; }
-    public Dictionary<string, string> ForeignKeyColumns { get; private set; } = new Dictionary<string, string>();
+    public List<ForeignKey> ForeignKeyColumns { get; private set; } = new List<ForeignKey>();
     public List<string> UniqueKeyColumns { get; private set; } = new List<string>();
-
-    public bool IsUnique = false;
     public string[] SelectedColumns { get; private set; }
     public string SelectCondition { get; private set; }
     public FilterDefinition<BsonDocument> SelectFilter { get; private set; }
     public string ForeignColumn { get; private set; }
+
+    private CatalogManager CatalogManager { get; set; }
 
 
 
@@ -50,6 +50,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
     public MyAbkrGrammarListener(string metadataFilePath)
     {
+        CatalogManager = new CatalogManager(metadataFilePath);
         metadataXml = new XmlDocument();
         try
         {
@@ -94,7 +95,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     private void ProcessColumnDefinitions(IEnumerable<abkr_grammar.Column_definitionContext> columnDefinitions)
     {
         Columns = new Dictionary<string, object>();
-        ForeignKeyColumns = new Dictionary<string, string>();
+        ForeignKeyColumns = new List<ForeignKey>();
         UniqueKeyColumns = new List<string>();
 
         foreach (var columnDefinition in columnDefinitions)
@@ -162,10 +163,12 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
     private void AddForeignKey(abkr_grammar.Column_constraintContext constraint, string columnName)
     {
-        var foreignTable = constraint.identifier()[0].GetText();
-        var foreignColumn = constraint.identifier()[1].GetText();
+        var databaseName = constraint.identifier()[0].GetText();
+        var foreignTable = constraint.identifier()[1].GetText();
         var foreignAlias = constraint.identifier()[2].GetText();
-        ForeignKeyColumns[columnName] = $"{foreignTable}.{foreignColumn}:{foreignAlias}";
+        var isUnique = CatalogManager.IsForeignKeyUnique(databaseName, foreignTable, foreignAlias);
+        var fk = new ForeignKey(TableName, columnName, foreignTable, foreignAlias, isUnique );
+        ForeignKeyColumns.Add(fk);
     }
 
 

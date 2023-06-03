@@ -1,10 +1,4 @@
-﻿using abkrServer.CatalogManager.RecordManager;
-using MongoDB.Bson;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Xml.Linq;
+﻿using System.Xml.Linq;
 
 namespace abkr.CatalogManager
 {
@@ -48,18 +42,7 @@ namespace abkr.CatalogManager
         {
             var indexes = new List<Index>();
             var metadata = LoadMetadata();
-            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName);
-
-            if (databaseElement == null)
-            {
-                throw new ArgumentException($"Database '{databaseName}' does not exist.");
-            }
-
-            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName")?.Value == tableName);
-            if (tableElement == null)
-            {
-                throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
-            }
+            var tableElement = GetTableElement(databaseName, tableName, metadata);
 
             var indexFilesElement = tableElement.Element("IndexFiles");
             if (indexFilesElement != null)
@@ -69,18 +52,12 @@ namespace abkr.CatalogManager
                     var indexName = indexElement.Attribute("indexName")?.Value;
                     var isUnique = bool.Parse(indexElement.Attribute("isUnique")?.Value ?? "false");
 
-                    var index = new Index(indexName)
-                    {
-                        IsUnique = isUnique
-                    };
+                    var index = new Index(indexName, isUnique);
 
                     var indexAttributesElement = indexElement.Element("IndexAttributes");
                     if (indexAttributesElement != null)
                     {
-                        foreach (var attribute in indexAttributesElement.Elements("IAttribute"))
-                        {
-                            index.Columns.Add(attribute.Value);
-                        }
+                        index.Columns.AddRange(indexAttributesElement.Elements("IAttribute").Select(a => a.Value));
                     }
 
                     indexes.Add(index);
@@ -90,17 +67,12 @@ namespace abkr.CatalogManager
             return indexes;
         }
 
-
         public List<ForeignKey> GetForeignKeyReferences(string databaseName, string tableName)
         {
             var foreignKeys = new List<ForeignKey>();
             var metadata = LoadMetadata();
 
-            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName)
-                ?? throw new ArgumentException($"Database '{databaseName}' does not exist.");
-
-            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName")?.Value == tableName)
-                ?? throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
+            var tableElement = GetTableElement(databaseName, tableName, metadata);
 
             var structureElement = tableElement.Element("Structure");
             if (structureElement != null)
@@ -112,19 +84,15 @@ namespace abkr.CatalogManager
                     {
                         var attributeName = attributeElement.Attribute("attributeName")?.Value;
                         var references = attributeElement.Attribute("references")?.Value;
+                        var isUnique = bool.Parse(attributeElement.Attribute("isUnique")?.Value ?? "false");
                         if (!string.IsNullOrEmpty(attributeName) && !string.IsNullOrEmpty(references))
                         {
                             // Assumes the references string is in format "referencedTable:referencedColumn"
                             var splitReferences = references.Split(':');
                             if (splitReferences.Length == 2)
                             {
-                                foreignKeys.Add(new ForeignKey
-                                {
-                                    TableName = tableName,
-                                    ColumnName = attributeName,
-                                    ReferencedTable = splitReferences[0],
-                                    ReferencedColumn = splitReferences[1]
-                                });
+                                var foreignKey = new ForeignKey(tableName, attributeName, splitReferences[0], splitReferences[1], isUnique);
+                                foreignKeys.Add(foreignKey);
                             }
                         }
                     }
@@ -133,6 +101,18 @@ namespace abkr.CatalogManager
 
             return foreignKeys;
         }
+
+        private static XElement GetTableElement(string databaseName, string tableName, XElement metadata)
+        {
+            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName)
+                ?? throw new ArgumentException($"Database '{databaseName}' does not exist.");
+
+            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName")?.Value == tableName)
+                ?? throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
+
+            return tableElement;
+        }
+
 
 
         public void CreateDatabase(string databaseName)
@@ -242,15 +222,10 @@ namespace abkr.CatalogManager
                 // Check if the column is a foreign key
                 if (column.ForeignKeyReference != null)
                 {
-                    // Split the ForeignKeyReference to get the table and column names
-                    var splitReferences = column.ForeignKeyReference.Split(':');
-                    if (splitReferences.Length != 2)
-                    {
-                        throw new ArgumentException($"ForeignKeyReference for column '{column.Name}' must be in format 'tableName:columnName'.", nameof(columns));
-                    }
+                    // Split the ForeignKeyReference to get the table and column 
 
-                    string foreignTable = splitReferences[0].Split('.')[1];
-                    string foreignColumn = splitReferences[1];
+                    string foreignTable = column.ForeignKeyReference.ReferencedTable;
+                    string foreignColumn = column.ForeignKeyReference.ReferencedColumn;
 
                     // Check if the referenced column in the foreign table is unique
                     if (!IsForeignKeyUnique(databaseName, foreignTable, foreignColumn))

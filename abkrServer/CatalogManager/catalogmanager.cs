@@ -1,4 +1,5 @@
 ﻿using System.Xml.Linq;
+using abkr.ServerLogger;
 using abkrServer.CatalogManager.RecordManager;
 
 namespace abkr.CatalogManager
@@ -6,9 +7,11 @@ namespace abkr.CatalogManager
     public class CatalogManager
     {
         private readonly string _metadataFilePath;
+        private Logger logger;
 
-        public CatalogManager(string metadataFilePath)
+        public CatalogManager(string metadataFilePath, Logger l)
         {
+            logger = l;
             _metadataFilePath = metadataFilePath;
         }
 
@@ -16,7 +19,7 @@ namespace abkr.CatalogManager
         {
             if (!File.Exists(_metadataFilePath))
             {
-                Console.WriteLine($"Metadata file not found at {_metadataFilePath}. Creating a new file.");
+                logger.LogMessage($"Metadata file not found at {_metadataFilePath}. Creating a new file.");
                 var databasesElement = new XElement("Databases");
                 databasesElement.Save(_metadataFilePath);
             }
@@ -27,7 +30,7 @@ namespace abkr.CatalogManager
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error reading metadata file: {ex.Message}");
+                logger.LogMessage($"Error reading metadata file: {ex.Message}");
                 return new XElement("Databases");
             }
         }
@@ -36,7 +39,7 @@ namespace abkr.CatalogManager
         {
             Directory.CreateDirectory(Path.GetDirectoryName(_metadataFilePath));
             metadata.Save(_metadataFilePath);
-            Console.WriteLine($"Metadata saved to {_metadataFilePath}");
+            logger.LogMessage($"Metadata saved to {_metadataFilePath}");
         }
 
         public List<Index> GetIndexes(string databaseName, string tableName)
@@ -122,7 +125,7 @@ namespace abkr.CatalogManager
             var databaseElement = new XElement("DataBase", new XAttribute("dataBaseName", databaseName));
             metadata.Add(databaseElement);
             SaveMetadata(metadata);
-            Console.WriteLine($"Database '{databaseName}' created.");
+            logger.LogMessage($"Database '{databaseName}' created.");
         }
 
         public string GetPrimaryKeyColumn(string databaseName, string tableName)
@@ -185,7 +188,7 @@ namespace abkr.CatalogManager
                 throw new ArgumentException($"Table '{tableName}' already exists in database '{databaseName}'.");
             }
 
-            Console.WriteLine("Proceeding.");
+            logger.LogMessage("Proceeding.");
 
             // If the table doesn't exist, create a new one
             tableElement = new XElement("Table", new XAttribute("tableName", tableName));
@@ -197,7 +200,7 @@ namespace abkr.CatalogManager
             // Iterate through the provided columns
             foreach (var column in columns)
             {
-                Console.WriteLine($"CatalogManager.CreateTable: Adding column '{column.Name}' to table '{tableName}' in iteration {i++}.");
+                logger.LogMessage($"CatalogManager.CreateTable: Adding column '{column.Name}' to table '{tableName}' in iteration {i++}.");
                 XElement attribute = new XElement("Attribute");
                 attribute.SetAttributeValue("attributeName", column.Name);
 
@@ -214,8 +217,8 @@ namespace abkr.CatalogManager
                 {
                     attribute.SetAttributeValue("isPrimaryKey", "true");
                     attribute.SetAttributeValue("isUnique", "true");
-                    Console.WriteLine($"Primary key attribute added for column: {column.Name}");
-                    Console.WriteLine($"Unique key attribute added for primary key: {column.Name}");
+                    logger.LogMessage($"Primary key attribute added for column: {column.Name}");
+                    logger.LogMessage($"Unique key attribute added for primary key: {column.Name}");
                 }
 
                 // Check if the column is a foreign key
@@ -225,6 +228,8 @@ namespace abkr.CatalogManager
 
                     string foreignTable = column.ForeignKeyReference.ReferencedTable;
                     string foreignColumn = column.ForeignKeyReference.ReferencedColumn;
+
+                    logger.LogMessage($"Foreign key attribute added from column: {foreignColumn} in Table: {foreignTable}");
 
                     // Check if the referenced column in the foreign table is unique
                     if (!IsForeignKeyUnique(databaseName, foreignTable, foreignColumn))
@@ -244,21 +249,21 @@ namespace abkr.CatalogManager
 
 
                     attribute.SetAttributeValue("isForeignKey", "true");
-                    attribute.SetAttributeValue("references", column.ForeignKeyReference.ToString());
-                    Console.WriteLine($"Foreign key attribute added for column: {column.Name}");
+                    attribute.SetAttributeValue("references", $"{databaseName}.{foreignTable}({foreignColumn})");
+                    logger.LogMessage($"Foreign key attribute added for column: {column.Name}");
                 }
 
                 // Check if the column is a unique key
                 if (column.IsUnique)
                 {
                     attribute.SetAttributeValue("isUnique", "true");
-                    Console.WriteLine($"Unique key attribute added for column: {column.Name}");
+                    logger.LogMessage($"Unique key attribute added for column: {column.Name}");
                 }
 
                 structureElement.Add(attribute);
             }
 
-            Console.WriteLine("CatalogManager.CreateTable: Adding primary key element.");
+            logger.LogMessage("CatalogManager.CreateTable: Adding primary key element.");
 
             if (string.IsNullOrEmpty(primaryKeyColumn))
             {
@@ -270,7 +275,7 @@ namespace abkr.CatalogManager
             tableElement.Add(primaryKeyElement); // Add primary key element to table
             databaseElement.Add(tableElement);
 
-            Console.WriteLine("CatalogManager.CreateTable: Saving metadata.");
+            logger.LogMessage("CatalogManager.CreateTable: Saving metadata.");
 
             SaveMetadata(metadata);
         }

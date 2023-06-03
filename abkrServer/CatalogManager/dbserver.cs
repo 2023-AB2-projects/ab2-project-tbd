@@ -29,7 +29,7 @@ namespace abkr.CatalogManager
                 File.WriteAllText(metadataFilePath, emptyMetadata.ToString() + "\n");
             }
 
-            _catalogManager = new CatalogManager(metadataFilePath);
+            _catalogManager = new CatalogManager(metadataFilePath, logger);
         }
 
         public static Task ExecuteStatementAsync(string sql)

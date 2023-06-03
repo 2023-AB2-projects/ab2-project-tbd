@@ -87,15 +87,38 @@ namespace abkr.CatalogManager
                     if (isForeignKey)
                     {
                         var attributeName = attributeElement.Attribute("attributeName")?.Value;
+
+                        logger.LogMessage($"Found foreign key {attributeName} in table {tableName}");
+
                         var references = attributeElement.Attribute("references")?.Value;
+
+                        logger.LogMessage($"References: {references}");
+
                         var isUnique = bool.Parse(attributeElement.Attribute("isUnique")?.Value ?? "false");
+
+                        logger.LogMessage($"Is unique: {isUnique}");
+
                         if (!string.IsNullOrEmpty(attributeName) && !string.IsNullOrEmpty(references))
                         {
                             // Assumes the references string is in format "referencedTable:referencedColumn"
-                            var splitReferences = references.Split(':');
+                            var splitReferences = references.Split('(');
                             if (splitReferences.Length == 2)
                             {
-                                var foreignKey = new ForeignKey(tableName, attributeName, splitReferences[0], splitReferences[1], isUnique);
+                                var referencedTable = splitReferences[0].Split('.')[1];
+                                var referencedColumn = splitReferences[1].Split(')')[0];
+                                var pk = GetPrimaryKeyColumn(databaseName, referencedTable);
+                                bool ispk = false;
+                                if(pk == referencedColumn)
+                                {
+                                    ispk= true;
+                                }
+                                else
+                                {
+                                    ispk = false;
+                                }
+                                (string, bool) t = (referencedColumn, ispk);
+                                
+                                var foreignKey = new ForeignKey(tableName, attributeName, referencedTable, t , isUnique);
                                 foreignKeys.Add(foreignKey);
                             }
                         }
@@ -224,7 +247,7 @@ namespace abkr.CatalogManager
                     // Split the ForeignKeyReference to get the table and column 
 
                     string foreignTable = column.ForeignKeyReference.ReferencedTable;
-                    string foreignColumn = column.ForeignKeyReference.ReferencedColumn;
+                    string foreignColumn = column.ForeignKeyReference.ReferencedColumn.Item1;
 
                     logger.LogMessage($"Foreign key attribute added from column: {foreignColumn} in Table: {foreignTable}");
 

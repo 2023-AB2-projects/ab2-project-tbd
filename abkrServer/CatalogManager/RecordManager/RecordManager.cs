@@ -110,78 +110,96 @@ namespace abkr.CatalogManager
         {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
 
-            // Check if the unique constraint is violated
-            if (CheckUnique(databaseName, tableName, row, _client, _catalogManager))
+            CheckUniqueAlias(databaseName, tableName, row, _client, _catalogManager);
+            CheckForeignKeys(databaseName, tableName, row, _client, _catalogManager);
+
+            InsertIntoMainCollection(databaseName, tableName, row, collection);
+            InsertIntoIndexCollections(databaseName, tableName, row, _client, _catalogManager);
+        }
+
+        private static void CheckUniqueAlias(string databaseName, string tableName, Dictionary<string, object> row, IMongoClient _client, CatalogManager _catalogManager)
+        {
+            if (!CheckUnique(databaseName, tableName, row, _client, _catalogManager))
             {
                 throw new Exception($"Insert failed. Unique index constraint violated in table '{tableName}' in database '{databaseName}'.");
             }
+        }
 
-            // Check if the foreign key constraint is violated
+        private static void CheckForeignKeys(string databaseName, string tableName, Dictionary<string, object> row, IMongoClient _client, CatalogManager _catalogManager)
+        {
             var foreignKeys = _catalogManager.GetForeignKeyReferences(databaseName, tableName);
+
             foreach (var foreignKey in foreignKeys)
             {
-                var referencedTable = foreignKey.ReferencedTable;
-                var referencedColumn = foreignKey.ReferencedColumn;
-                var foreignKeyValue = row[foreignKey.ColumnName];
-
-                var referencedCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(referencedTable+"_index");
-                var filter = Builders<BsonDocument>.Filter.Eq("_id", referencedColumn);
-                var docs = referencedCollection.Find(filter);
-                if(docs.CountDocuments() <= 0 || docs.CountDocuments() > 1)
-                {
-                    throw new Exception($"RecordManager.Insert failed. Foreign key constraint violated on column '{foreignKey.ColumnName}' in table '{tableName}' in database '{databaseName}'. Referenced record corrupted in table '{referencedTable}' for column '{referencedColumn}'.");
-                }
-                var result = docs.FirstOrDefault().Values.ToString().Split('#');
-                if (!result.Contains(foreignKeyValue.ToString()))
-                {
-                    throw new Exception($"RecordManager.Insert failed. Foreign key constraint violated on column '{foreignKey.ColumnName}' in table '{tableName}' in database '{databaseName}'. Referenced record not found in table '{referencedTable}' for column '{referencedColumn}'.");
-                }
+                CheckForeignKey(databaseName, foreignKey, row, _client);
             }
+        }
 
-            // Insert data into the main collection
+        private static void CheckForeignKey(string databaseName, ForeignKey foreignKey, Dictionary<string, object> row, IMongoClient _client)
+        {
+            var referencedTable = foreignKey.ReferencedTable;
+            var foreignKeyValue = row[foreignKey.ColumnName];
+
+            var referencedCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(referencedTable);
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", foreignKeyValue);
+            var count = referencedCollection.CountDocuments(filter);
+
+            if (count == 0)
+            {
+                throw new Exception($"RecordManager.Insert failed. Foreign key constraint violated on column '{foreignKey.ColumnName}' in table '{foreignKey.TableName}' in database '{databaseName}'. Referenced record not found in table '{referencedTable}' for column '{foreignKey.ReferencedColumn}'.");
+            }
+        }
+
+        private static void InsertIntoMainCollection(string databaseName, string tableName, Dictionary<string, object> row, IMongoCollection<BsonDocument> collection)
+        {
+            var document = CreateDocumentFromRow(row);
+            collection.InsertOne(document);
+        }
+
+        private static BsonDocument CreateDocumentFromRow(Dictionary<string, object> row)
+        {
             var document = new BsonDocument();
             var idKey = row.Keys.First();
             document["_id"] = Convert.ToInt32(row[idKey]);
             var otherValues = row.Where(kvp => kvp.Key != idKey).Select(kvp => kvp.Value.ToString());
             document["value"] = string.Join("#", otherValues);
-            collection.InsertOne(document);
+            return document;
+        }
 
-            // Insert data into index collections
+        private static void InsertIntoIndexCollections(string databaseName, string tableName, Dictionary<string, object> row, IMongoClient _client, CatalogManager _catalogManager)
+        {
             var indexes = _catalogManager.GetIndexes(databaseName, tableName);
+
             foreach (var index in indexes)
             {
-                // Skip if the index is the primary key, as MongoDB automatically creates an index for it
-                if (index.Name == idKey)
-                    continue;
-
-                var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
-
-                var indexDocument = new BsonDocument();
-                indexDocument["_id"] = index.Name;
-
-                var filter = Builders<BsonDocument>.Filter.Eq("_id", index.Name);
-
-                var prevDoc = indexCollection.Find(filter).FirstOrDefault();
-
-                var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
-                var indexValue = string.Join("&", indexValues);
-
-                if (prevDoc == null)
-                {
-                    // This is the first document for this index
-                    indexDocument["value"] = indexValue;
-                }
-                else
-                {
-                    // This is not the first document, concatenate the new values
-                    indexDocument["value"] = prevDoc.GetValue("value") + "#" + indexValue;
-                }
-
-
-                var replaceFilter = Builders<BsonDocument>.Filter.Eq("_id", indexDocument["_id"]);
-                indexCollection.ReplaceOne(replaceFilter, indexDocument, new ReplaceOptions { IsUpsert = true });
+                InsertIntoIndexCollection(databaseName, tableName, row, _client, index);
             }
         }
+
+        private static void InsertIntoIndexCollection(string databaseName, string tableName, Dictionary<string, object> row, IMongoClient _client, Index index)
+        {
+            if (index.Name == row.Keys.First())
+            {
+                return;
+            }
+
+            var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
+            var indexDocument = new BsonDocument();
+            indexDocument["_id"] = index.Name;
+
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", index.Name);
+            var prevDoc = indexCollection.Find(filter).FirstOrDefault();
+
+            var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
+            var indexValue = string.Join("&", indexValues);
+
+            indexDocument["value"] = prevDoc != null
+                ? prevDoc.GetValue("value") + "#" + indexValue
+                : indexValue;
+
+            indexCollection.ReplaceOne(filter, indexDocument, new ReplaceOptions { IsUpsert = true });
+        }
+
 
         public static bool CheckUnique(string databaseName, string tableName, Dictionary<string, object> row, IMongoClient _client, CatalogManager _catalogManager)
         {
@@ -194,30 +212,19 @@ namespace abkr.CatalogManager
                 {
                     var filter = Builders<BsonDocument>.Filter.Eq("_id", index.Name);
                     var indexDocument = indexCollection.Find(filter).FirstOrDefault();
-                    if (indexDocument != null)
+
+                    var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
+                    var indexValue = string.Join("&", indexValues);
+
+                    if (indexDocument != null && indexDocument.GetValue("value").AsString.Contains(indexValue))
                     {
-                        var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
-                        var indexValue = string.Join("&", indexValues);
-                        if (indexDocument.GetValue("value").AsString.Contains(indexValue))
-                        {
-                            return true;
-                        }
+                        return false; // uniqueness constraint is violated
                     }
                 }
-                else
-                {
-                    continue;
-                }
-                //var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
-                //var indexValue = string.Join("&", indexValues);
-                //if (indexDocument.GetValue("value").AsString.Contains(indexValue))
-                //{
-                //    return true;
-                //}
             }
-            return false;
-        }
 
+            return true; // no uniqueness constraint is violated
+        }
 
 
         //public static void Insert(string databaseName, string tableName, Dictionary<string, object> row, IMongoClient _client, CatalogManager _catalogManager)

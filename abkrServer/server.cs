@@ -31,12 +31,12 @@ class Server
 
 
         // Initialize the DatabaseServer instance
-        var databaseServer = new DatabaseServer("mongodb://localhost:27017/", "C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/Parser/example.xml");  
+        var databaseServer = new DatabaseServer("mongodb://localhost:27017/", "C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/Parser/example.xml", logger);  
 
         while (!cts.Token.IsCancellationRequested)
         {
             // Wait for a client to connect
-            TcpClient client = null; // Store the connected client
+            TcpClient? client = null; // Store the connected client
 
             try
             {

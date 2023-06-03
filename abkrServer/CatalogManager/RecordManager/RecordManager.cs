@@ -6,17 +6,19 @@ using System.Text;
 using System.Threading.Tasks;
 using MongoDB.Bson;
 using abkrServer.CatalogManager.RecordManager;
+using abkr.ServerLogger;
 
 namespace abkr.CatalogManager
 {
     internal class RecordManager
     {
+        public static Logger logger = new Logger("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/server_logger.txt");
 
 
         public static void CreateDatabase(string databaseName, IMongoClient _client, CatalogManager _catalogManager)
         {
             _client?.GetDatabase(databaseName);
-            Console.WriteLine($"Creating database: {databaseName}");
+            logger.LogMessage($"Creating database: {databaseName}");
             _catalogManager?.CreateDatabase(databaseName);
         }
 
@@ -43,7 +45,7 @@ namespace abkr.CatalogManager
 
 
             database?.CreateCollection(tableName);
-            Console.WriteLine($"Creating table: {databaseName}.{tableName}");
+            logger.LogMessage($"Creating table: {databaseName}.{tableName}");
 
             //var columnsDictionary = columns?.ToDictionary(column => column.Name, column => column.Type);
             var primaryKeyColumn = columns.FirstOrDefault(column => column.IsPrimaryKey)?.Name
@@ -56,12 +58,12 @@ namespace abkr.CatalogManager
             {
                 if (column.IsUnique && !column.IsPrimaryKey)
                 {
-                    Console.WriteLine("RecordManager: Creating unique index");
+                    logger.LogMessage("RecordManager: Creating unique index");
                     _catalogManager?.CreateIndex(databaseName, tableName, column.Name, new List<string> { column.Name }, true);
                 }
                 else
                 {
-                    Console.WriteLine("RecordManager: Creating nonunique index");
+                    logger.LogMessage("RecordManager: Creating nonunique index");
                     _catalogManager?.CreateIndex(databaseName, tableName, column.Name, new List<string> { column.Name }, false);
                 }
             }
@@ -98,14 +100,14 @@ namespace abkr.CatalogManager
 
         public static void DropDatabase(string databaseName, IMongoClient _client, CatalogManager _catalogManager)
         {
-            Console.WriteLine($"Dropping database: {databaseName}");
+            logger.LogMessage($"Dropping database: {databaseName}");
             _client?.DropDatabase(databaseName);
             _catalogManager?.DropDatabase(databaseName);
         }
 
         public static void DropTable(string databaseName, string tableName, IMongoClient _client, CatalogManager _catalogManager)
         {
-            Console.WriteLine($"Dropping table: {databaseName}.{tableName}");
+            logger.LogMessage($"Dropping table: {databaseName}.{tableName}");
             var database = _client.GetDatabase(databaseName);
             database.DropCollection(tableName);
             database.DropCollection(tableName + "_index");

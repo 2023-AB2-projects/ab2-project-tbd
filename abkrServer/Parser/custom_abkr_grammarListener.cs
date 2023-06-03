@@ -1,5 +1,6 @@
 ﻿using abkr.CatalogManager;
 using abkr.grammarParser;
+using abkr.ServerLogger;
 using Antlr4.Runtime.Misc;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -42,15 +43,18 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public string ForeignColumn { get; private set; }
 
     private CatalogManager CatalogManager { get; set; }
+    private Logger Logger { get; set; }
 
 
 
 
     private readonly XmlDocument metadataXml;
 
-    public MyAbkrGrammarListener(string metadataFilePath)
+    public MyAbkrGrammarListener(string metadataFilePath, CatalogManager catalogManager, Logger logger)
     {
-        CatalogManager = new CatalogManager(metadataFilePath);
+        Logger = logger;
+        CatalogManager = catalogManager;
+        Console.WriteLine("\n"+metadataFilePath+"\n");
         metadataXml = new XmlDocument();
         try
         {
@@ -58,11 +62,11 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         }
         catch (XmlException ex)
         {
-            Console.WriteLine("Invalid XML. Details: " + ex.Message);
+            Logger.LogMessage("Invalid XML. Details: " + ex.Message);
         }
         catch (IOException ex)
         {
-            Console.WriteLine("Problem reading file. Details: " + ex.Message);
+            Logger.LogMessage("Problem reading file. Details: " + ex.Message);
         }
     }
 
@@ -145,7 +149,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         }
     }
 
-    private bool IsPrimaryKey(abkr_grammar.Column_constraintContext constraint)
+    private static bool IsPrimaryKey(abkr_grammar.Column_constraintContext constraint)
     {
         return constraint.PRIMARY() != null;
     }
@@ -156,7 +160,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         UniqueKeyColumns.Add(columnName);
     }
 
-    private bool IsForeignKey(abkr_grammar.Column_constraintContext constraint)
+    private static bool IsForeignKey(abkr_grammar.Column_constraintContext constraint)
     {
         return constraint.FOREIGN() != null && constraint.identifier().Length > 2;
     }
@@ -167,12 +171,13 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         var foreignTable = constraint.identifier()[1].GetText();
         var foreignAlias = constraint.identifier()[2].GetText();
         var isUnique = CatalogManager.IsForeignKeyUnique(databaseName, foreignTable, foreignAlias);
+
         var fk = new ForeignKey(TableName, columnName, foreignTable, foreignAlias, isUnique );
         ForeignKeyColumns.Add(fk);
     }
 
 
-    private bool IsUniqueKey(abkr_grammar.Column_constraintContext constraint)
+    private static bool IsUniqueKey(abkr_grammar.Column_constraintContext constraint)
     {
         return constraint.UNIQUE() != null;
     }
@@ -205,8 +210,8 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
             Columns[context.identifier_list().identifier(i).GetText()] = context.value_list().value(i).GetText();
         }
 
-        Console.WriteLine("[Insert] Columns: " + string.Join(", ", Columns.Keys));
-        Console.WriteLine("[Insert] Values: " + string.Join(", ", Columns.Values));
+        Logger.LogMessage("[Insert] Columns: " + string.Join(", ", Columns.Keys));
+        Logger.LogMessage("[Insert] Values: " + string.Join(", ", Columns.Values));
     }
 
 

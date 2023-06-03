@@ -5,20 +5,21 @@ using Antlr4.Runtime.Tree;
 using System.Xml.Linq;
 using System.Diagnostics.CodeAnalysis;
 using abkrServer.CatalogManager.RecordManager;
+using abkr.ServerLogger;
 
 namespace abkr.CatalogManager
 {
 
     public class DatabaseServer
     {
-        [NotNull] static private IMongoClient _client;
-        [NotNull] static public IMongoClient MongoClient => _client;
+        static private IMongoClient _client;
+        static public IMongoClient MongoClient => _client;
+        static private CatalogManager _catalogManager;
+        static private Logger logger;
 
-        [NotNull] static private CatalogManager _catalogManager;
-
-
-        public DatabaseServer(string connectionString, string metadataFileName)
+        public DatabaseServer(string connectionString, string metadataFileName, Logger logger)
         {
+            DatabaseServer.logger = logger;
             _client = new MongoClient(connectionString);
             string metadataFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, metadataFileName);
 
@@ -33,7 +34,7 @@ namespace abkr.CatalogManager
 
         public static Task ExecuteStatementAsync(string sql)
         {
-            Console.WriteLine("ExecuteStatementAsync called");
+            logger.LogMessage("ExecuteStatementAsync called");
 
             // Create a new instance of the ANTLR input stream with the SQL statement
             var inputStream = new AntlrInputStream(sql);
@@ -50,7 +51,7 @@ namespace abkr.CatalogManager
             // Invoke the parser's entry rule (statement) and get the parse tree
             var parseTree = parser.statement();
 
-            var listener = new MyAbkrGrammarListener("C:/Users/bfcsa/source/repos/abkr/abkrServer/Parser/example.xml");
+            var listener = new MyAbkrGrammarListener("C:/Users/bfcsa/source/repos/abkr/abkrServer/Parser/example.xml",_catalogManager, logger);
             ParseTreeWalker.Default.Walk(listener, parseTree);
 
             // Perform actions based on the parsed statement
@@ -70,7 +71,7 @@ namespace abkr.CatalogManager
                     var foreignKeyReference = listener.ForeignKeyColumns.Where(fk => fk.ColumnName == columnName).FirstOrDefault();
                     if (foreignKeyReference != null)
                     {
-                        Console.WriteLine($"DatabaseServer.ExecuteStatement: Column {columnName} is a foreign key reference to {foreignKeyReference}");
+                        logger.LogMessage($"DatabaseServer.ExecuteStatement: Column {columnName} is a foreign key reference to {foreignKeyReference}");
                     }
 
 
@@ -108,9 +109,9 @@ namespace abkr.CatalogManager
                 Dictionary<string, object> rowData = new Dictionary<string, object>();
                 //string? primaryKeyColumn = null;
 
-                Console.WriteLine("Before calling Insert method...");
-                Console.WriteLine("Columns: " + string.Join(", ", listener.Columns.Keys));
-                Console.WriteLine("Values: " + string.Join(", ", listener.Columns.Values));
+                logger.LogMessage("Before calling Insert method...");
+                logger.LogMessage("Columns: " + string.Join(", ", listener.Columns.Keys));
+                logger.LogMessage("Values: " + string.Join(", ", listener.Columns.Values));
 
                 //primaryKeyColumn = _catalogManager?.GetPrimaryKeyColumn(listener.DatabaseName, listener.TableName)
                 //        ?? throw new Exception("ERROR: Primary key not found!");
@@ -121,17 +122,17 @@ namespace abkr.CatalogManager
                     rowData[column.Key] = column.Value;
                 }
 
-                Console.WriteLine("Row data: " + string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}")));
+                logger.LogMessage("Row data: " + string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}")));
 
                 RecordManager.Insert(listener.DatabaseName, listener.TableName, rowData, _client, _catalogManager);
 
-                Console.WriteLine("After calling Insert method...");
+                logger.LogMessage("After calling Insert method...");
 
                 Query(listener.DatabaseName, listener.TableName);
             }
             else if (listener.StatementType == StatementType.Delete)
             {
-                Console.WriteLine($"Deleting row from {listener.DatabaseName}.{listener.TableName}");
+                logger.LogMessage($"Deleting row from {listener.DatabaseName}.{listener.TableName}");
                 PrintAllDocuments(listener.DatabaseName, listener.TableName);
                 RecordManager.Delete(listener.DatabaseName, listener.TableName, listener.DeleteFilter, _client, _catalogManager);
                 PrintAllDocuments(listener.DatabaseName, listener.TableName);
@@ -149,26 +150,26 @@ namespace abkr.CatalogManager
         {
             var databaseList = _client?.ListDatabaseNames().ToList()
                 ?? throw new Exception("No Databases present.");
-            Console.WriteLine("Databases:");
+            logger.LogMessage("Databases:");
             foreach (var databaseName in databaseList)
             {
-                Console.WriteLine(databaseName);
+                logger.LogMessage(databaseName);
             }
         }
 
         public static void Query(string databaseName, string tableName)
         {
-            Console.WriteLine($"Querying {databaseName}.{tableName}");
+            logger.LogMessage($"Querying {databaseName}.{tableName}");
             var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName)
                 ?? throw new Exception("ERROR: Table not found! Null ref");
 
             var filter = Builders<BsonDocument>.Filter.Empty;
             var documents = collection.Find(filter).ToList();
 
-            Console.WriteLine("Results:");
+            logger.LogMessage("Results:");
             foreach (var document in documents)
             {
-                Console.WriteLine(document.ToString());
+                logger.LogMessage(document.ToString());
             }
         }
 
@@ -177,10 +178,10 @@ namespace abkr.CatalogManager
             var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
             var documents = collection.Find(Builders<BsonDocument>.Filter.Empty).ToList();
 
-            Console.WriteLine($"Documents in {databaseName}.{tableName}:");
+            logger.LogMessage($"Documents in {databaseName}.{tableName}:");
             foreach (var document in documents)
             {
-                Console.WriteLine(document);
+                logger.LogMessage(document.AsString);
             }
         }
 
@@ -213,7 +214,7 @@ namespace abkr.CatalogManager
                 {
                     foreach (string column in selectedColumns)
                     {
-                        Console.WriteLine($"{column}: {document[column]}");
+                        logger.LogMessage($"{column}: {document[column]}");
                     }
                 }
                 // If all columns are selected
@@ -221,7 +222,7 @@ namespace abkr.CatalogManager
                 {
                     foreach (BsonElement element in document)
                     {
-                        Console.WriteLine($"{element.Name}: {element.Value}");
+                        logger.LogMessage($"{element.Name}: {element.Value}");
                     }
                 }
             }

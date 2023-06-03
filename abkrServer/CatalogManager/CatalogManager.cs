@@ -174,6 +174,45 @@ namespace abkr.CatalogManager
                 ?? throw new Exception($"ERROR: Primary key column name not found in table {tableName}!");
         }
 
+        public int? GetColumnLineNumber(string databaseName, string tableName, string columnName)
+        {
+            // Load the existing metadata
+            var metadata = LoadMetadata();
+
+            // Ensure the database exists
+            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName)
+                ?? throw new ArgumentException($"Database '{databaseName}' does not exist.");
+
+            // Ensure the table exists
+            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName").Value == tableName)
+                ?? throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
+
+            // Get the structure element
+            var structureElement = tableElement.Element("Structure");
+
+            // If the structure doesn't exist or there are no attributes, return null
+            if (structureElement == null || !structureElement.HasElements)
+            {
+                return null;
+            }
+
+            // Get the list of all attribute elements
+            var attributes = structureElement.Elements("Attribute").ToList();
+
+            // Find the attribute with the given column name and get its line number
+            for (int i = 0; i < attributes.Count; i++)
+            {
+                if (attributes[i].Attribute("attributeName")?.Value == columnName)
+                {
+                    return i + 1;  // return line number starting from 1
+                }
+            }
+
+            // If the column was not found, return null
+            return null;
+        }
+
+
 
         public void CreateTable(
             string databaseName,

@@ -216,7 +216,6 @@ namespace abkr.CatalogManager
         {
             var indexes = _catalogManager.GetIndexes(databaseName, tableName);
             var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
-            logger.LogMessage($"RecordManager.CheckUnique: indexCollection is {indexCollection} for table {tableName}");
 
             foreach (var index in indexes)
             {

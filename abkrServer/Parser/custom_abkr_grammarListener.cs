@@ -21,7 +21,7 @@ public enum StatementType
 
 public class MyAbkrGrammarListener : abkr_grammarBaseListener
 {
-    [NotNull]public StatementType StatementType { get; private set; } = StatementType.Unknown;
+    [NotNull] public StatementType StatementType { get; private set; } = StatementType.Unknown;
     public string? DatabaseName { get; private set; }
     public string? TableName { get; private set; }
     public string? IndexName { get; private set; }
@@ -189,22 +189,15 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         TableName = context.identifier(1).GetText();
 
         Columns.Clear();
-        Values.Clear();
         int valueCount = context.value_list().value().Length;
+        int columnCount = context.identifier_list().identifier().Length;
 
-        int? columnCount = context.identifier_list().identifier().Length;
-        if (columnCount != null && columnCount == valueCount)
-        {
-            for (int i = 0; i < columnCount; i++)
-            {
-                Columns[context.identifier_list().identifier(i).GetText()] = context.value_list().value(i).GetText();
-            }
-        }
-        else
+        if (columnCount != valueCount)
         {
             throw new Exception("Mismatch between column count and value count");
         }
-        for (int i = 0; i < valueCount; i++)
+
+        for (int i = 0; i < columnCount; i++)
         {
             Columns[context.identifier_list().identifier(i).GetText()] = context.value_list().value(i).GetText();
         }
@@ -212,6 +205,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         Console.WriteLine("[Insert] Columns: " + string.Join(", ", Columns.Keys));
         Console.WriteLine("[Insert] Values: " + string.Join(", ", Columns.Values));
     }
+
 
 
     public override void EnterDrop_table_statement(abkr_grammar.Drop_table_statementContext context)
@@ -251,38 +245,28 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         DatabaseName = context.identifier(0).GetText();
         TableName = context.identifier(1).GetText();
 
-        // You get the where clause context here
         var whereClauseContext = context.where_clause();
         if (whereClauseContext != null)
         {
-            // Now you can extract information from the where clause using its context
             var fieldName = whereClauseContext.condition().identifier().GetText();
             var operatorText = whereClauseContext.condition().comparison_operator().GetText();
             var value = ExtractValue(whereClauseContext.condition().value());
 
-            // Based on the operator, you can form the FilterDefinition for delete operation
-            if (operatorText == "EQUALS")
-                DeleteFilter = Builders<BsonDocument>.Filter.Eq(fieldName, value);
-
-            switch (operatorText)
-            {
-                case "EQUALS":
-                    DeleteFilter = Builders<BsonDocument>.Filter.Eq(fieldName, value);
-                    break;
-                case "GREATER_THAN":
-                    DeleteFilter = Builders<BsonDocument>.Filter.Gt(fieldName, value);
-                    break;
-                case "GREATER_EQUALS":
-                    DeleteFilter = Builders<BsonDocument>.Filter.Gte(fieldName, value);
-                    break;
-                case "LESS_THAN":
-                    DeleteFilter = Builders<BsonDocument>.Filter.Lt(fieldName, value);
-                    break;
-                case "LESS_EQUALS":
-                    DeleteFilter = Builders<BsonDocument>.Filter.Lte(fieldName, value);
-                    break;
-            }
+            DeleteFilter = CreateFilter(fieldName, operatorText, value);
         }
+    }
+
+    private FilterDefinition<BsonDocument> CreateFilter(string fieldName, string operatorText, object value)
+    {
+        return operatorText switch
+        {
+            "EQUALS" => Builders<BsonDocument>.Filter.Eq(fieldName, value),
+            "GREATER_THAN" => Builders<BsonDocument>.Filter.Gt(fieldName, value),
+            "GREATER_EQUALS" => Builders<BsonDocument>.Filter.Gte(fieldName, value),
+            "LESS_THAN" => Builders<BsonDocument>.Filter.Lt(fieldName, value),
+            "LESS_EQUALS" => Builders<BsonDocument>.Filter.Lte(fieldName, value),
+            _ => throw new InvalidOperationException($"Unknown operator '{operatorText}'")
+        };
     }
 
 
@@ -293,52 +277,29 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         DatabaseName = context.identifier(0).GetText();
         TableName = context.identifier(1).GetText();
 
-        // Handle column list
         var columnListContext = context.column_list();
         if (columnListContext.ASTERISK() != null)
         {
-            // Select all columns
-            SelectedColumns = new string[0];  // Or any indicator of "all columns"
+            SelectedColumns = new string[0];
         }
         else if (columnListContext.identifier_list() != null)
         {
-            var columnIdentifiers = columnListContext.identifier_list().identifier();
-            SelectedColumns = columnIdentifiers.Select(c => c.GetText()).ToArray();
+            SelectedColumns = columnListContext.identifier_list().identifier().Select(c => c.GetText()).ToArray();
         }
 
-        // You get the where clause context here
         var whereClauseContext = context.where_clause();
         if (whereClauseContext != null)
         {
-            // Now you can extract information from the where clause using its context
             var fieldName = whereClauseContext.condition().identifier().GetText();
             var operatorText = whereClauseContext.condition().comparison_operator().GetText();
             var value = ExtractValue(whereClauseContext.condition().value());
 
-            // Based on the operator, you can form the FilterDefinition for select 
-
-            switch (operatorText)
-            {
-                case "EQUALS":
-                    SelectFilter = Builders<BsonDocument>.Filter.Eq(fieldName, value);
-                    break;
-                case "GREATER_THAN":
-                    SelectFilter = Builders<BsonDocument>.Filter.Gt(fieldName, value);
-                    break;
-                case "GREATER_EQUALS":
-                    SelectFilter = Builders<BsonDocument>.Filter.Gte(fieldName, value);
-                    break;
-                case "LESS_THAN":
-                    SelectFilter = Builders<BsonDocument>.Filter.Lt(fieldName, value);
-                    break;
-                case "LESS_EQUALS":
-                    SelectFilter = Builders<BsonDocument>.Filter.Lte(fieldName, value);
-                    break;
-            }
+            SelectFilter = CreateFilter(fieldName, operatorText, value);
         }
     }
 
-    private object ExtractValue(abkr_grammar.ValueContext context)
+
+    private static object ExtractValue(abkr_grammar.ValueContext context)
     {
         // You extract the value here based on its type
         if (context.NUMBER() != null)
@@ -357,34 +318,20 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         var comparisonOperator = context.condition().comparison_operator().GetText();
         var value = GetValueFromValue(context.condition().value());
 
-        var builder = Builders<BsonDocument>.Filter;
-
         if (identifier == GetPrimaryKeyColumnName(DatabaseName, TableName))
         {
             identifier = "_id";
         }
 
-        switch (comparisonOperator)
+        var filter = CreateFilter(identifier, comparisonOperator, value);
+
+        switch (StatementType)
         {
-            case "EQUALS":
-                DeleteFilter = builder.Eq(identifier, value);
-                SelectFilter = builder.Eq(identifier, value);
+            case StatementType.Delete:
+                DeleteFilter = filter;
                 break;
-            case "GREATER_THAN":
-                DeleteFilter = builder.Gt(identifier, value);
-                SelectFilter = builder.Gt(identifier, value);
-                break;
-            case "GREATER_EQUALS":
-                DeleteFilter = builder.Gte(identifier, value);
-                SelectFilter = builder.Gte(identifier, value);
-                break;
-            case "LESS_THAN":
-                DeleteFilter = builder.Lt(identifier, value);
-                SelectFilter = builder.Lt(identifier, value);
-                break;
-            case "LESS_EQUALS":
-                DeleteFilter = builder.Lte(identifier, value);
-                SelectFilter = builder.Lte(identifier, value);
+            case StatementType.Select:
+                SelectFilter = filter;
                 break;
         }
     }
@@ -392,35 +339,24 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
     private string GetPrimaryKeyColumnName(string databaseName, string tableName)
     {
-        XmlNode? tableNode = metadataXml.SelectSingleNode($"//DataBase[@dataBaseName='{databaseName}']/Table[@tableName='{tableName}']");
-        if (tableNode != null)
-        {
-            XmlNode? primaryKeyNode = tableNode.SelectSingleNode("primaryKey");
-            if (primaryKeyNode != null)
-            {
-                return primaryKeyNode.Attributes["name"].Value;
-            }
-        }
+        var tableNode = metadataXml.SelectSingleNode($"//DataBase[@dataBaseName='{databaseName}']/Table[@tableName='{tableName}']")
+                       ?? throw new InvalidOperationException($"Table {tableName} not found in database {databaseName}");
 
-        return null;
+        var primaryKeyNode = tableNode.SelectSingleNode("primaryKey")
+                             ?? throw new InvalidOperationException($"No primary key found for table {tableName}");
+
+        return primaryKeyNode.Attributes["name"].Value;
     }
 
-
-
-
-    private object GetValueFromValue(abkr_grammar.ValueContext context)
+    private  object GetValueFromValue(abkr_grammar.ValueContext context)
     {
-        if (context.STRING() != null)
-        {
-            return context.STRING().GetText().Trim('\'');
-        }
-        else if (context.NUMBER() != null)
-        {
-            return int.Parse(context.NUMBER().GetText());
-        }
-
-        return null;
+        return context.STRING() != null
+            ? context.STRING().GetText().Trim('\'')
+            : context.NUMBER() != null
+                ? int.Parse(context.NUMBER().GetText())
+                : null;
     }
+
 
 }
 

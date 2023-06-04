@@ -240,17 +240,20 @@ namespace abkr.CatalogManager
             return true; // no uniqueness constraint is violated
         }
 
-        public static void Delete(string databaseName, string tableName, Dictionary<string, object> conditions, Dictionary<string, string> operators, IMongoClient _client, CatalogManager _catalogManager)
+        public static void Delete(string databaseName, string tableName, List<FilterCondition> conditions, IMongoClient _client, CatalogManager _catalogManager)
         {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
             var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
             var primaryKey = _catalogManager.GetPrimaryKeyColumn(databaseName, tableName);
 
+            logger.LogMessage($"RecordManager.Delete: Deleting from table {tableName} in database {databaseName} with conditions {string.Join(",", conditions.Select(c=>$"{c.ColumnName} {c.Operator} {c.Value}"))}");
+
             // Step 1: Retrieve documents from the main collection that satisfy the conditions
-            var documents = GetDocumentsSatisfyingConditions(databaseName, tableName, conditions, operators, _client, _catalogManager);
+            var documents = GetDocumentsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
 
             // Step 2: Check foreign key constraints
-            if (conditions.ContainsKey(primaryKey))
+            var primaryKeyCondition = conditions.FirstOrDefault(c => c.ColumnName == primaryKey);
+            if (primaryKeyCondition != null)
             {
                 var foreignKeyReferences = _catalogManager.GetForeignKeyReferences(databaseName, tableName);
                 foreach (var reference in foreignKeyReferences)
@@ -271,6 +274,8 @@ namespace abkr.CatalogManager
             // Step 3: Delete records from main and index collections
             foreach (var document in documents)
             {
+                logger.LogMessage($"RecordManager.Delete: Deleting document {document} from table {tableName} in database {databaseName}");
+
                 // Delete from main collection
                 var filter = Builders<BsonDocument>.Filter.Eq("_id", document["_id"]);
                 collection.DeleteOne(filter);
@@ -294,36 +299,45 @@ namespace abkr.CatalogManager
                 }
             }
         }
-        private static bool SatisfiesConditions(Dictionary<string, object> row, Dictionary<string, object> conditions, Dictionary<string, string> operators)
+        private static bool SatisfiesConditions(Dictionary<string, object> row, List<FilterCondition> conditions)
         {
             foreach (var condition in conditions)
             {
-                if (!row.ContainsKey(condition.Key))
+                // Check if the row has the column specified in the condition
+                if (!row.ContainsKey(condition.ColumnName))
                 {
                     return false;
                 }
-                var op = operators[condition.Key];
-                var filteredValues = FilteredValues(op, condition.Value, new[] { row[condition.Key].ToString() });
+
+                // Get the operator and value from the condition
+                var op = condition.Operator;
+                var columnValue = condition.Value;
+
+                // Use the FilteredValues method to determine if the row satisfies the condition
+                var filteredValues = FilteredValues(op, columnValue, new[] { row[condition.ColumnName].ToString() });
                 if (!filteredValues.Any())
                 {
                     return false;
                 }
             }
+
             return true;
         }
 
 
         // Function to retrieve documents that satisfy conditions
-        private static List<BsonDocument> GetDocumentsSatisfyingConditions(string databaseName, string tableName, Dictionary<string, object> conditions, Dictionary<string, string> operators, IMongoClient _client, CatalogManager _catalogManager)
-        {
+        private static List<BsonDocument> GetDocumentsSatisfyingConditions(string databaseName, string tableName, List<FilterCondition> conditions, IMongoClient _client, CatalogManager _catalogManager)
+        { 
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
             var documents = collection.Find(new BsonDocument()).ToList();
 
             var result = new List<BsonDocument>();
             foreach (var document in documents)
             {
+                logger.LogMessage($"RecordManager.GetDocumentsSatisfyingConditions: Checking document {document.ToJson()} from table {tableName} in database {databaseName}");
+
                 var row = ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
-                if (SatisfiesConditions(row, conditions, operators))
+                if (SatisfiesConditions(row, conditions))
                 {
                     result.Add(document);
                 }
@@ -341,31 +355,26 @@ namespace abkr.CatalogManager
             var columns = catalogManager.GetColumnNames(databasName, tableName);
             logger.LogMessage($"RecordManager.ConvertDocumentToRow: columns are {columns}");
 
+            var pk = catalogManager.GetPrimaryKeyColumn(databasName, tableName);
+
             var i = 0;
             foreach ( var column in columns)
             {
+                if (column == pk)
+                {
+                    continue;
+                }
                 row[column] = values[i++];
             }
 
             return row;
         }
 
-        // Function to check if a row satisfies conditions
-        private static bool SatisfiesConditions(Dictionary<string, object> row, Dictionary<string, object> conditions)
-        {
-            foreach (var condition in conditions)
-            {
-                if (!row.ContainsKey(condition.Key) || row[condition.Key].ToString() != condition.Value.ToString())
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
-
         // Function to check if a row violates a foreign key constraint
         private static bool CheckForeignKeyForDelete(string databaseName, ForeignKey reference, Dictionary<string, object> row, IMongoClient _client)
         {
+            logger.LogMessage($"RecordManager.CheckForeignKeyForDelete: Checking foreign key constraint {reference.ColumnName} int tavle {reference.TableName} referencing {reference.ReferencedColumn} in table {reference.ReferencedTable} for row {string.Join(",", row)}");
+
             if (!row.ContainsKey(reference.ColumnName))
             {
                 return true;
@@ -381,23 +390,18 @@ namespace abkr.CatalogManager
 
         private static IEnumerable<string> FilteredValues(string op, object columnValue, string[] values)
         {
-            switch (op)
+            logger.LogMessage($"RecordManager.FilteredValues: Filtering values {string.Join(",", values)} for operator {op} and column value {columnValue}");
+
+            return op switch
             {
                 //EQUALS | GREATER_THAN | GREATER_EQUALS | LESS_THAN | LESS_EQUALS;
-
-                case "EQUALS":
-                    return values.Where(v=> v==columnValue.ToString());
-                case "GREATER_THAN":
-                    return values.Where(v => Convert.ToInt32(v) > Convert.ToInt32(columnValue.ToString()));
-                case "GREATER_EQUALS":
-                    return values.Where(v => Convert.ToInt32(v) >= Convert.ToInt32(columnValue.ToString()));
-                case "LESS_THAN":
-                    return values.Where(v => Convert.ToInt32(v) < Convert.ToInt32(columnValue.ToString()));
-                case "LESS_EQUALS":
-                    return values.Where(v => Convert.ToInt32(v) <= Convert.ToInt32(columnValue.ToString()));
-                default:
-                    throw new ArgumentException($"Unsupported operator: {op}");
-            }
+                "=" => values.Where(v => v == columnValue.ToString()),
+                ">" => values.Where(v => Convert.ToInt32(v) > Convert.ToInt32(columnValue.ToString())),
+                ">=" => values.Where(v => Convert.ToInt32(v) >= Convert.ToInt32(columnValue.ToString())),
+                "<" => values.Where(v => Convert.ToInt32(v) < Convert.ToInt32(columnValue.ToString())),
+                "<=" => values.Where(v => Convert.ToInt32(v) <= Convert.ToInt32(columnValue.ToString())),
+                _ => throw new ArgumentException($"Unsupported operator: {op}"),
+            };
         }
 
     }

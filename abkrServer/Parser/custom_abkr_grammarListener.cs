@@ -282,7 +282,8 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     {
         var columnName = context.identifier().GetText();
         var op = context.comparison_operator().GetText();
-        var value = ExtractValue(context.value());
+        var value = ExtractValue(context.value())
+            ?? throw new NullReferenceException();
 
         Conditions.Add(new FilterCondition(columnName, op, value.ToString()));
     }
@@ -320,27 +321,4 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         // Add cases for other types as well
         return null;
     }
-
-
-    private string GetPrimaryKeyColumnName(string databaseName, string tableName)
-    {
-        var tableNode = metadataXml.SelectSingleNode($"//DataBase[@dataBaseName='{databaseName}']/Table[@tableName='{tableName}']")
-                       ?? throw new InvalidOperationException($"Table {tableName} not found in database {databaseName}");
-
-        var primaryKeyNode = tableNode.SelectSingleNode("primaryKey")
-                             ?? throw new InvalidOperationException($"No primary key found for table {tableName}");
-
-        return primaryKeyNode.Attributes["name"].Value;
-    }
-
-    private  object GetValueFromValue(abkr_grammar.ValueContext context)
-    {
-        return context.STRING() != null
-            ? context.STRING().GetText().Trim('\'')
-            : context.NUMBER() != null
-                ? int.Parse(context.NUMBER().GetText())
-                : null;
-    }
-
-
 }

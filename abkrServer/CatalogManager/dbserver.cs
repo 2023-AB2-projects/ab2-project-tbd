@@ -182,7 +182,7 @@ namespace abkr.CatalogManager
             logger.LogMessage($"Documents in {databaseName}.{tableName}:");
             foreach (var document in documents)
             {
-                logger.LogMessage(document.AsString);
+                logger.LogMessage(document.ToString());
             }
         }
 

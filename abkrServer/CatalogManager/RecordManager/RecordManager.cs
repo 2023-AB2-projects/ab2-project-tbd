@@ -271,33 +271,56 @@ namespace abkr.CatalogManager
                 }
             }
 
+            logger.LogMessage($"RecordManager.Delete: Deleting documents {string.Join(",", documents)}!!! from table {tableName} in database {databaseName}");
+
             // Step 3: Delete records from main and index collections
             foreach (var document in documents)
             {
-                logger.LogMessage($"RecordManager.Delete: Deleting document {document} from table {tableName} in database {databaseName}");
-
-                // Delete from main collection
-                var filter = Builders<BsonDocument>.Filter.Eq("_id", document["_id"]);
-                collection.DeleteOne(filter);
-
-                // Delete from index collections
-                var row = ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
-                var indexes = _catalogManager.GetIndexes(databaseName, tableName);
-                foreach (var index in indexes)
+                if(primaryKeyCondition != null)
                 {
-                    var indexDocumentFilter = Builders<BsonDocument>.Filter.Eq("_id", index.Name);
-                    var indexDocument = indexCollection.Find(indexDocumentFilter).FirstOrDefault();
-                    if (indexDocument != null)
-                    {
-                        var indexValues = indexDocument["value"].AsString.Split('#').ToList();
-                        var rowIndexValues = index.Columns.Select(columnName => row[columnName].ToString());
-                        var rowIndexValue = string.Join("&", rowIndexValues);
-                        indexValues.Remove(rowIndexValue);
-                        indexDocument["value"] = string.Join("#", indexValues);
-                        indexCollection.ReplaceOne(indexDocumentFilter, indexDocument);
-                    }
+                    DeleteOnPrimaryKey(databaseName, tableName, _client, collection, document, _catalogManager);
+                    primaryKeyCondition = null;
+                }
+                else
+                {
+                    DeleteOnNonPrimaryKey(databaseName, tableName, conditions, _client, collection, document, indexCollection, _catalogManager);
+                }
+                logger.LogMessage($"RecordManager.Delete: Deleted document {document} from table {tableName} in database {databaseName}");
+            }
+        }
+
+        private static void DeleteOnPrimaryKey(string databaseName, string tableName, IMongoClient _client, IMongoCollection<BsonDocument> collection, BsonDocument doc,CatalogManager catalogManager)
+        {
+            // Delete from main collection
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", doc["_id"]);
+            logger.LogMessage($"RecordManager.DeleteOnPrimaryKey: Deleted from main collection: {collection.DeleteOne(filter)}");
+
+            // Delete from index collections
+            var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
+            var row = ConvertDocumentToRow(doc, catalogManager, databaseName, tableName);
+            var indexes = catalogManager.GetIndexes(databaseName, tableName);
+            foreach (var index in indexes)
+            {
+                var indexDocumentFilter = Builders<BsonDocument>.Filter.Eq("_id", index.Name);
+                var indexDocument = indexCollection.Find(indexDocumentFilter).FirstOrDefault();
+                if (indexDocument != null)
+                {
+                    var indexValues = indexDocument["value"].AsString.Split('#').ToList();
+                    var rowIndexValues = index.Columns.Select(columnName => row[columnName].ToString());
+                    var rowIndexValue = string.Join("&", rowIndexValues);
+                    indexValues.Remove(rowIndexValue);
+                    indexDocument["value"] = string.Join("#", indexValues);
+                    indexCollection.ReplaceOne(indexDocumentFilter, indexDocument, new ReplaceOptions { IsUpsert = true });
+                }
+                else
+                {
+                    throw new Exception($"RecordManager.DeleteOnPriamryKey: Delete failed. Index document not found for index {index.Name} in table {tableName} in database {databaseName}.");
                 }
             }
+        }
+        private static void DeleteOnNonPrimaryKey(string databaseName, string tableName, List<FilterCondition> conditions, IMongoClient _client, IMongoCollection<BsonDocument> collection, BsonDocument doc, IMongoCollection<BsonDocument> indexCollection, CatalogManager _catalogManager)
+        {
+
         }
         private static bool SatisfiesConditions(Dictionary<string, object> row, List<FilterCondition> conditions)
         {
@@ -353,7 +376,7 @@ namespace abkr.CatalogManager
             var values = document["value"].AsString.Split('#');
 
             var columns = catalogManager.GetColumnNames(databasName, tableName);
-            logger.LogMessage($"RecordManager.ConvertDocumentToRow: columns are {columns}");
+            logger.LogMessage($"RecordManager.ConvertDocumentToRow: columns are {columns.Where(c=>c==c)}");
 
             var pk = catalogManager.GetPrimaryKeyColumn(databasName, tableName);
 
@@ -373,7 +396,7 @@ namespace abkr.CatalogManager
         // Function to check if a row violates a foreign key constraint
         private static bool CheckForeignKeyForDelete(string databaseName, ForeignKey reference, Dictionary<string, object> row, IMongoClient _client)
         {
-            logger.LogMessage($"RecordManager.CheckForeignKeyForDelete: Checking foreign key constraint {reference.ColumnName} int tavle {reference.TableName} referencing {reference.ReferencedColumn} in table {reference.ReferencedTable} for row {string.Join(",", row)}");
+            logger.LogMessage($"RecordManager.CheckForeignKeyForDelete: Checking foreign key constraint {reference.ColumnName} in table {reference.TableName} referencing {reference.ReferencedColumn} in table {reference.ReferencedTable} for row {string.Join(",", row)}");
 
             if (!row.ContainsKey(reference.ColumnName))
             {

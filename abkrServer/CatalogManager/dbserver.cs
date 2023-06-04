@@ -134,9 +134,8 @@ namespace abkr.CatalogManager
             {
                 logger.LogMessage($"Deleting row from {listener.DatabaseName}.{listener.TableName}");
                 PrintAllDocuments(listener.DatabaseName, listener.TableName);
-                var conditions = new Dictionary<string, object>();
-                conditions[listener.ColumnName] = listener.ColumnValue;
-                RecordManager.Delete(listener.DatabaseName, listener.TableName,conditions,listener.Operator, _client, _catalogManager);
+                var conditions = listener.Conditions;
+                RecordManager.Delete(listener.DatabaseName, listener.TableName,conditions, _client, _catalogManager);
                 PrintAllDocuments(listener.DatabaseName, listener.TableName);
             }
             else if (listener.StatementType == StatementType.Select)

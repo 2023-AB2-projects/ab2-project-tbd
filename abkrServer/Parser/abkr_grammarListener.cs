@@ -241,6 +241,42 @@ public interface Iabkr_grammarListener : IParseTreeListener {
 	/// <param name="context">The parse tree.</param>
 	void ExitCondition([NotNull] abkr_grammar.ConditionContext context);
 	/// <summary>
+	/// Enter a parse tree produced by the <c>simpleCondition</c>
+	/// labeled alternative in <see cref="abkr_grammar.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterSimpleCondition([NotNull] abkr_grammar.SimpleConditionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>simpleCondition</c>
+	/// labeled alternative in <see cref="abkr_grammar.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitSimpleCondition([NotNull] abkr_grammar.SimpleConditionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>andExpression</c>
+	/// labeled alternative in <see cref="abkr_grammar.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterAndExpression([NotNull] abkr_grammar.AndExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>andExpression</c>
+	/// labeled alternative in <see cref="abkr_grammar.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitAndExpression([NotNull] abkr_grammar.AndExpressionContext context);
+	/// <summary>
+	/// Enter a parse tree produced by the <c>parenExpression</c>
+	/// labeled alternative in <see cref="abkr_grammar.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void EnterParenExpression([NotNull] abkr_grammar.ParenExpressionContext context);
+	/// <summary>
+	/// Exit a parse tree produced by the <c>parenExpression</c>
+	/// labeled alternative in <see cref="abkr_grammar.expression"/>.
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	void ExitParenExpression([NotNull] abkr_grammar.ParenExpressionContext context);
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="abkr_grammar.comparison_operator"/>.
 	/// </summary>
 	/// <param name="context">The parse tree.</param>

@@ -288,6 +288,48 @@ public partial class abkr_grammarBaseListener : Iabkr_grammarListener {
 	/// <param name="context">The parse tree.</param>
 	public virtual void ExitCondition([NotNull] abkr_grammar.ConditionContext context) { }
 	/// <summary>
+	/// Enter a parse tree produced by the <c>simpleCondition</c>
+	/// labeled alternative in <see cref="abkr_grammar.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterSimpleCondition([NotNull] abkr_grammar.SimpleConditionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>simpleCondition</c>
+	/// labeled alternative in <see cref="abkr_grammar.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitSimpleCondition([NotNull] abkr_grammar.SimpleConditionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>andExpression</c>
+	/// labeled alternative in <see cref="abkr_grammar.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterAndExpression([NotNull] abkr_grammar.AndExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>andExpression</c>
+	/// labeled alternative in <see cref="abkr_grammar.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitAndExpression([NotNull] abkr_grammar.AndExpressionContext context) { }
+	/// <summary>
+	/// Enter a parse tree produced by the <c>parenExpression</c>
+	/// labeled alternative in <see cref="abkr_grammar.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void EnterParenExpression([NotNull] abkr_grammar.ParenExpressionContext context) { }
+	/// <summary>
+	/// Exit a parse tree produced by the <c>parenExpression</c>
+	/// labeled alternative in <see cref="abkr_grammar.expression"/>.
+	/// <para>The default implementation does nothing.</para>
+	/// </summary>
+	/// <param name="context">The parse tree.</param>
+	public virtual void ExitParenExpression([NotNull] abkr_grammar.ParenExpressionContext context) { }
+	/// <summary>
 	/// Enter a parse tree produced by <see cref="abkr_grammar.comparison_operator"/>.
 	/// <para>The default implementation does nothing.</para>
 	/// </summary>

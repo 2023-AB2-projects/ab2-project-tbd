@@ -284,7 +284,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         var op = context.comparison_operator().GetText();
         var value = ExtractValue(context.value());
 
-        Conditions.Add(new Condition(columnName, op, value.ToString()));
+        Conditions.Add(new FilterCondition(columnName, op, value.ToString()));
     }
 
     public override void EnterAndExpression([NotNull] abkr_grammar.AndExpressionContext context)

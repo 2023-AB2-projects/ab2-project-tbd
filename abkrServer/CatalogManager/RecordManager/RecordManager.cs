@@ -240,117 +240,121 @@ namespace abkr.CatalogManager
             return true; // no uniqueness constraint is violated
         }
 
-
-        //public static void Insert(string databaseName, string tableName, Dictionary<string, object> row, IMongoClient _client, CatalogManager _catalogManager)
-        //{
-        //    var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-        //    var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
-
-        //    var idKey = row.Keys.First();
-        //    var idValue = Convert.ToInt32(row[idKey]);
-
-        //    var indexList = _catalogManager.GetIndexes(databaseName, tableName);
-
-        //    foreach (var index in indexList)
-        //    {
-        //        foreach (var column in index.Columns)
-        //        {
-        //            if (!row.ContainsKey(column))
-        //            {
-        //                throw new ArgumentException($"Column '{column}' is part of index '{index.Name}' but it is not present in the row data.");
-        //            }
-        //        }
-        //    }
-        //    var filter = Builders<BsonDocument>.Filter.Eq("_id", Convert.ToInt32(row[indexList.FirstOrDefault(index => index.IsUnique).Columns[0]]));
-        //    var existingDocument = collection.Find(filter);
-        //    var frequency= new Dictionary<string, int>();
-
-        //    foreach (var kvp in existingDocument.ToList())
-        //    {
-
-        //        var values=kvp.Values.ToList();
-        //        foreach(var value in values)
-        //        {
-        //            if (frequency.ContainsKey(value.ToString()))
-        //            {
-        //                frequency[value.ToString()]++;
-        //            }
-        //            else
-        //            {
-        //                frequency[value.ToString()] = 1;
-        //            }
-        //        }
-        //        if ()
-        //        //if (existingDocument != null)
-        //        //{
-        //        //    throw new Exception($"Insert failed. Unique index constraint violated on column '{index.Columns[0]}' in table '{tableName}' in database '{databaseName}'.");
-        //        //}
-        //    }
-
-        //    var document = new BsonDocument();
-        //    var id = row.Keys.First();
-        //    document["_id"] = Convert.ToInt32(row[id]);
-        //    var otherValues = row.Where(kvp => kvp.Key != id).Select(kvp => kvp.Value.ToString());
-        //    document["value"] = string.Join("#", otherValues);
-
-        //    collection.InsertOne(document);
-        //}
-
-        public static void Delete(string databaseName, string tableName, string columnName, string op, object columnValue, IMongoClient _client, CatalogManager _catalogManager)
+        public static void Delete(string databaseName, string tableName, Dictionary<string, object> conditions, IMongoClient _client, CatalogManager _catalogManager)
         {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
             var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
             var primaryKey = _catalogManager.GetPrimaryKeyColumn(databaseName, tableName);
-            var isPrimaryKey = columnName == primaryKey;
 
-            var posInMainCollection = _catalogManager.GetColumnLineNumber(databaseName, tableName, columnName)
-                ?? throw new NullReferenceException($"RecordManager.Delete: Column {columnName} not found table {tableName} in database {databaseName}.");
+            // Step 1: Retrieve documents from the main collection that satisfy the conditions
+            var documents = GetDocumentsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
 
-            var filter = Builders<BsonDocument>.Filter.Eq("_id", columnName);
-            var values = indexCollection.Find(filter).FirstOrDefault().GetValue("value").AsString.Split('#');
-
-            var filteredValues = FilteredValues(columnName, op, columnValue, values);
-            if(!filteredValues.Any())
-            {
-                throw new Exception($"Delete failed. No records found in table '{tableName}' in database '{databaseName}'.");
-            }
-
-            if (isPrimaryKey)
+            // Step 2: Check foreign key constraints
+            if (conditions.ContainsKey(primaryKey))
             {
                 var foreignKeyReferences = _catalogManager.GetForeignKeyReferences(databaseName, tableName);
                 foreach (var reference in foreignKeyReferences)
                 {
-                    foreach (var value in filteredValues)
+                    foreach (var document in documents)
                     {
-                        var row = collection.Find(Builders<BsonDocument>.Filter.Eq("_id", value)).FirstOrDefault();
-                        if (row != null)
+                        var row = ConvertDocumentToRow(document);
+                        var value = row[reference.ColumnName];
+                        var result = CheckForeignKeyForDelete(databaseName, reference, row, _client);
+                        if (!result)
                         {
-                            throw new Exception($"Delete failed. Foreign key constraint violated on column '{reference.ReferencedColumn.Item1}' in table '{reference.ReferencedTable}' in database '{databaseName}'.");
+                            throw new Exception($"Delete failed. Foreign key constraint violated on column '{reference.ColumnName}' in table '{reference.TableName}' in database '{databaseName}'. Referenced record found in table '{reference.ReferencedTable}' for column '{reference.ReferencedColumn}'.");
                         }
-                        Delete(databaseName, reference.ReferencedTable, reference.ReferencedColumn.Item1, "=", value, _client, _catalogManager);
-
                     }
                 }
             }
-            
 
-
-            var indexes = _catalogManager.GetIndexes(databaseName, tableName);
-            foreach (var index in indexes)
+            // Step 3: Delete records from main and index collections
+            foreach (var document in documents)
             {
-                var indexDocumentFilter = Builders<BsonDocument>.Filter.Eq("_id", index.Name);
-                var indexDocument = indexCollection.Find(indexDocumentFilter).FirstOrDefault();
-                if (indexDocument != null)
+                // Delete from main collection
+                var filter = Builders<BsonDocument>.Filter.Eq("_id", document["_id"]);
+                collection.DeleteOne(filter);
+
+                // Delete from index collections
+                var row = ConvertDocumentToRow(document);
+                var indexes = _catalogManager.GetIndexes(databaseName, tableName);
+                foreach (var index in indexes)
                 {
-                    var indexValues = indexDocument["value"].AsString.Split('#').ToList();
-                    var rowIndexValues = index.Columns.Select(columnName => row[columnName].ToString());
-                    var rowIndexValue = string.Join("&", rowIndexValues);
-                    indexValues.Remove(rowIndexValue);
-                    indexDocument["value"] = string.Join("#", indexValues);
-                    indexCollection.ReplaceOne(indexDocumentFilter, indexDocument);
+                    var indexDocumentFilter = Builders<BsonDocument>.Filter.Eq("_id", index.Name);
+                    var indexDocument = indexCollection.Find(indexDocumentFilter).FirstOrDefault();
+                    if (indexDocument != null)
+                    {
+                        var indexValues = indexDocument["value"].AsString.Split('#').ToList();
+                        var rowIndexValues = index.Columns.Select(columnName => row[columnName].ToString());
+                        var rowIndexValue = string.Join("&", rowIndexValues);
+                        indexValues.Remove(rowIndexValue);
+                        indexDocument["value"] = string.Join("#", indexValues);
+                        indexCollection.ReplaceOne(indexDocumentFilter, indexDocument);
+                    }
                 }
             }
         }
+
+        // Function to retrieve documents that satisfy conditions
+        private static List<BsonDocument> GetDocumentsSatisfyingConditions(string databaseName, string tableName, Dictionary<string, object> conditions, IMongoClient _client, CatalogManager _catalogManager)
+        {
+            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+            var documents = collection.Find(new BsonDocument()).ToList();
+
+            var result = new List<BsonDocument>();
+            foreach (var document in documents)
+            {
+                var row = ConvertDocumentToRow(document);
+                if (SatisfiesConditions(row, conditions))
+                {
+                    result.Add(document);
+                }
+            }
+            return result;
+        }
+
+        // Function to convert a document to a row
+        private static Dictionary<string, object> ConvertDocumentToRow(BsonDocument document)
+        {
+            var row = new Dictionary<string, object>();
+            row["_id"] = document["_id"];
+            var values = document["value"].AsString.Split('#');
+            for (int i = 0; i < values.Length; i++)
+            {
+                var parts = values[i].Split('=');
+                row[parts[0]] = parts[1];
+            }
+            return row;
+        }
+
+        // Function to check if a row satisfies conditions
+        private static bool SatisfiesConditions(Dictionary<string, object> row, Dictionary<string, object> conditions)
+        {
+            foreach (var condition in conditions)
+            {
+                if (!row.ContainsKey(condition.Key) || row[condition.Key].ToString() != condition.Value.ToString())
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        // Function to check if a row violates a foreign key constraint
+        private static bool CheckForeignKeyForDelete(string databaseName, ForeignKey reference, Dictionary<string, object> row, IMongoClient _client)
+        {
+            if (!row.ContainsKey(reference.ColumnName))
+            {
+                return true;
+            }
+
+            var foreignKeyCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(reference.ReferencedTable);
+            var filter = Builders<BsonDocument>.Filter.Eq(reference.ReferencedColumn.Item1, row[reference.ColumnName]);
+            var result = foreignKeyCollection.Find(filter).FirstOrDefault();
+
+            return result == null;
+        }
+
 
         private static IEnumerable<string> FilteredValues(string columnName, string op, object columnValue, string[] values)
         {

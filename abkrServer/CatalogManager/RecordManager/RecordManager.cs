@@ -13,7 +13,7 @@ namespace abkr.CatalogManager
 {
     internal class RecordManager
     {
-        public static Logger logger = new("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/server_logger.txt");
+        public static Logger logger = new("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/server_logger.log");
 
 
         public static void CreateDatabase(string databaseName, IMongoClient _client, CatalogManager _catalogManager)

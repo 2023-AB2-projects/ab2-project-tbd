@@ -54,6 +54,10 @@ column_list: ASTERISK | identifier_list;
 
 where_clause: WHERE condition;
 
-condition: identifier comparison_operator value (AND condition)?;
+condition: expression;
+expression: identifier comparison_operator value     #simpleCondition
+           | expression AND expression               #andExpression
+           | LPAREN expression RPAREN                #parenExpression
+           ;
 
 comparison_operator: EQUALS | GREATER_THAN | GREATER_EQUALS | LESS_THAN | LESS_EQUALS;

@@ -6,16 +6,16 @@ using System.Threading.Tasks;
 
 namespace abkrServer.CatalogManager.RecordManager
 {
-    public class Condition
+    public class FilterCondition
     {
         public string ColumnName { get; set; }
         public string Operator { get; set; }
         public object Value { get; set; }
 
-        public Condition(string columnName, string operator, object value)
+        public FilterCondition(string columnName, string op, object value)
         {
             ColumnName = columnName;
-            Operator = operator;
+            Operator = op;
             Value = value;
         }
     }

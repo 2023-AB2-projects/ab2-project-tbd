@@ -2,6 +2,7 @@
 using abkr.grammarParser;
 using abkr.ServerLogger;
 using abkrServer.CatalogManager.RecordManager;
+using Amazon.Auth.AccessControlPolicy;
 using Antlr4.Runtime.Misc;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -44,6 +45,8 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     private CatalogManager CatalogManager { get; set; }
     private Logger Logger { get; set; }
     public string Operator { get; set;}
+    public List<FilterCondition> Conditions { get; private set; } = new List<FilterCondition>();
+
 
 
 
@@ -253,25 +256,17 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public override void EnterDelete_statement(abkr_grammar.Delete_statementContext context)
     {
         StatementType = StatementType.Delete;
-
         DatabaseName = context.identifier(0).GetText();
         TableName = context.identifier(1).GetText();
-
-        var whereClauseContext = context.where_clause();
-        if (whereClauseContext != null)
-        {
-            ColumnName = whereClauseContext.condition().identifier().GetText();
-            Operator = whereClauseContext.condition().comparison_operator().GetText();
-            ColumnValue = ExtractValue(whereClauseContext.condition().value());
-        }
+        Conditions.Clear(); // Clear the conditions for a new statement
     }
 
     public override void EnterSelect_statement(abkr_grammar.Select_statementContext context)
     {
         StatementType = StatementType.Select;
-
         DatabaseName = context.identifier(0).GetText();
         TableName = context.identifier(1).GetText();
+        Conditions.Clear(); // Clear the conditions for a new statement
 
         var columnListContext = context.column_list();
         if (columnListContext.ASTERISK() != null)
@@ -282,15 +277,35 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         {
             SelectedColumns = columnListContext.identifier_list().identifier().Select(c => c.GetText()).ToArray();
         }
-
-        var whereClauseContext = context.where_clause();
-        if (whereClauseContext != null)
-        {
-            ColumnName = whereClauseContext.condition().identifier().GetText();
-            Operator = whereClauseContext.condition().comparison_operator().GetText();
-            ColumnValue = ExtractValue(whereClauseContext.condition().value());
-        }
     }
+    public override void EnterSimpleCondition([NotNull] abkr_grammar.SimpleConditionContext context)
+    {
+        var columnName = context.identifier().GetText();
+        var op = context.comparison_operator().GetText();
+        var value = ExtractValue(context.value());
+
+        Conditions.Add(new Condition(columnName, op, value.ToString()));
+    }
+
+    public override void EnterAndExpression([NotNull] abkr_grammar.AndExpressionContext context)
+    {
+        // For AND, we don't do anything special here because we've already
+        // processed each of the simple conditions in `enterSimpleCondition`
+    }
+
+    public override void EnterParenExpression([NotNull] abkr_grammar.ParenExpressionContext context)
+    {
+        // For parentheses, we don't need to do anything because ANTLR will
+        // respect operator precedence and the parentheses when building the parse tree
+    }
+
+    // Don't forget to clear the conditions list when entering a new statement:
+
+    public override void EnterStatement([NotNull] abkr_grammar.StatementContext context)
+    {
+        Conditions.Clear();
+    }
+
 
 
     private static object ExtractValue(abkr_grammar.ValueContext context)

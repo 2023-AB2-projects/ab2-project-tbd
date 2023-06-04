@@ -339,6 +339,26 @@ namespace abkr.CatalogManager
             SaveMetadata(metadata);
         }
 
+        public List<string> GetColumnNames(string databaseName, string tableName)
+        {
+            // Load the existing metadata
+            var metadata = LoadMetadata();
+
+            // Select the database
+            var databaseElement = metadata.Descendants("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName").Value == databaseName) 
+                ?? throw new ArgumentException($"Database '{databaseName}' does not exist.");
+
+            // Select the table
+            var tableElement = databaseElement.Descendants("Table").FirstOrDefault(e => e.Attribute("tableName").Value == tableName) 
+                ?? throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
+
+            // Get the column names
+            var columnNames = tableElement.Descendants("Attribute").Select(a => a.Attribute("attributeName").Value).ToList();
+
+            return columnNames;
+        }
+
+
 
 
         public void CreateIndex(string databaseName, string tableName, string indexName, List<string> columns, bool isUnique)

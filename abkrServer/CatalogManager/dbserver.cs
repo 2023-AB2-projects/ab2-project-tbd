@@ -134,13 +134,15 @@ namespace abkr.CatalogManager
             {
                 logger.LogMessage($"Deleting row from {listener.DatabaseName}.{listener.TableName}");
                 PrintAllDocuments(listener.DatabaseName, listener.TableName);
-                RecordManager.Delete(listener.DatabaseName, listener.TableName,listener.ColumnName,listener.Operator,listener.ColumnValue, _client, _catalogManager);
+                var conditions = new Dictionary<string, object>();
+                conditions[listener.ColumnName] = listener.ColumnValue;
+                RecordManager.Delete(listener.DatabaseName, listener.TableName,conditions,listener.Operator, _client, _catalogManager);
                 PrintAllDocuments(listener.DatabaseName, listener.TableName);
             }
             else if (listener.StatementType == StatementType.Select)
             {
 
-                HandleSelectStatement(listener.DatabaseName, listener.TableName, listener.ColumnName, listener.Operator, listener.ColumnValue, listener.SelectedColumns);
+                //HandleSelectStatement(listener.DatabaseName, listener.TableName, listener.ColumnName, listener.Operator, listener.ColumnValue, listener.SelectedColumns);
             }
 
             return Task.CompletedTask;

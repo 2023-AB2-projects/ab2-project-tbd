@@ -240,14 +240,14 @@ namespace abkr.CatalogManager
             return true; // no uniqueness constraint is violated
         }
 
-        public static void Delete(string databaseName, string tableName, Dictionary<string, object> conditions, IMongoClient _client, CatalogManager _catalogManager)
+        public static void Delete(string databaseName, string tableName, Dictionary<string, object> conditions, String op, IMongoClient _client, CatalogManager _catalogManager)
         {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
             var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
             var primaryKey = _catalogManager.GetPrimaryKeyColumn(databaseName, tableName);
 
             // Step 1: Retrieve documents from the main collection that satisfy the conditions
-            var documents = GetDocumentsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
+            var documents = GetDocumentsSatisfyingConditions(databaseName, tableName, conditions,op, _client, _catalogManager);
 
             // Step 2: Check foreign key constraints
             if (conditions.ContainsKey(primaryKey))
@@ -257,7 +257,7 @@ namespace abkr.CatalogManager
                 {
                     foreach (var document in documents)
                     {
-                        var row = ConvertDocumentToRow(document);
+                        var row = ConvertDocumentToRow(document,_catalogManager, databaseName, tableName);
                         var value = row[reference.ColumnName];
                         var result = CheckForeignKeyForDelete(databaseName, reference, row, _client);
                         if (!result)
@@ -276,7 +276,7 @@ namespace abkr.CatalogManager
                 collection.DeleteOne(filter);
 
                 // Delete from index collections
-                var row = ConvertDocumentToRow(document);
+                var row = ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
                 var indexes = _catalogManager.GetIndexes(databaseName, tableName);
                 foreach (var index in indexes)
                 {
@@ -296,7 +296,7 @@ namespace abkr.CatalogManager
         }
 
         // Function to retrieve documents that satisfy conditions
-        private static List<BsonDocument> GetDocumentsSatisfyingConditions(string databaseName, string tableName, Dictionary<string, object> conditions, IMongoClient _client, CatalogManager _catalogManager)
+        private static List<BsonDocument> GetDocumentsSatisfyingConditions(string databaseName, string tableName, Dictionary<string, object> conditions,String operators, IMongoClient _client, CatalogManager _catalogManager)
         {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
             var documents = collection.Find(new BsonDocument()).ToList();
@@ -304,7 +304,7 @@ namespace abkr.CatalogManager
             var result = new List<BsonDocument>();
             foreach (var document in documents)
             {
-                var row = ConvertDocumentToRow(document);
+                var row = ConvertDocumentToRow(document,_catalogManager, databaseName, tableName);
                 if (SatisfiesConditions(row, conditions))
                 {
                     result.Add(document);
@@ -314,16 +314,21 @@ namespace abkr.CatalogManager
         }
 
         // Function to convert a document to a row
-        private static Dictionary<string, object> ConvertDocumentToRow(BsonDocument document)
+        private static Dictionary<string, object> ConvertDocumentToRow(BsonDocument document, CatalogManager catalogManager, string databasName, string tableName)
         {
             var row = new Dictionary<string, object>();
             row["_id"] = document["_id"];
             var values = document["value"].AsString.Split('#');
-            for (int i = 0; i < values.Length; i++)
+
+            var columns = catalogManager.GetColumnNames(databasName, tableName);
+            logger.LogMessage($"RecordManager.ConvertDocumentToRow: columns are {columns}");
+
+            var i = 0;
+            foreach ( var column in columns)
             {
-                var parts = values[i].Split('=');
-                row[parts[0]] = parts[1];
+                row[column] = values[i++];
             }
+
             return row;
         }
 
@@ -356,7 +361,7 @@ namespace abkr.CatalogManager
         }
 
 
-        private static IEnumerable<string> FilteredValues(string columnName, string op, object columnValue, string[] values)
+        private static IEnumerable<string> FilteredValues(string op, object columnValue, string[] values)
         {
             switch (op)
             {

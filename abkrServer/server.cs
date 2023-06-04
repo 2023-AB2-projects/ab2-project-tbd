@@ -11,7 +11,7 @@ using abkr.ServerLogger;
 class Server
 {
     private static CancellationTokenSource cts = new CancellationTokenSource();
-    private static Logger logger = new Logger("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/server_logger.txt");
+    private static Logger logger = new Logger("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/server_logger.log");
 
     public static async Task Main()
     {

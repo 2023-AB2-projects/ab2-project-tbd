@@ -240,14 +240,14 @@ namespace abkr.CatalogManager
             return true; // no uniqueness constraint is violated
         }
 
-        public static void Delete(string databaseName, string tableName, Dictionary<string, object> conditions, String op, IMongoClient _client, CatalogManager _catalogManager)
+        public static void Delete(string databaseName, string tableName, Dictionary<string, object> conditions, Dictionary<string, string> operators, IMongoClient _client, CatalogManager _catalogManager)
         {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
             var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
             var primaryKey = _catalogManager.GetPrimaryKeyColumn(databaseName, tableName);
 
             // Step 1: Retrieve documents from the main collection that satisfy the conditions
-            var documents = GetDocumentsSatisfyingConditions(databaseName, tableName, conditions,op, _client, _catalogManager);
+            var documents = GetDocumentsSatisfyingConditions(databaseName, tableName, conditions, operators, _client, _catalogManager);
 
             // Step 2: Check foreign key constraints
             if (conditions.ContainsKey(primaryKey))
@@ -294,9 +294,27 @@ namespace abkr.CatalogManager
                 }
             }
         }
+        private static bool SatisfiesConditions(Dictionary<string, object> row, Dictionary<string, object> conditions, Dictionary<string, string> operators)
+        {
+            foreach (var condition in conditions)
+            {
+                if (!row.ContainsKey(condition.Key))
+                {
+                    return false;
+                }
+                var op = operators[condition.Key];
+                var filteredValues = FilteredValues(op, condition.Value, new[] { row[condition.Key].ToString() });
+                if (!filteredValues.Any())
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
 
         // Function to retrieve documents that satisfy conditions
-        private static List<BsonDocument> GetDocumentsSatisfyingConditions(string databaseName, string tableName, Dictionary<string, object> conditions,String operators, IMongoClient _client, CatalogManager _catalogManager)
+        private static List<BsonDocument> GetDocumentsSatisfyingConditions(string databaseName, string tableName, Dictionary<string, object> conditions, Dictionary<string, string> operators, IMongoClient _client, CatalogManager _catalogManager)
         {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
             var documents = collection.Find(new BsonDocument()).ToList();
@@ -304,8 +322,8 @@ namespace abkr.CatalogManager
             var result = new List<BsonDocument>();
             foreach (var document in documents)
             {
-                var row = ConvertDocumentToRow(document,_catalogManager, databaseName, tableName);
-                if (SatisfiesConditions(row, conditions))
+                var row = ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
+                if (SatisfiesConditions(row, conditions, operators))
                 {
                     result.Add(document);
                 }

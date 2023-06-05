@@ -276,33 +276,33 @@ namespace abkr.CatalogManager
             // Step 3: Delete records from main and index collections
             foreach (var document in documents)
             {
-                if(primaryKeyCondition != null)
-                {
-                    DeleteOnPrimaryKey(databaseName, tableName, _client, collection, document, _catalogManager);
-                    primaryKeyCondition = null;
-                }
-                else
-                {
-                    DeleteOnNonPrimaryKey(databaseName, tableName, conditions, _client, collection, document, indexCollection, _catalogManager);
-                }
+                DeleteDoc(databaseName, tableName, _client, collection, document, _catalogManager);
                 logger.LogMessage($"RecordManager.Delete: Deleted document {document} from table {tableName} in database {databaseName}");
             }
         }
 
-        private static void DeleteOnPrimaryKey(string databaseName, string tableName, IMongoClient _client, IMongoCollection<BsonDocument> collection, BsonDocument doc,CatalogManager catalogManager)
+        private static void DeleteDoc(string databaseName, string tableName, IMongoClient _client, IMongoCollection<BsonDocument> collection, BsonDocument doc,CatalogManager catalogManager)
         {
             // Delete from main collection
             var filter = Builders<BsonDocument>.Filter.Eq("_id", doc["_id"]);
-            logger.LogMessage($"RecordManager.DeleteOnPrimaryKey: Deleted from main collection: {collection.DeleteOne(filter)}");
+            logger.LogMessage($"RecordManager.DeleteDoc: Deleted from main collection: {collection.DeleteOne(doc)}");
 
             // Delete from index collections
             var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
             var row = ConvertDocumentToRow(doc, catalogManager, databaseName, tableName);
             var indexes = catalogManager.GetIndexes(databaseName, tableName);
             foreach (var index in indexes)
-            {
+            { 
+                if (index.Name == catalogManager.GetPrimaryKeyColumn(databaseName, tableName))
+                {
+                    continue;
+                }
+
                 var indexDocumentFilter = Builders<BsonDocument>.Filter.Eq("_id", index.Name);
                 var indexDocument = indexCollection.Find(indexDocumentFilter).FirstOrDefault();
+
+                logger.LogMessage($"RecordManager.DeleteDoc: indexDocument is {indexDocument} for index {index.Name}");
+
                 if (indexDocument != null)
                 {
                     var indexValues = indexDocument["value"].AsString.Split('#').ToList();
@@ -318,10 +318,7 @@ namespace abkr.CatalogManager
                 }
             }
         }
-        private static void DeleteOnNonPrimaryKey(string databaseName, string tableName, List<FilterCondition> conditions, IMongoClient _client, IMongoCollection<BsonDocument> collection, BsonDocument doc, IMongoCollection<BsonDocument> indexCollection, CatalogManager _catalogManager)
-        {
-
-        }
+        
         private static bool SatisfiesConditions(Dictionary<string, object> row, List<FilterCondition> conditions)
         {
             if(row == null || !row.Any())
@@ -334,7 +331,7 @@ namespace abkr.CatalogManager
                 var op = condition.Operator;
                 var columnValue = condition.Value;
 
-                logger.LogMessage($"RecordManager.SatisfiesConditions: Checking condition {condition.ColumnName} {op} {columnValue} for values {string.Join(",", row[condition.ColumnName])}");
+                //logger.LogMessage($"RecordManager.SatisfiesConditions: Checking condition {condition.ColumnName} {op} {columnValue} for values {string.Join(",", row[condition.ColumnName])}");
 
 
                 // Check if the row has the column specified in the condition

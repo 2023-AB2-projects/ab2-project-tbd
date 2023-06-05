@@ -378,7 +378,6 @@ namespace abkr.CatalogManager
         private static Dictionary<string, object> ConvertDocumentToRow(BsonDocument document, CatalogManager catalogManager, string databasName, string tableName)
         {
             var row = new Dictionary<string, object>();
-            row["_id"] = document["_id"];
             var values = document["value"].AsString.Split('#');
 
             var columns = catalogManager.GetColumnNames(databasName, tableName);

@@ -141,7 +141,7 @@ namespace abkr.CatalogManager
             else if (listener.StatementType == StatementType.Select)
             {
 
-                //HandleSelectStatement(listener.DatabaseName, listener.TableName, listener.ColumnName, listener.Operator, listener.ColumnValue, listener.SelectedColumns);
+                HandleSelectStatement(listener.DatabaseName, listener.TableName, listener.Conditions, listener.SelectedColumns);
             }
 
             return Task.CompletedTask;
@@ -187,7 +187,7 @@ namespace abkr.CatalogManager
         }
 
 
-        private static void HandleSelectStatement(string databaseName, string tableName, FilterDefinition<BsonDocument> filter, string[] selectedColumns)
+        private static void HandleSelectStatement(string databaseName, string tableName, List<FilterCondition> conditions, string[] selectedColumns)
         {
             if (string.IsNullOrEmpty(databaseName) || string.IsNullOrEmpty(tableName))
             {
@@ -199,9 +199,9 @@ namespace abkr.CatalogManager
 
             List<BsonDocument> documents;
 
-            if (filter != null)
+            if (conditions != null)
             {
-                documents = _collection.Find(filter).ToList();
+                documents = _collection.Find(new BsonDocument()).ToList();
             }
             else
             {

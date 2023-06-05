@@ -324,8 +324,19 @@ namespace abkr.CatalogManager
         }
         private static bool SatisfiesConditions(Dictionary<string, object> row, List<FilterCondition> conditions)
         {
+            if(row == null || !row.Any())
+            {
+                throw new Exception("RecordManager.SatisfiesConditions: Row is null or empty.");
+            }
+
             foreach (var condition in conditions)
             {
+                var op = condition.Operator;
+                var columnValue = condition.Value;
+
+                logger.LogMessage($"RecordManager.SatisfiesConditions: Checking condition {condition.ColumnName} {op} {columnValue} for values {string.Join(",", row[condition.ColumnName])}");
+
+
                 // Check if the row has the column specified in the condition
                 if (!row.ContainsKey(condition.ColumnName))
                 {
@@ -333,9 +344,7 @@ namespace abkr.CatalogManager
                 }
 
                 // Get the operator and value from the condition
-                var op = condition.Operator;
-                var columnValue = condition.Value;
-
+               
                 // Use the FilteredValues method to determine if the row satisfies the condition
                 var filteredValues = FilteredValues(op, columnValue, new[] { row[condition.ColumnName].ToString() });
                 if (!filteredValues.Any())
@@ -376,9 +385,14 @@ namespace abkr.CatalogManager
             var values = document["value"].AsString.Split('#');
 
             var columns = catalogManager.GetColumnNames(databasName, tableName);
-            logger.LogMessage($"RecordManager.ConvertDocumentToRow: columns are {columns.Where(c=>c==c)}");
+            logger.LogMessage($"RecordManager.ConvertDocumentToRow: columns are: ");
+            foreach (var column in columns)
+            {
+                logger.LogMessage(column);
+            }
 
             var pk = catalogManager.GetPrimaryKeyColumn(databasName, tableName);
+            row[pk] = document["_id"];
 
             var i = 0;
             foreach ( var column in columns)
@@ -389,6 +403,8 @@ namespace abkr.CatalogManager
                 }
                 row[column] = values[i++];
             }
+
+            logger.LogMessage($"RecordManager.ConvertDocumentToRow: Converted document {document.ToJson()} to row {string.Join(",", row)}");
 
             return row;
         }

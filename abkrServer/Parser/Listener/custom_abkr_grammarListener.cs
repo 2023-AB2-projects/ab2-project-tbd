@@ -1,5 +1,4 @@
 ﻿using abkr.CatalogManager;
-using abkr.grammarParser;
 using abkr.ServerLogger;
 using abkrServer.CatalogManager.RecordManager;
 using abkrServer.Parser.Listener;
@@ -45,7 +44,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
     private CatalogManager CatalogManager { get; set; }
     private Logger Logger { get; set; }
-    public string Operator { get; set;}
+    public string Operator { get; set; }
     public List<FilterCondition> Conditions { get; private set; } = new List<FilterCondition>();
     public List<JoinCondition> JoinConditions { get; private set; } = new List<JoinCondition>();
 
@@ -61,7 +60,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     {
         Logger = logger;
         CatalogManager = catalogManager;
-        Console.WriteLine("\n"+metadataFilePath+"\n");
+        Console.WriteLine("\n" + metadataFilePath + "\n");
         metadataXml = new XmlDocument();
         try
         {
@@ -182,7 +181,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         var pk = CatalogManager.GetPrimaryKeyColumn(databaseName, foreignTable);
         var ispk = pk == foreignAlias;
 
-        var fk = new ForeignKey(TableName, columnName, foreignTable, (foreignAlias, ispk), isUnique );
+        var fk = new ForeignKey(TableName, columnName, foreignTable, (foreignAlias, ispk), isUnique);
         ForeignKeyColumns.Add(fk);
     }
 
@@ -266,16 +265,18 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
     public override void EnterJoin_clause([NotNull] abkr_grammarParser.Join_clauseContext context)
     {
+        var databasName = context.identifier(0)?.GetText();
         var tableAlias = context.identifier(1)?.GetText(); // Depending on the structure of your identifiers.
         var conditionContext = context.condition();
         if (conditionContext != null)
         {
-            var conditionColumnName = conditionContext.identifier().GetText();
-            var op = conditionContext.comparison_operator().GetText();
-            var conditionValue = ExtractValue(conditionContext.value())
-                ?? throw new NullReferenceException();
-
-            JoinConditions.Add(new JoinCondition(tableAlias, conditionColumnName, op, conditionValue.ToString()));
+            EnterExpression(conditionContext.expression());
+            if (Conditions.Count > 0)
+            {
+                // Get the most recent condition
+                var condition = Conditions.Last();
+                JoinConditions.Add(new JoinCondition(databasName,tableAlias, condition.ColumnName, condition.Operator, condition.Value.ToString()));
+            }
         }
     }
 
@@ -283,8 +284,8 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public override void EnterSelect_statement(abkr_grammarParser.Select_statementContext context)
     {
         StatementType = StatementType.Select;
-        DatabaseName = context.identifier(0).GetText();
-        TableName = context.identifier(1).GetText();
+        DatabaseName = context.table_source().identifier(0).GetText();
+        TableName = context.table_source().identifier(1).GetText();
         Conditions.Clear(); // Clear the conditions for a new statement
 
         var columnListContext = context.column_list();
@@ -307,7 +308,14 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
                 EnterJoin_clause(joinClause);
             }
         }
+
+        var whereClauseContext = context.where_clause();
+        if (whereClauseContext != null)
+        {
+            EnterExpression(whereClauseContext.condition().expression());
+        }
     }
+
     public override void EnterSimpleCondition([NotNull] abkr_grammarParser.SimpleConditionContext context)
     {
         var columnName = context.identifier().GetText();
@@ -320,15 +328,40 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
     public override void EnterAndExpression([NotNull] abkr_grammarParser.AndExpressionContext context)
     {
-        // For AND, we don't do anything special here because we've already
-        // processed each of the simple conditions in `enterSimpleCondition`
+        // Here, both sides of AND are expressions themselves,
+        // you need to recursively handle them
+        var leftExpression = context.expression(0);
+        var rightExpression = context.expression(1);
+
+        // For example:
+        EnterExpression(leftExpression);
+        EnterExpression(rightExpression);
     }
 
     public override void EnterParenExpression([NotNull] abkr_grammarParser.ParenExpressionContext context)
     {
-        // For parentheses, we don't need to do anything because ANTLR will
-        // respect operator precedence and the parentheses when building the parse tree
+        var innerExpression = context.expression();
+        EnterExpression(innerExpression);
     }
+
+    private void EnterExpression(abkr_grammarParser.ExpressionContext context)
+    {
+        // Depending on the specific type of the expression,
+        // call the appropriate method.
+        if (context is abkr_grammarParser.SimpleConditionContext simpleConditionContext)
+        {
+            EnterSimpleCondition(simpleConditionContext);
+        }
+        else if (context is abkr_grammarParser.AndExpressionContext andExpressionContext)
+        {
+            EnterAndExpression(andExpressionContext);
+        }
+        else if (context is abkr_grammarParser.ParenExpressionContext parenExpressionContext)
+        {
+            EnterParenExpression(parenExpressionContext);
+        }
+    }
+
 
     // Don't forget to clear the conditions list when entering a new statement:
 

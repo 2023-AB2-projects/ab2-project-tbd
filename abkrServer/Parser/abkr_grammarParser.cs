@@ -1807,6 +1807,7 @@ public partial class abkr_grammarParser : Parser {
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode GREATER_EQUALS() { return GetToken(abkr_grammarParser.GREATER_EQUALS, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LESS_THAN() { return GetToken(abkr_grammarParser.LESS_THAN, 0); }
 		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LESS_EQUALS() { return GetToken(abkr_grammarParser.LESS_EQUALS, 0); }
+		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DIFFERS() { return GetToken(abkr_grammarParser.DIFFERS, 0); }
 		public Comparison_operatorContext(ParserRuleContext parent, int invokingState)
 			: base(parent, invokingState)
 		{
@@ -1834,7 +1835,7 @@ public partial class abkr_grammarParser : Parser {
 			{
 			State = 238;
 			_la = TokenStream.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 34485567488L) != 0)) ) {
+			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 34619785216L) != 0)) ) {
 			ErrorHandler.RecoverInline(this);
 			}
 			else {
@@ -1886,7 +1887,7 @@ public partial class abkr_grammarParser : Parser {
 		8,21,1,21,1,21,1,21,1,22,1,22,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,
 		1,23,3,23,229,8,23,1,23,1,23,1,23,5,23,234,8,23,10,23,12,23,237,9,23,1,
 		24,1,24,1,24,0,1,46,25,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,
-		36,38,40,42,44,46,48,0,2,1,0,37,38,2,0,23,26,35,35,239,0,59,1,0,0,0,2,
+		36,38,40,42,44,46,48,0,2,1,0,37,38,2,0,23,27,35,35,239,0,59,1,0,0,0,2,
 		61,1,0,0,0,4,65,1,0,0,0,6,74,1,0,0,0,8,78,1,0,0,0,10,84,1,0,0,0,12,96,
 		1,0,0,0,14,102,1,0,0,0,16,110,1,0,0,0,18,130,1,0,0,0,20,137,1,0,0,0,22,
 		139,1,0,0,0,24,147,1,0,0,0,26,149,1,0,0,0,28,165,1,0,0,0,30,172,1,0,0,

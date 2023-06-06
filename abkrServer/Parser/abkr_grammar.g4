@@ -64,4 +64,4 @@ expression: identifier comparison_operator value     #simpleCondition
            | LPAREN expression RPAREN                #parenExpression
            ;
 
-comparison_operator: EQUALS | GREATER_THAN | GREATER_EQUALS | LESS_THAN | LESS_EQUALS;
+comparison_operator: EQUALS | GREATER_THAN | GREATER_EQUALS | LESS_THAN | LESS_EQUALS | DIFFERS;

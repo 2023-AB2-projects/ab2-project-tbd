@@ -301,7 +301,7 @@ namespace abkr.CatalogManager
                 var indexDocumentFilter = Builders<BsonDocument>.Filter.Eq("_id", index.Name);
                 var indexDocument = indexCollection.Find(indexDocumentFilter).FirstOrDefault();
 
-                logger.LogMessage($"RecordManager.DeleteDoc: indexDocument is {indexDocument} for index {index.Name}");
+                //logger.LogMessage($"RecordManager.DeleteDoc: indexDocument is {indexDocument} for index {index.Name}");
 
                 if (indexDocument != null)
                 {
@@ -319,7 +319,7 @@ namespace abkr.CatalogManager
             }
         }
         
-        private static bool SatisfiesConditions(Dictionary<string, object> row, List<FilterCondition> conditions)
+        public static bool SatisfiesConditions(Dictionary<string, object> row, List<FilterCondition> conditions)
         {
             if(row == null || !row.Any())
             {
@@ -331,7 +331,7 @@ namespace abkr.CatalogManager
                 var op = condition.Operator;
                 var columnValue = condition.Value;
 
-                //logger.LogMessage($"RecordManager.SatisfiesConditions: Checking condition {condition.ColumnName} {op} {columnValue} for values {string.Join(",", row[condition.ColumnName])}");
+                logger.LogMessage($"RecordManager.SatisfiesConditions: Checking condition {condition.ColumnName} {op} {columnValue} for values {string.Join(",", row[condition.ColumnName])}");
 
 
                 // Check if the row has the column specified in the condition
@@ -355,7 +355,7 @@ namespace abkr.CatalogManager
 
 
         // Function to retrieve documents that satisfy conditions
-        private static List<BsonDocument> GetDocumentsSatisfyingConditions(string databaseName, string tableName, List<FilterCondition> conditions, IMongoClient _client, CatalogManager _catalogManager)
+        public static List<BsonDocument> GetDocumentsSatisfyingConditions(string databaseName, string tableName, List<FilterCondition> conditions, IMongoClient _client, CatalogManager _catalogManager)
         { 
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
             var documents = collection.Find(new BsonDocument()).ToList();
@@ -363,7 +363,7 @@ namespace abkr.CatalogManager
             var result = new List<BsonDocument>();
             foreach (var document in documents)
             {
-                logger.LogMessage($"RecordManager.GetDocumentsSatisfyingConditions: Checking document {document.ToJson()} from table {tableName} in database {databaseName}");
+                //logger.LogMessage($"RecordManager.GetDocumentsSatisfyingConditions: Checking document {document.ToJson()} from table {tableName} in database {databaseName}");
 
                 var row = ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
                 if (SatisfiesConditions(row, conditions))
@@ -375,17 +375,17 @@ namespace abkr.CatalogManager
         }
 
         // Function to convert a document to a row
-        private static Dictionary<string, object> ConvertDocumentToRow(BsonDocument document, CatalogManager catalogManager, string databasName, string tableName)
+        public static Dictionary<string, object> ConvertDocumentToRow(BsonDocument document, CatalogManager catalogManager, string databasName, string tableName)
         {
             var row = new Dictionary<string, object>();
             var values = document["value"].AsString.Split('#');
 
             var columns = catalogManager.GetColumnNames(databasName, tableName);
-            logger.LogMessage($"RecordManager.ConvertDocumentToRow: columns are: ");
-            foreach (var column in columns)
-            {
-                logger.LogMessage(column);
-            }
+            //logger.LogMessage($"RecordManager.ConvertDocumentToRow: columns are: ");
+            //foreach (var column in columns)
+            //{
+            //    logger.LogMessage(column);
+            //}
 
             var pk = catalogManager.GetPrimaryKeyColumn(databasName, tableName);
             row[pk] = document["_id"];
@@ -408,7 +408,7 @@ namespace abkr.CatalogManager
         // Function to check if a row violates a foreign key constraint
         private static bool CheckForeignKeyForDelete(string databaseName, ForeignKey reference, Dictionary<string, object> row, IMongoClient _client)
         {
-            logger.LogMessage($"RecordManager.CheckForeignKeyForDelete: Checking foreign key constraint {reference.ColumnName} in table {reference.TableName} referencing {reference.ReferencedColumn} in table {reference.ReferencedTable} for row {string.Join(",", row)}");
+            //logger.LogMessage($"RecordManager.CheckForeignKeyForDelete: Checking foreign key constraint {reference.ColumnName} in table {reference.TableName} referencing {reference.ReferencedColumn} in table {reference.ReferencedTable} for row {string.Join(",", row)}");
 
             if (!row.ContainsKey(reference.ColumnName))
             {
@@ -423,9 +423,9 @@ namespace abkr.CatalogManager
         }
 
 
-        private static IEnumerable<string> FilteredValues(string op, object columnValue, string[] values)
+        public static IEnumerable<string> FilteredValues(string op, object columnValue, string[] values)
         {
-            logger.LogMessage($"RecordManager.FilteredValues: Filtering values {string.Join(",", values)} for operator {op} and column value {columnValue}");
+            //logger.LogMessage($"RecordManager.FilteredValues: Filtering values {string.Join(",", values)} for operator {op} and column value {columnValue}");
 
             return op switch
             {

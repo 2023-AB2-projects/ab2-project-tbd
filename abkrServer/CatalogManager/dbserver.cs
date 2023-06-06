@@ -6,6 +6,7 @@ using System.Xml.Linq;
 using System.Diagnostics.CodeAnalysis;
 using abkrServer.CatalogManager.RecordManager;
 using abkr.ServerLogger;
+using System.Text;
 
 namespace abkr.CatalogManager
 {
@@ -132,7 +133,6 @@ namespace abkr.CatalogManager
             }
             else if (listener.StatementType == StatementType.Delete)
             {
-                logger.LogMessage($"Deleting row from {listener.DatabaseName}.{listener.TableName}");
                 PrintAllDocuments(listener.DatabaseName, listener.TableName);
                 var conditions = listener.Conditions;
                 RecordManager.Delete(listener.DatabaseName, listener.TableName,conditions, _client, _catalogManager);
@@ -197,37 +197,40 @@ namespace abkr.CatalogManager
             var _database = _client?.GetDatabase(databaseName);
             var _collection = _database?.GetCollection<BsonDocument>(tableName);
 
-            List<BsonDocument> documents;
+            // Step 1: Retrieve documents from the collection that satisfy the conditions
+            var documents = RecordManager.GetDocumentsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
 
-            if (conditions != null)
+            // If there are specific columns selected
+            if (selectedColumns.Length > 0 && !selectedColumns.Contains("*"))
             {
-                documents = _collection.Find(new BsonDocument()).ToList();
-            }
-            else
-            {
-                documents = _collection.Find(new BsonDocument()).ToList();
-            }
-
-            foreach (BsonDocument document in documents)
-            {
-                // If specific columns are selected
-                if (selectedColumns.Length > 0)
+                foreach (BsonDocument document in documents)
                 {
+                    var row = RecordManager.ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
                     foreach (string column in selectedColumns)
                     {
-                        logger.LogMessage($"{column}: {document[column]}");
+                        logger.LogMessage($"{column}: {row[column]}");
                     }
                 }
-                // If all columns are selected
-                else
+            }
+            // If all columns are selected (with asterisk '*')
+            else
+            {
+                foreach (BsonDocument document in documents)
                 {
-                    foreach (BsonElement element in document)
+                    var row = RecordManager.ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
+                    var stringBuilder = new StringBuilder();
+                    stringBuilder.AppendLine("Record:");
+                    foreach (var item in row)
                     {
-                        logger.LogMessage($"{element.Name}: {element.Value}");
+                        stringBuilder.AppendLine($"{item.Key}: {item.Value}");
                     }
+                    logger.LogMessage(stringBuilder.ToString());
                 }
             }
         }
+
+
     }
 }
+
 

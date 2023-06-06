@@ -50,30 +50,19 @@ namespace abkr.Client
                 await writer.WriteLineAsync(sqlStatement);
 
                 // Receive response from server
-                string? response = await reader.ReadLineAsync();
-                logger.LogMessage($"{response}");
+                var responseBuilder = new StringBuilder();
+                string? line;
+                while ((line = await reader.ReadLineAsync()) != null)
+                {
+                    if (line == "end")  // Stop when an empty line is encountered
+                    {
+                        break;
+                    }
+                    responseBuilder.AppendLine(line);
+                }
+                string response = responseBuilder.ToString();
 
-                //if (isSelectStatement)
-                //{
-                //    // Open a separate channel to receive data from the server
-
-                //    // Create a new TcpClient and connect to the server
-                //    TcpClient dataClient = new TcpClient();
-                //    await dataClient.ConnectAsync(IPAddress.Parse("127.0.0.1"), 1235);
-
-                //    using NetworkStream dataStream = dataClient.GetStream();
-                //    using StreamReader dataReader = new StreamReader(dataStream, Encoding.ASCII);
-
-                //    // Receive data from the server
-                //    string responseData = await dataReader.ReadToEndAsync();
-                //    Console.WriteLine(responseData);
-
-                //    // Close the data channel
-                //    dataClient.Close();
-
-                //    // Reset the flag for the next SQL statement
-                //    isSelectStatement = false;
-                //}
+                logger.LogMessage(response);
             }
 
             // Close connection

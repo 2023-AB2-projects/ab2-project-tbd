@@ -331,7 +331,7 @@ namespace abkr.CatalogManager
                 var op = condition.Operator;
                 var columnValue = condition.Value;
 
-                logger.LogMessage($"RecordManager.SatisfiesConditions: Checking condition {condition.ColumnName} {op} {columnValue} for values {string.Join(",", row[condition.ColumnName])}");
+                //logger.LogMessage($"RecordManager.SatisfiesConditions: Checking condition {condition.ColumnName} {op} {columnValue} for values {string.Join(",", row[condition.ColumnName])}");
 
 
                 // Check if the row has the column specified in the condition
@@ -400,7 +400,7 @@ namespace abkr.CatalogManager
                 row[column] = values[i++];
             }
 
-            logger.LogMessage($"RecordManager.ConvertDocumentToRow: Converted document {document.ToJson()} to row {string.Join(",", row)}");
+            //logger.LogMessage($"RecordManager.ConvertDocumentToRow: Converted document {document.ToJson()} to row {string.Join(",", row)}");
 
             return row;
         }

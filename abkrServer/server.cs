@@ -108,15 +108,23 @@ class Server
                 try
                 {
                     await DatabaseServer.ExecuteStatementAsync(data);
-                    response = "Success";
+                    if (data.Trim().ToLower().StartsWith("select"))
+                    {
+                        response = "Success\n" + DatabaseServer.LastQueryResult;
+                    }
+                    else
+                    {
+                        response = "Success";
+                    }
                 }
                 catch (Exception ex)
                 {
                     response = $"Error: {ex.Message}";
                 }
-
                 // Write a response to the client
+                logger.LogMessage($"Server is sending: {response}");
                 await writer.WriteLineAsync(response);
+                await writer.WriteLineAsync("end");  // Send an empty line
             }
         }
         catch (IOException ex)

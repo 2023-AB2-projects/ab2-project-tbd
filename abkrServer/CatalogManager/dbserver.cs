@@ -17,6 +17,8 @@ namespace abkr.CatalogManager
         static public IMongoClient MongoClient => _client;
         static private CatalogManager _catalogManager;
         static private Logger logger;
+        public static string LastQueryResult { get; private set; }
+
 
         public DatabaseServer(string connectionString, string metadataFileName, Logger logger)
         {
@@ -199,6 +201,7 @@ namespace abkr.CatalogManager
 
             // Step 1: Retrieve documents from the collection that satisfy the conditions
             var documents = RecordManager.GetDocumentsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
+            StringBuilder resultStringBuilder = new StringBuilder();
 
             // If there are specific columns selected
             if (selectedColumns.Length > 0 && !selectedColumns.Contains("*"))
@@ -206,10 +209,15 @@ namespace abkr.CatalogManager
                 foreach (BsonDocument document in documents)
                 {
                     var row = RecordManager.ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
+                    var stringBuilder = new StringBuilder();
+                    stringBuilder.AppendLine("Record:");
                     foreach (string column in selectedColumns)
                     {
-                        logger.LogMessage($"{column}: {row[column]}");
+                        string message = $"{column}: {row[column]}";
+                        stringBuilder.AppendLine(message);
+                        logger.LogMessage(message);
                     }
+                    resultStringBuilder.AppendLine(stringBuilder.ToString());
                 }
             }
             // If all columns are selected (with asterisk '*')
@@ -225,11 +233,12 @@ namespace abkr.CatalogManager
                         stringBuilder.AppendLine($"{item.Key}: {item.Value}");
                     }
                     logger.LogMessage(stringBuilder.ToString());
+                    resultStringBuilder.AppendLine(stringBuilder.ToString());
                 }
             }
+
+            LastQueryResult = resultStringBuilder.ToString();
         }
-
-
     }
 }
 

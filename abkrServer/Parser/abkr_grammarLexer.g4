@@ -26,6 +26,9 @@ GREATER_THAN: '>';
 GREATER_EQUALS: '>=';
 LESS_THAN: '<';
 LESS_EQUALS: '<=';
+DIFFERS: '!=';
+INNER: I N N E R;
+JOIN: J O I N;
 
 fragment A: 'A' | 'a';
 fragment B: 'B' | 'b';

@@ -1,4 +1,4 @@
-parser grammar abkr_grammar;
+grammar abkr_grammar;
 
 options { tokenVocab=abkr_grammarLexer; }
 
@@ -48,11 +48,15 @@ value_list: value (COMMA value)*;
 
 value: STRING | NUMBER;
 
-select_statement: SELECT column_list FROM identifier (DOT identifier)? where_clause?;
+select_statement: SELECT column_list FROM table_source where_clause?;
 
 column_list: ASTERISK | identifier_list;
 
 where_clause: WHERE condition;
+
+table_source: identifier (DOT identifier)? join_clause*;
+
+join_clause: INNER JOIN identifier (DOT identifier)? ON condition;
 
 condition: expression;
 expression: identifier comparison_operator value     #simpleCondition

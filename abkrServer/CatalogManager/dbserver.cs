@@ -189,6 +189,7 @@ namespace abkr.CatalogManager
         }
 
 
+        // Refactored function
         private static void HandleSelectStatement(string databaseName, string tableName, List<FilterCondition> conditions, string[] selectedColumns)
         {
             if (string.IsNullOrEmpty(databaseName) || string.IsNullOrEmpty(tableName))
@@ -196,13 +197,36 @@ namespace abkr.CatalogManager
                 throw new Exception("Database or table name missing in SELECT statement");
             }
 
-            var _database = _client?.GetDatabase(databaseName);
-            var _collection = _database?.GetCollection<BsonDocument>(tableName);
+            var _database = GetDatabase(databaseName);
+            var _collection = GetCollection(_database, tableName);
 
             // Retrieve documents from the collection that satisfy the conditions
-            var documents = RecordManager.GetDocumentsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
-            StringBuilder resultStringBuilder = new StringBuilder();
+            var documents = GetDocuments(databaseName, tableName, conditions);
+            var formattedResult = FormatOutput(documents, selectedColumns, databaseName, tableName);
 
+            LastQueryResult = formattedResult;
+            logger.LogMessage(LastQueryResult);
+        }
+
+        // Additional helper functions
+        private static IMongoDatabase GetDatabase(string databaseName)
+        {
+            return _client?.GetDatabase(databaseName);
+        }
+
+        private static IMongoCollection<BsonDocument> GetCollection(IMongoDatabase database, string tableName)
+        {
+            return database?.GetCollection<BsonDocument>(tableName);
+        }
+
+        private static List<BsonDocument> GetDocuments(string databaseName, string tableName, List<FilterCondition> conditions)
+        {
+            return RecordManager.GetDocumentsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
+        }
+
+        private static string FormatOutput(List<BsonDocument> documents, string[] selectedColumns, string databaseName, string tableName)
+        {
+            StringBuilder resultStringBuilder = new StringBuilder();
             int columnWidth = 20; // Define the width of your columns, can be adjusted based on needs
 
             if (selectedColumns.Length > 0 && !selectedColumns.Contains("*"))
@@ -234,9 +258,9 @@ namespace abkr.CatalogManager
                 resultStringBuilder.AppendLine("+" + new string('-', line.Length - 2) + "+");
             }
 
-            LastQueryResult = resultStringBuilder.ToString();
-            logger.LogMessage(LastQueryResult);
+            return resultStringBuilder.ToString();
         }
+
     }
 }
 

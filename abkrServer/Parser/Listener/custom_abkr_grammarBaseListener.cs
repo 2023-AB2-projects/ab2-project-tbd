@@ -1,7 +1,7 @@
 ﻿using System;
 using Antlr4.Runtime.Misc;
 
-namespace abkr.grammarParser
+namespace abkrServer.Parser.Listener
 {
     public class CustomAbkrGrammarBaseListener : abkr_grammarBaseListener
     {

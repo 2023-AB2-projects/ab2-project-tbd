@@ -2,6 +2,7 @@
 using abkr.grammarParser;
 using abkr.ServerLogger;
 using abkrServer.CatalogManager.RecordManager;
+using abkrServer.Parser.Listener;
 using Amazon.Auth.AccessControlPolicy;
 using Antlr4.Runtime.Misc;
 using MongoDB.Bson;
@@ -46,6 +47,8 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     private Logger Logger { get; set; }
     public string Operator { get; set;}
     public List<FilterCondition> Conditions { get; private set; } = new List<FilterCondition>();
+    public List<JoinCondition> JoinConditions { get; private set; } = new List<JoinCondition>();
+
 
 
 
@@ -76,31 +79,31 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
     // Override the listener methods to extract the required information
 
-    public override void EnterCreate_database_statement(abkr_grammar.Create_database_statementContext context)
+    public override void EnterCreate_database_statement(abkr_grammarParser.Create_database_statementContext context)
     {
         StatementType = StatementType.CreateDatabase;
         DatabaseName = context.identifier().GetText();
     }
 
-    public override void EnterDrop_database_statement([NotNull] abkr_grammar.Drop_database_statementContext context)
+    public override void EnterDrop_database_statement([NotNull] abkr_grammarParser.Drop_database_statementContext context)
     {
         StatementType = StatementType.DropDatabase;
         DatabaseName = context.identifier().GetText();
     }
-    public override void EnterCreate_table_statement(abkr_grammar.Create_table_statementContext context)
+    public override void EnterCreate_table_statement(abkr_grammarParser.Create_table_statementContext context)
     {
         StatementType = StatementType.CreateTable;
         SetDatabaseAndTableName(context);
         ProcessColumnDefinitions(context.column_definition_list().column_definition());
     }
 
-    private void SetDatabaseAndTableName(abkr_grammar.Create_table_statementContext context)
+    private void SetDatabaseAndTableName(abkr_grammarParser.Create_table_statementContext context)
     {
         DatabaseName = context.identifier()[0].GetText();
         TableName = context.identifier()[1].GetText();
     }
 
-    private void ProcessColumnDefinitions(IEnumerable<abkr_grammar.Column_definitionContext> columnDefinitions)
+    private void ProcessColumnDefinitions(IEnumerable<abkr_grammarParser.Column_definitionContext> columnDefinitions)
     {
         Columns = new Dictionary<string, object>();
         ForeignKeyColumns = new List<ForeignKey>();
@@ -113,7 +116,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         }
     }
 
-    private void AddColumn(abkr_grammar.Column_definitionContext columnDefinition)
+    private void AddColumn(abkr_grammarParser.Column_definitionContext columnDefinition)
     {
         var columnName = columnDefinition.identifier().GetText();
         ColumnName = columnName;
@@ -121,7 +124,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         Columns[columnName] = columnType;
     }
 
-    private void ProcessColumnConstraints(IEnumerable<abkr_grammar.Column_constraintContext> columnConstraints)
+    private void ProcessColumnConstraints(IEnumerable<abkr_grammarParser.Column_constraintContext> columnConstraints)
     {
         if (columnConstraints == null)
         {
@@ -134,7 +137,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         }
     }
 
-    private void ProcessConstraint(abkr_grammar.Column_constraintContext constraint)
+    private void ProcessConstraint(abkr_grammarParser.Column_constraintContext constraint)
     {
 
         if (IsPrimaryKey(constraint))
@@ -153,7 +156,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         }
     }
 
-    private static bool IsPrimaryKey(abkr_grammar.Column_constraintContext constraint)
+    private static bool IsPrimaryKey(abkr_grammarParser.Column_constraintContext constraint)
     {
         return constraint.PRIMARY() != null;
     }
@@ -164,12 +167,12 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         UniqueKeyColumns.Add(columnName);
     }
 
-    private static bool IsForeignKey(abkr_grammar.Column_constraintContext constraint)
+    private static bool IsForeignKey(abkr_grammarParser.Column_constraintContext constraint)
     {
         return constraint.FOREIGN() != null && constraint.identifier().Length > 2;
     }
 
-    private void AddForeignKey(abkr_grammar.Column_constraintContext constraint, string columnName)
+    private void AddForeignKey(abkr_grammarParser.Column_constraintContext constraint, string columnName)
     {
         var databaseName = constraint.identifier()[0].GetText();
         var foreignTable = constraint.identifier()[1].GetText();
@@ -184,7 +187,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     }
 
 
-    private static bool IsUniqueKey(abkr_grammar.Column_constraintContext constraint)
+    private static bool IsUniqueKey(abkr_grammarParser.Column_constraintContext constraint)
     {
         return constraint.UNIQUE() != null;
     }
@@ -196,7 +199,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
 
 
-    public override void EnterInsert_statement(abkr_grammar.Insert_statementContext context)
+    public override void EnterInsert_statement(abkr_grammarParser.Insert_statementContext context)
     {
         StatementType = StatementType.Insert;
 
@@ -223,7 +226,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
 
 
-    public override void EnterDrop_table_statement(abkr_grammar.Drop_table_statementContext context)
+    public override void EnterDrop_table_statement(abkr_grammarParser.Drop_table_statementContext context)
     {
         StatementType = StatementType.DropTable;
         DatabaseName = context.identifier(0).GetText();
@@ -231,7 +234,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     }
 
 
-    public override void EnterCreate_index_statement(abkr_grammar.Create_index_statementContext context)
+    public override void EnterCreate_index_statement(abkr_grammarParser.Create_index_statementContext context)
     {
         StatementType = StatementType.CreateIndex;
         DatabaseName = context.identifier(0).GetText();
@@ -245,7 +248,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         }
     }
 
-    public override void EnterDrop_index_statement(abkr_grammar.Drop_index_statementContext context)
+    public override void EnterDrop_index_statement(abkr_grammarParser.Drop_index_statementContext context)
     {
         StatementType = StatementType.DropIndex;
         DatabaseName = context.identifier(0).GetText();
@@ -253,7 +256,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         IndexName = context.identifier(2).GetText();
     }
 
-    public override void EnterDelete_statement(abkr_grammar.Delete_statementContext context)
+    public override void EnterDelete_statement(abkr_grammarParser.Delete_statementContext context)
     {
         StatementType = StatementType.Delete;
         DatabaseName = context.identifier(0).GetText();
@@ -261,7 +264,23 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         Conditions.Clear(); // Clear the conditions for a new statement
     }
 
-    public override void EnterSelect_statement(abkr_grammar.Select_statementContext context)
+    public override void EnterJoin_clause([NotNull] abkr_grammarParser.Join_clauseContext context)
+    {
+        var tableAlias = context.identifier(1)?.GetText(); // Depending on the structure of your identifiers.
+        var conditionContext = context.condition();
+        if (conditionContext != null)
+        {
+            var conditionColumnName = conditionContext.identifier().GetText();
+            var op = conditionContext.comparison_operator().GetText();
+            var conditionValue = ExtractValue(conditionContext.value())
+                ?? throw new NullReferenceException();
+
+            JoinConditions.Add(new JoinCondition(tableAlias, conditionColumnName, op, conditionValue.ToString()));
+        }
+    }
+
+
+    public override void EnterSelect_statement(abkr_grammarParser.Select_statementContext context)
     {
         StatementType = StatementType.Select;
         DatabaseName = context.identifier(0).GetText();
@@ -277,8 +296,19 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         {
             SelectedColumns = columnListContext.identifier_list().identifier().Select(c => c.GetText()).ToArray();
         }
+
+        // Handle the JOIN clauses
+        JoinConditions.Clear();  // Clear the join conditions for a new statement
+        var joinClauses = context.table_source().join_clause();
+        if (joinClauses != null)
+        {
+            foreach (var joinClause in joinClauses)
+            {
+                EnterJoin_clause(joinClause);
+            }
+        }
     }
-    public override void EnterSimpleCondition([NotNull] abkr_grammar.SimpleConditionContext context)
+    public override void EnterSimpleCondition([NotNull] abkr_grammarParser.SimpleConditionContext context)
     {
         var columnName = context.identifier().GetText();
         var op = context.comparison_operator().GetText();
@@ -288,13 +318,13 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         Conditions.Add(new FilterCondition(columnName, op, value.ToString()));
     }
 
-    public override void EnterAndExpression([NotNull] abkr_grammar.AndExpressionContext context)
+    public override void EnterAndExpression([NotNull] abkr_grammarParser.AndExpressionContext context)
     {
         // For AND, we don't do anything special here because we've already
         // processed each of the simple conditions in `enterSimpleCondition`
     }
 
-    public override void EnterParenExpression([NotNull] abkr_grammar.ParenExpressionContext context)
+    public override void EnterParenExpression([NotNull] abkr_grammarParser.ParenExpressionContext context)
     {
         // For parentheses, we don't need to do anything because ANTLR will
         // respect operator precedence and the parentheses when building the parse tree
@@ -302,14 +332,14 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
     // Don't forget to clear the conditions list when entering a new statement:
 
-    public override void EnterStatement([NotNull] abkr_grammar.StatementContext context)
+    public override void EnterStatement([NotNull] abkr_grammarParser.StatementContext context)
     {
         Conditions.Clear();
     }
 
 
 
-    private static object ExtractValue(abkr_grammar.ValueContext context)
+    private static object ExtractValue(abkr_grammarParser.ValueContext context)
     {
         // You extract the value here based on its type
         if (context.NUMBER() != null)

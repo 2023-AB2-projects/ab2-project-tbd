@@ -4,6 +4,8 @@ using System.Net.Sockets;
 using System.Text;
 using System.Threading.Tasks;
 using abkr.ClientLogger;
+using System.Diagnostics;
+
 
 namespace abkr.Client
 {
@@ -13,6 +15,7 @@ namespace abkr.Client
         static async Task Main(string[] args)
         {
             bool isSelectStatement = false;
+            Stopwatch stopwatch = new Stopwatch();
 
             // Connect to server
             TcpClient client = new TcpClient();
@@ -63,6 +66,8 @@ namespace abkr.Client
                 string response = responseBuilder.ToString();
 
                 logger.LogMessage(response);
+                stopwatch.Stop();
+                logger.LogMessage($"Elapsed time: {stopwatch.ElapsedMilliseconds} ms");
             }
 
             // Close connection

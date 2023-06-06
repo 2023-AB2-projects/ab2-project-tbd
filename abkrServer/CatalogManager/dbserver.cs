@@ -199,45 +199,43 @@ namespace abkr.CatalogManager
             var _database = _client?.GetDatabase(databaseName);
             var _collection = _database?.GetCollection<BsonDocument>(tableName);
 
-            // Step 1: Retrieve documents from the collection that satisfy the conditions
+            // Retrieve documents from the collection that satisfy the conditions
             var documents = RecordManager.GetDocumentsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
             StringBuilder resultStringBuilder = new StringBuilder();
 
-            // If there are specific columns selected
+            int columnWidth = 20; // Define the width of your columns, can be adjusted based on needs
+
             if (selectedColumns.Length > 0 && !selectedColumns.Contains("*"))
             {
+                var line = "| " + string.Join(" | ", selectedColumns.Select(column => column.PadRight(columnWidth))) + " |";
+                resultStringBuilder.AppendLine("+" + new string('-', line.Length - 2) + "+");
+                resultStringBuilder.AppendLine(line);
+
                 foreach (BsonDocument document in documents)
                 {
                     var row = RecordManager.ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
-                    var stringBuilder = new StringBuilder();
-                    stringBuilder.AppendLine("Record:");
-                    foreach (string column in selectedColumns)
-                    {
-                        string message = $"{column}: {row[column]}";
-                        stringBuilder.AppendLine(message);
-                        logger.LogMessage(message);
-                    }
-                    resultStringBuilder.AppendLine(stringBuilder.ToString());
+                    resultStringBuilder.AppendLine("| " + string.Join(" | ", selectedColumns.Select(column => row[column]?.ToString().PadRight(columnWidth))) + " |");
                 }
+                resultStringBuilder.AppendLine("+" + new string('-', line.Length - 2) + "+");
             }
-            // If all columns are selected (with asterisk '*')
             else
             {
+                var firstRow = RecordManager.ConvertDocumentToRow(documents[0], _catalogManager, databaseName, tableName);
+                var columns = firstRow.Keys.ToList();
+                var line = "| " + string.Join(" | ", columns.Select(column => column.PadRight(columnWidth))) + " |";
+                resultStringBuilder.AppendLine("+" + new string('-', line.Length - 2) + "+");
+                resultStringBuilder.AppendLine(line);
+
                 foreach (BsonDocument document in documents)
                 {
                     var row = RecordManager.ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
-                    var stringBuilder = new StringBuilder();
-                    stringBuilder.AppendLine("Record:");
-                    foreach (var item in row)
-                    {
-                        stringBuilder.AppendLine($"{item.Key}: {item.Value}");
-                    }
-                    logger.LogMessage(stringBuilder.ToString());
-                    resultStringBuilder.AppendLine(stringBuilder.ToString());
+                    resultStringBuilder.AppendLine("| " + string.Join(" | ", columns.Select(column => row[column]?.ToString().PadRight(columnWidth))) + " |");
                 }
+                resultStringBuilder.AppendLine("+" + new string('-', line.Length - 2) + "+");
             }
 
             LastQueryResult = resultStringBuilder.ToString();
+            logger.LogMessage(LastQueryResult);
         }
     }
 }

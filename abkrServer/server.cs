@@ -124,7 +124,7 @@ class Server
                 // Write a response to the client
                 logger.LogMessage($"Server is sending: {response}");
                 await writer.WriteLineAsync(response);
-                await writer.WriteLineAsync("end");  // Send an empty line
+                await writer.WriteLineAsync("end");  
             }
         }
         catch (IOException ex)

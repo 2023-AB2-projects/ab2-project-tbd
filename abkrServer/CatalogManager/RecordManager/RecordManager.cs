@@ -429,12 +429,13 @@ namespace abkr.CatalogManager
 
             return op switch
             {
-                //EQUALS | GREATER_THAN | GREATER_EQUALS | LESS_THAN | LESS_EQUALS;
+                //EQUALS | GREATER_THAN | GREATER_EQUALS | LESS_THAN | LESS_EQUALS | DIFFERS;
                 "=" => values.Where(v => v == columnValue.ToString()),
                 ">" => values.Where(v => Convert.ToInt32(v) > Convert.ToInt32(columnValue.ToString())),
                 ">=" => values.Where(v => Convert.ToInt32(v) >= Convert.ToInt32(columnValue.ToString())),
                 "<" => values.Where(v => Convert.ToInt32(v) < Convert.ToInt32(columnValue.ToString())),
                 "<=" => values.Where(v => Convert.ToInt32(v) <= Convert.ToInt32(columnValue.ToString())),
+                "!=" => values.Where(v => v != columnValue.ToString()),
                 _ => throw new ArgumentException($"Unsupported operator: {op}"),
             };
         }

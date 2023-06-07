@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using abkrServer.CatalogManager.RecordManager;
 using abkr.ServerLogger;
 using System.Text;
+using abkrServer.Parser.Listener;
 
 namespace abkr.CatalogManager
 {
@@ -71,6 +72,9 @@ namespace abkr.CatalogManager
                     var columnType = column.Value;
                     var isUnique = listener.UniqueKeyColumns.Contains(columnName);
                     var isPrimaryKey = columnName == listener.PrimaryKeyColumn;
+
+                    logger.LogMessage($"DatabaseServer.ExecuteStatement: Column {columnName} is a {columnType} {(isPrimaryKey ? "primary key" : "")}");
+
                     var foreignKeyReference = listener.ForeignKeyColumns.Where(fk => fk.ColumnName == columnName).FirstOrDefault();
                     if (foreignKeyReference != null)
                     {
@@ -83,7 +87,9 @@ namespace abkr.CatalogManager
                         isUnique = true;
                     }
 
-                    var newColumn = new Column(columnName, columnType, isUnique, isPrimaryKey, foreignKeyReference);
+                    logger.LogMessage($"DatabaseServer.ExecuteStatement: Column {columnName} is a {columnType} {(isPrimaryKey ? "primary key" : "")} {(isUnique ? "unique" : "")} {(foreignKeyReference != null ? $"foreign key reference to {foreignKeyReference}" : "")}");
+
+                    var newColumn = new Column(columnName, columnType, isPrimaryKey, isUnique, foreignKeyReference);
 
                     columns.Add(newColumn);
                 }
@@ -112,9 +118,9 @@ namespace abkr.CatalogManager
                 Dictionary<string, object> rowData = new Dictionary<string, object>();
                 //string? primaryKeyColumn = null;
 
-                logger.LogMessage("Before calling Insert method...");
-                logger.LogMessage("Columns: " + string.Join(", ", listener.Columns.Keys));
-                logger.LogMessage("Values: " + string.Join(", ", listener.Columns.Values));
+                //logger.LogMessage("Before calling Insert method...");
+                //logger.LogMessage("Columns: " + string.Join(", ", listener.Columns.Keys));
+                //logger.LogMessage("Values: " + string.Join(", ", listener.Columns.Values));
 
                 //primaryKeyColumn = _catalogManager?.GetPrimaryKeyColumn(listener.DatabaseName, listener.TableName)
                 //        ?? throw new Exception("ERROR: Primary key not found!");
@@ -125,26 +131,36 @@ namespace abkr.CatalogManager
                     rowData[column.Key] = column.Value;
                 }
 
-                logger.LogMessage("Row data: " + string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}")));
+                //logger.LogMessage("Row data: " + string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}")));
 
                 RecordManager.Insert(listener.DatabaseName, listener.TableName, rowData, _client, _catalogManager);
 
-                logger.LogMessage("After calling Insert method...");
+                //logger.LogMessage("After calling Insert method...");
 
-                Query(listener.DatabaseName, listener.TableName);
+                //Query(listener.DatabaseName, listener.TableName);
             }
             else if (listener.StatementType == StatementType.Delete)
             {
-                PrintAllDocuments(listener.DatabaseName, listener.TableName);
+                //PrintAllDocuments(listener.DatabaseName, listener.TableName);
                 var conditions = listener.Conditions;
                 RecordManager.Delete(listener.DatabaseName, listener.TableName,conditions, _client, _catalogManager);
-                PrintAllDocuments(listener.DatabaseName, listener.TableName);
+                //PrintAllDocuments(listener.DatabaseName, listener.TableName);
             }
             else if (listener.StatementType == StatementType.Select)
             {
-
-                HandleSelectStatement(listener.DatabaseName, listener.TableName, listener.Conditions, listener.SelectedColumns);
+                if (listener.JoinConditions.Count > 0)
+                {
+                    foreach (var joinCondition in listener.JoinConditions)
+                    {
+                        HandleSelectStatementWithJoin(listener.DatabaseName, listener.TableName, joinCondition.TableAlias, joinCondition, listener.Conditions, listener.SelectedColumns);
+                    }
+                }
+                else
+                {
+                    HandleSelectStatement(listener.DatabaseName, listener.TableName, listener.Conditions, listener.SelectedColumns);
+                }
             }
+
 
             return Task.CompletedTask;
         }
@@ -205,8 +221,59 @@ namespace abkr.CatalogManager
             var formattedResult = FormatOutput(documents, selectedColumns, databaseName, tableName);
 
             LastQueryResult = formattedResult;
-            logger.LogMessage(LastQueryResult);
+            //logger.LogMessage(LastQueryResult);
         }
+
+        private static void HandleSelectStatementWithJoin(string databaseName, string tableName, string joinedTableName, JoinCondition joinCondition, List<FilterCondition> conditions, string[] selectedColumns)
+        {
+            if (string.IsNullOrEmpty(databaseName) || string.IsNullOrEmpty(tableName) || string.IsNullOrEmpty(joinedTableName))
+            {
+                throw new Exception("Database or table name missing in SELECT statement");
+            }
+
+            var _database = GetDatabase(databaseName);
+            var _collection = GetCollection(_database, tableName);
+            var _joinedCollection = GetCollection(_database, joinedTableName);
+
+            // Retrieve documents from the collection that satisfy the conditions
+            var documents = GetDocuments(databaseName, tableName, conditions);
+            var joinConditions = new List<FilterCondition>
+    {
+        new FilterCondition(joinCondition.ConditionColumnName, "=", joinCondition.ConditionValue)
+    };
+            var joinDocuments = GetDocuments(databaseName, joinedTableName, joinConditions);
+
+            var joinRows = new List<Dictionary<string, object>>();
+
+            // Indexed Nested Loop Join
+            foreach (var document in documents)
+            {
+                var row = RecordManager.ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
+
+                foreach (var joinDocument in joinDocuments)
+                {
+                    var joinRow = RecordManager.ConvertDocumentToRow(joinDocument, _catalogManager, databaseName, joinedTableName);
+
+                    if (row[joinCondition.ConditionColumnName].Equals(joinRow[joinCondition.ConditionColumnName]))
+                    {
+                        // Merge the rows
+                        var resultRow = new Dictionary<string, object>(row);
+                        foreach (var column in joinRow)
+                        {
+                            resultRow[$"{joinedTableName}.{column.Key}"] = column.Value;
+                        }
+
+                        joinRows.Add(resultRow);
+                    }
+                }
+            }
+
+            // Format the output using the new rows
+            var formattedResult = FormatOutput(joinRows, selectedColumns, databaseName, tableName);
+
+            LastQueryResult = formattedResult;
+        }
+
 
         // Additional helper functions
         private static IMongoDatabase GetDatabase(string databaseName)
@@ -260,6 +327,40 @@ namespace abkr.CatalogManager
 
             return resultStringBuilder.ToString();
         }
+
+        private static string FormatOutput(List<Dictionary<string, object>> rows, string[] selectedColumns, string databaseName, string tableName)
+        {
+            StringBuilder resultStringBuilder = new StringBuilder();
+            int columnWidth = 20; // Define the width of your columns, can be adjusted based on needs
+
+            if (selectedColumns.Length > 0 && !selectedColumns.Contains("*"))
+            {
+                var line = "| " + string.Join(" | ", selectedColumns.Select(column => column.PadRight(columnWidth))) + " |";
+                resultStringBuilder.AppendLine("+" + new string('-', line.Length - 2) + "+");
+                resultStringBuilder.AppendLine(line);
+
+                foreach (var row in rows)
+                {
+                    resultStringBuilder.AppendLine("| " + string.Join(" | ", selectedColumns.Select(column => row[column]?.ToString().PadRight(columnWidth))) + " |");
+                }
+            }
+            else
+            {
+                var columns = rows[0].Keys.ToList();
+                var line = "| " + string.Join(" | ", columns.Select(column => column.PadRight(columnWidth))) + " |";
+                resultStringBuilder.AppendLine("+" + new string('-', line.Length - 2) + "+");
+                resultStringBuilder.AppendLine(line);
+
+                foreach (var row in rows)
+                {
+                    resultStringBuilder.AppendLine("| " + string.Join(" | ", columns.Select(column => row[column]?.ToString().PadRight(columnWidth))) + " |");
+                }
+            }
+
+            resultStringBuilder.AppendLine("+" + new string('-', resultStringBuilder.ToString().Split('\n')[0].Length - 2) + "+");
+            return resultStringBuilder.ToString();
+        }
+
 
     }
 }

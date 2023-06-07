@@ -219,8 +219,8 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
             Columns[context.identifier_list().identifier(i).GetText()] = context.value_list().value(i).GetText();
         }
 
-        Logger.LogMessage("[Insert] Columns: " + string.Join(", ", Columns.Keys));
-        Logger.LogMessage("[Insert] Values: " + string.Join(", ", Columns.Values));
+        //Logger.LogMessage("[Insert] Columns: " + string.Join(", ", Columns.Keys));
+        //Logger.LogMessage("[Insert] Values: " + string.Join(", ", Columns.Values));
     }
 
 
@@ -265,20 +265,14 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
     public override void EnterJoin_clause([NotNull] abkr_grammarParser.Join_clauseContext context)
     {
-        var databasName = context.identifier(0)?.GetText();
-        var tableAlias = context.identifier(1)?.GetText(); // Depending on the structure of your identifiers.
-        var conditionContext = context.condition();
-        if (conditionContext != null)
-        {
-            EnterExpression(conditionContext.expression());
-            if (Conditions.Count > 0)
-            {
-                // Get the most recent condition
-                var condition = Conditions.Last();
-                JoinConditions.Add(new JoinCondition(databasName,tableAlias, condition.ColumnName, condition.Operator, condition.Value.ToString()));
-            }
-        }
+        var databaseName = context.identifier(0)?.GetText();
+        var tableName = context.identifier(1)?.GetText();
+        var columnName1 = context.identifier(2)?.GetText();
+        var columnName2 = context.identifier(3)?.GetText();
+
+        JoinConditions.Add(new JoinCondition(databaseName, tableName, columnName1, columnName2));
     }
+
 
 
     public override void EnterSelect_statement(abkr_grammarParser.Select_statementContext context)

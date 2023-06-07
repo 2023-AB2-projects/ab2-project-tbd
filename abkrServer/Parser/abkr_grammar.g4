@@ -56,7 +56,7 @@ where_clause: WHERE condition;
 
 table_source: identifier (DOT identifier)? join_clause*;
 
-join_clause: INNER JOIN identifier (DOT identifier)? ON condition;
+join_clause: INNER JOIN identifier (DOT identifier)? ON identifier EQUALS identifier;
 
 condition: expression;
 expression: identifier comparison_operator value     #simpleCondition

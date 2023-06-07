@@ -13,7 +13,7 @@ namespace abkr.CatalogManager
 {
     internal class RecordManager
     {
-        public static Logger logger = new("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/server_logger.log");
+        public static Logger logger = new("C:/Users/Simon Zoltán/Desktop/ab2-project-tbd/abkrServer/server_logger.log");
 
 
         public static void CreateDatabase(string databaseName, IMongoClient _client, CatalogManager _catalogManager)
@@ -371,6 +371,24 @@ namespace abkr.CatalogManager
                     result.Add(document);
                 }
             }
+            return result;
+        }
+
+        public static List<Dictionary<string, object>> GetRowsSatisfyingConditions(string databaseName, string tableName, List<FilterCondition> conditions, IMongoClient _client, CatalogManager _catalogManager)
+        {
+            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+            var documents = collection.Find(new BsonDocument()).ToList();
+
+            var result = new List<Dictionary<string, object>>();
+            foreach (var document in documents)
+            {
+                var row = ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
+                if (SatisfiesConditions(row, conditions))
+                {
+                    result.Add(row);
+                }
+            }
+
             return result;
         }
 

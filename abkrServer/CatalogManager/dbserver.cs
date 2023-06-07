@@ -7,6 +7,7 @@ using System.Diagnostics.CodeAnalysis;
 using abkrServer.CatalogManager.RecordManager;
 using abkr.ServerLogger;
 using System.Text;
+using Newtonsoft.Json;
 
 namespace abkr.CatalogManager
 {
@@ -54,7 +55,7 @@ namespace abkr.CatalogManager
             // Invoke the parser's entry rule (statement) and get the parse tree
             var parseTree = parser.statement();
 
-            var listener = new MyAbkrGrammarListener("C:/Users/bfcsa/source/repos/abkr/abkrServer/Parser/example.xml",_catalogManager, logger);
+            var listener = new MyAbkrGrammarListener("C:/Users/Simon Zoltán/Desktop/ab2-project-tbd/abkrServer/Parser/example.xml", _catalogManager, logger);
             ParseTreeWalker.Default.Walk(listener, parseTree);
 
             // Perform actions based on the parsed statement
@@ -142,7 +143,6 @@ namespace abkr.CatalogManager
             }
             else if (listener.StatementType == StatementType.Select)
             {
-
                 HandleSelectStatement(listener.DatabaseName, listener.TableName, listener.Conditions, listener.SelectedColumns);
             }
 
@@ -200,11 +200,11 @@ namespace abkr.CatalogManager
             var _database = GetDatabase(databaseName);
             var _collection = GetCollection(_database, tableName);
 
-            // Retrieve documents from the collection that satisfy the conditions
-            var documents = GetDocuments(databaseName, tableName, conditions);
-            var formattedResult = FormatOutput(documents, selectedColumns, databaseName, tableName);
+            // Retrieve rows from the collection that satisfy the conditions
+            var documents = GetRows(databaseName, tableName, conditions);
 
-            LastQueryResult = formattedResult;
+            LastQueryResult = JsonConvert.SerializeObject(documents, Formatting.Indented);
+
             logger.LogMessage(LastQueryResult);
         }
 
@@ -222,6 +222,11 @@ namespace abkr.CatalogManager
         private static List<BsonDocument> GetDocuments(string databaseName, string tableName, List<FilterCondition> conditions)
         {
             return RecordManager.GetDocumentsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
+        }
+
+        public static List<Dictionary<string, object>> GetRows(string databaseName, string tableName, List<FilterCondition> conditions)
+        {
+            return RecordManager.GetRowsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
         }
 
         private static string FormatOutput(List<BsonDocument> documents, string[] selectedColumns, string databaseName, string tableName)

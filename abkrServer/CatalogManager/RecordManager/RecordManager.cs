@@ -356,7 +356,7 @@ namespace abkr.CatalogManager
 
         // Function to retrieve documents that satisfy conditions
         public static List<BsonDocument> GetDocumentsSatisfyingConditions(string databaseName, string tableName, List<FilterCondition> conditions, IMongoClient _client, CatalogManager _catalogManager)
-        { 
+        {
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
             var documents = collection.Find(new BsonDocument()).ToList();
 
@@ -370,6 +370,21 @@ namespace abkr.CatalogManager
                 {
                     result.Add(document);
                 }
+            }
+            return result;
+        }
+
+        public static List<Dictionary<string, object>> GetRowsSatisfyingConditions(string databaseName, string tableName, List<FilterCondition> conditions, IMongoClient _client, CatalogManager _catalogManager)
+        {
+            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+            var documents = collection.Find(new BsonDocument()).ToList();
+
+            var result = new List<Dictionary<string, object>>();
+            foreach (var document in documents)
+            {
+                var row = ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
+                if (!SatisfiesConditions(row, conditions)) continue;
+                result.Add(row);
             }
             return result;
         }

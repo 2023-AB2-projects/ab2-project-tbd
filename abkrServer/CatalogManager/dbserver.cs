@@ -205,74 +205,55 @@ namespace abkr.CatalogManager
         }
 
 
-        // Refactored function
         private static void HandleSelectStatement(string databaseName, string tableName, List<FilterCondition> conditions, string[] selectedColumns)
         {
-            if (string.IsNullOrEmpty(databaseName) || string.IsNullOrEmpty(tableName))
-            {
-                throw new Exception("Database or table name missing in SELECT statement");
-            }
-
-            var _database = GetDatabase(databaseName);
-            var _collection = GetCollection(_database, tableName);
-
-            // Retrieve documents from the collection that satisfy the conditions
-            var documents = GetDocuments(databaseName, tableName, conditions);
-            var formattedResult = FormatOutput(documents, selectedColumns, databaseName, tableName);
-
+            ValidateDatabaseAndTable(databaseName, tableName);
+            var rows = GetRows(databaseName, tableName, conditions);
+            var formattedResult = FormatOutput(rows, selectedColumns, databaseName, tableName);
             LastQueryResult = formattedResult;
-            //logger.LogMessage(LastQueryResult);
         }
 
         private static void HandleSelectStatementWithJoin(string databaseName, string tableName, string joinedTableName, JoinCondition joinCondition, List<FilterCondition> conditions, string[] selectedColumns)
         {
-            if (string.IsNullOrEmpty(databaseName) || string.IsNullOrEmpty(tableName) || string.IsNullOrEmpty(joinedTableName))
-            {
-                throw new Exception("Database or table name missing in SELECT statement");
-            }
-
-            var _database = GetDatabase(databaseName);
-            var _collection = GetCollection(_database, tableName);
-            var _joinedCollection = GetCollection(_database, joinedTableName);
-
-            // Retrieve documents from the collection that satisfy the conditions
-            var documents = GetDocuments(databaseName, tableName, conditions);
+            ValidateDatabaseAndTable(databaseName, tableName, joinedTableName);
+            var rows = GetRows(databaseName, tableName, conditions);
             var joinConditions = new List<FilterCondition>
     {
         new FilterCondition(joinCondition.ConditionColumnName, "=", joinCondition.ConditionValue)
     };
-            var joinDocuments = GetDocuments(databaseName, joinedTableName, joinConditions);
+            var joinRows = GetRows(databaseName, joinedTableName, joinConditions);
+            var mergedRows = MergeRows(rows, joinRows, joinCondition.ConditionColumnName, joinedTableName);
+            var formattedResult = FormatOutput(mergedRows, selectedColumns, databaseName, tableName);
+            LastQueryResult = formattedResult;
+        }
 
-
-            var joinRows = new List<Dictionary<string, object>>();
-
-            // Indexed Nested Loop Join
-            foreach (var document in documents)
+        private static void ValidateDatabaseAndTable(params string[] names)
+        {
+            if (names.Any(string.IsNullOrEmpty))
             {
-                var row = RecordManager.ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
+                throw new Exception("Database or table name missing in statement");
+            }
+        }
 
-                foreach (var joinDocument in joinDocuments)
+        private static List<Dictionary<string, object>> MergeRows(List<Dictionary<string, object>> rows, List<Dictionary<string, object>> joinRows, string conditionColumnName, string joinedTableName)
+        {
+            var mergedRows = new List<Dictionary<string, object>>();
+            foreach (var row in rows)
+            {
+                foreach (var joinRow in joinRows)
                 {
-                    var joinRow = RecordManager.ConvertDocumentToRow(joinDocument, _catalogManager, databaseName, joinedTableName);
-
-                    if (row[joinCondition.ConditionColumnName].Equals(joinRow[joinCondition.ConditionColumnName]))
+                    if (row[conditionColumnName].Equals(joinRow[conditionColumnName]))
                     {
-                        // Merge the rows
-                        var resultRow = new Dictionary<string, object>(row);
+                        var mergedRow = new Dictionary<string, object>(row);
                         foreach (var column in joinRow)
                         {
-                            resultRow[$"{joinedTableName}.{column.Key}"] = column.Value;
+                            mergedRow[$"{joinedTableName}.{column.Key}"] = column.Value;
                         }
-
-                        joinRows.Add(resultRow);
+                        mergedRows.Add(mergedRow);
                     }
                 }
             }
-
-            // Format the output using the new rows
-            var formattedResult = FormatOutput(joinRows, selectedColumns, databaseName, tableName);
-
-            LastQueryResult = formattedResult;
+            return mergedRows;
         }
 
 
@@ -290,6 +271,11 @@ namespace abkr.CatalogManager
         private static List<BsonDocument> GetDocuments(string databaseName, string tableName, List<FilterCondition> conditions)
         {
             return RecordManager.GetDocumentsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
+        }
+
+        private static List<Dictionary<string, object>> GetRows(string databaseName, string tableName, List<FilterCondition> conditions)
+        {
+            return RecordManager.GetRowsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
         }
 
         private static string FormatOutput(List<BsonDocument> documents, string[] selectedColumns, string databaseName, string tableName)

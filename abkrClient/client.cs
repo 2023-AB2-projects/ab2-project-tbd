@@ -17,7 +17,6 @@ namespace abkr.Client
             bool isSelectStatement = false;
             Stopwatch stopwatch = new Stopwatch();
 
-            stopwatch.Start();
 
             // Connect to server
             TcpClient client = new TcpClient();
@@ -34,6 +33,7 @@ namespace abkr.Client
                 // Read SQL statement from the command line
                 Console.Write("> ");
                 string? sqlStatement = Console.ReadLine();
+                stopwatch.Start();
 
                 if (string.IsNullOrWhiteSpace(sqlStatement))
                 {

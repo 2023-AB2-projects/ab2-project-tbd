@@ -33,7 +33,7 @@ namespace abkr.Client
                 // Read SQL statement from the command line
                 Console.Write("> ");
                 string? sqlStatement = Console.ReadLine();
-                stopwatch.Start();
+                stopwatch.Restart();
 
                 if (string.IsNullOrWhiteSpace(sqlStatement))
                 {

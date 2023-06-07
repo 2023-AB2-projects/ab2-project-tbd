@@ -243,6 +243,7 @@ namespace abkr.CatalogManager
     };
             var joinDocuments = GetDocuments(databaseName, joinedTableName, joinConditions);
 
+
             var joinRows = new List<Dictionary<string, object>>();
 
             // Indexed Nested Loop Join

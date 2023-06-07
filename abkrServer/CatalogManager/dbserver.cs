@@ -8,6 +8,7 @@ using abkrServer.CatalogManager.RecordManager;
 using abkr.ServerLogger;
 using System.Text;
 using Newtonsoft.Json;
+using abkrServer.Parser.Listener;
 
 namespace abkr.CatalogManager
 {
@@ -72,20 +73,23 @@ namespace abkr.CatalogManager
                     var columnType = column.Value;
                     var isUnique = listener.UniqueKeyColumns.Contains(columnName);
                     var isPrimaryKey = columnName == listener.PrimaryKeyColumn;
+
+                    logger.LogMessage($"DatabaseServer.ExecuteStatement: Column {columnName} is a {columnType} {(isPrimaryKey ? "primary key" : "")}");
+
                     var foreignKeyReference = listener.ForeignKeyColumns.Where(fk => fk.ColumnName == columnName).FirstOrDefault();
                     if (foreignKeyReference != null)
                     {
                         logger.LogMessage($"DatabaseServer.ExecuteStatement: Column {columnName} is a foreign key reference to {foreignKeyReference}");
                     }
 
-
                     if (isPrimaryKey)
                     {
                         isUnique = true;
                     }
 
-                    var newColumn = new Column(columnName, columnType, isUnique, isPrimaryKey, foreignKeyReference);
+                    logger.LogMessage($"DatabaseServer.ExecuteStatement: Column {columnName} is a {columnType} {(isPrimaryKey ? "primary key" : "")} {(isUnique ? "unique" : "")} {(foreignKeyReference != null ? $"foreign key reference to {foreignKeyReference}" : "")}");
 
+                    var newColumn = new Column(columnName, columnType, isPrimaryKey, isUnique, foreignKeyReference);
                     columns.Add(newColumn);
                 }
 
@@ -113,9 +117,9 @@ namespace abkr.CatalogManager
                 Dictionary<string, object> rowData = new Dictionary<string, object>();
                 //string? primaryKeyColumn = null;
 
-                logger.LogMessage("Before calling Insert method...");
-                logger.LogMessage("Columns: " + string.Join(", ", listener.Columns.Keys));
-                logger.LogMessage("Values: " + string.Join(", ", listener.Columns.Values));
+                //logger.LogMessage("Before calling Insert method...");
+                //logger.LogMessage("Columns: " + string.Join(", ", listener.Columns.Keys));
+                //logger.LogMessage("Values: " + string.Join(", ", listener.Columns.Values));
 
                 //primaryKeyColumn = _catalogManager?.GetPrimaryKeyColumn(listener.DatabaseName, listener.TableName)
                 //        ?? throw new Exception("ERROR: Primary key not found!");
@@ -126,24 +130,34 @@ namespace abkr.CatalogManager
                     rowData[column.Key] = column.Value;
                 }
 
-                logger.LogMessage("Row data: " + string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}")));
+                //logger.LogMessage("Row data: " + string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}")));
 
                 RecordManager.Insert(listener.DatabaseName, listener.TableName, rowData, _client, _catalogManager);
 
-                logger.LogMessage("After calling Insert method...");
+               // logger.LogMessage("After calling Insert method...");
 
                 Query(listener.DatabaseName, listener.TableName);
             }
             else if (listener.StatementType == StatementType.Delete)
             {
-                PrintAllDocuments(listener.DatabaseName, listener.TableName);
+               // PrintAllDocuments(listener.DatabaseName, listener.TableName);
                 var conditions = listener.Conditions;
                 RecordManager.Delete(listener.DatabaseName, listener.TableName,conditions, _client, _catalogManager);
-                PrintAllDocuments(listener.DatabaseName, listener.TableName);
+                //PrintAllDocuments(listener.DatabaseName, listener.TableName);
             }
             else if (listener.StatementType == StatementType.Select)
             {
-                HandleSelectStatement(listener.DatabaseName, listener.TableName, listener.Conditions, listener.SelectedColumns);
+                if (listener.JoinConditions.Count > 0)
+                {
+                    foreach (var joinCondition in listener.JoinConditions)
+                    {
+                        HandleSelectStatementWithJoin(listener.DatabaseName, listener.TableName, joinCondition.TableAlias, joinCondition, listener.Conditions, listener.SelectedColumns);
+                    }
+                }
+                else
+                {
+                    HandleSelectStatement(listener.DatabaseName, listener.TableName, listener.Conditions, listener.SelectedColumns);
+                }
             }
 
             return Task.CompletedTask;
@@ -192,24 +206,59 @@ namespace abkr.CatalogManager
         // Refactored function
         private static void HandleSelectStatement(string databaseName, string tableName, List<FilterCondition> conditions, string[] selectedColumns)
         {
-            if (string.IsNullOrEmpty(databaseName) || string.IsNullOrEmpty(tableName))
-            {
-                throw new Exception("Database or table name missing in SELECT statement");
-            }
-
-            var _database = GetDatabase(databaseName);
-            var _collection = GetCollection(_database, tableName);
-
+            ValidateDatabaseAndTable(databaseName, tableName);
             // Retrieve rows from the collection that satisfy the conditions
-            var documents = GetRows(databaseName, tableName, conditions);
+            var rows = GetRows(databaseName, tableName, conditions);
 
-            LastQueryResult = JsonConvert.SerializeObject(documents, Formatting.Indented);
+            LastQueryResult = JsonConvert.SerializeObject(rows, Formatting.Indented);
 
-            logger.LogMessage(LastQueryResult);
+            //logger.LogMessage(LastQueryResult);
         }
 
-        // Additional helper functions
-        private static IMongoDatabase GetDatabase(string databaseName)
+        private static void HandleSelectStatementWithJoin(string databaseName, string tableName, string joinedTableName, JoinCondition joinCondition, List<FilterCondition> conditions, string[] selectedColumns)
+        {
+            ValidateDatabaseAndTable(databaseName, tableName, joinedTableName);
+            var rows = GetRows(databaseName, tableName, conditions);
+            var joinConditions = new List<FilterCondition>
+            {
+                new FilterCondition(joinCondition.ConditionColumnName, "=", joinCondition.ConditionValue)
+            };
+            var joinRows = GetRows(databaseName, joinedTableName, joinConditions);
+            var mergedRows = MergeRows(rows, joinRows, joinCondition.ConditionColumnName, joinedTableName);
+            
+            LastQueryResult = JsonConvert.SerializeObject(rows, Formatting.Indented);
+
+        }
+        private static void ValidateDatabaseAndTable(params string[] names)
+        {
+            if (names.Any(string.IsNullOrEmpty))
+            {
+                throw new Exception("Database or table name missing in statement");
+            }
+        }
+
+        private static List<Dictionary<string, object>> MergeRows(List<Dictionary<string, object>> rows, List<Dictionary<string, object>> joinRows, string conditionColumnName, string joinedTableName)
+        {
+            var mergedRows = new List<Dictionary<string, object>>();
+            foreach (var row in rows)
+            {
+                foreach (var joinRow in joinRows)
+                {
+                    if (row[conditionColumnName].Equals(joinRow[conditionColumnName]))
+                    {
+                        var mergedRow = new Dictionary<string, object>(row);
+                        foreach (var column in joinRow)
+                        {
+                            mergedRow[$"{joinedTableName}.{column.Key}"] = column.Value;
+                        }
+                        mergedRows.Add(mergedRow);
+                    }
+                }
+            }
+            return mergedRows;
+        }
+            // Additional helper functions
+            private static IMongoDatabase GetDatabase(string databaseName)
         {
             return _client?.GetDatabase(databaseName);
         }
@@ -229,7 +278,7 @@ namespace abkr.CatalogManager
             return RecordManager.GetRowsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
         }
 
-        private static string FormatOutput(List<BsonDocument> documents, string[] selectedColumns, string databaseName, string tableName)
+        private static string FormatOutput(List<Dictionary<string, object>> rows, string[] selectedColumns, string databaseName, string tableName)
         {
             StringBuilder resultStringBuilder = new StringBuilder();
             int columnWidth = 20; // Define the width of your columns, can be adjusted based on needs
@@ -240,29 +289,25 @@ namespace abkr.CatalogManager
                 resultStringBuilder.AppendLine("+" + new string('-', line.Length - 2) + "+");
                 resultStringBuilder.AppendLine(line);
 
-                foreach (BsonDocument document in documents)
+                foreach (var row in rows)
                 {
-                    var row = RecordManager.ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
                     resultStringBuilder.AppendLine("| " + string.Join(" | ", selectedColumns.Select(column => row[column]?.ToString().PadRight(columnWidth))) + " |");
                 }
-                resultStringBuilder.AppendLine("+" + new string('-', line.Length - 2) + "+");
             }
             else
             {
-                var firstRow = RecordManager.ConvertDocumentToRow(documents[0], _catalogManager, databaseName, tableName);
-                var columns = firstRow.Keys.ToList();
+                var columns = rows[0].Keys.ToList();
                 var line = "| " + string.Join(" | ", columns.Select(column => column.PadRight(columnWidth))) + " |";
                 resultStringBuilder.AppendLine("+" + new string('-', line.Length - 2) + "+");
                 resultStringBuilder.AppendLine(line);
 
-                foreach (BsonDocument document in documents)
+                foreach (var row in rows)
                 {
-                    var row = RecordManager.ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
                     resultStringBuilder.AppendLine("| " + string.Join(" | ", columns.Select(column => row[column]?.ToString().PadRight(columnWidth))) + " |");
                 }
-                resultStringBuilder.AppendLine("+" + new string('-', line.Length - 2) + "+");
             }
 
+            resultStringBuilder.AppendLine("+" + new string('-', resultStringBuilder.ToString().Split('\n')[0].Length - 2) + "+");
             return resultStringBuilder.ToString();
         }
 

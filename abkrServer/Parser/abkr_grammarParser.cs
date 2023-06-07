@@ -32,1921 +32,2261 @@ using DFA = Antlr4.Runtime.Dfa.DFA;
 
 [System.CodeDom.Compiler.GeneratedCode("ANTLR", "4.12.0")]
 [System.CLSCompliant(false)]
-public partial class abkr_grammarParser : Parser {
-	protected static DFA[] decisionToDFA;
-	protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
-	public const int
-		CREATE=1, DATABASE=2, TABLE=3, INDEX=4, UNIQUE=5, DROP=6, ON=7, INT=8, 
-		VARCHAR=9, PRIMARY=10, KEY=11, FOREIGN=12, REFERENCES=13, INSERT=14, INTO=15, 
-		VALUES=16, DELETE=17, FROM=18, WHERE=19, SELECT=20, AND=21, ASTERISK=22, 
-		GREATER_THAN=23, GREATER_EQUALS=24, LESS_THAN=25, LESS_EQUALS=26, DIFFERS=27, 
-		INNER=28, JOIN=29, DOT=30, COMMA=31, COLON=32, LPAREN=33, RPAREN=34, EQUALS=35, 
-		IDENTIFIER=36, NUMBER=37, STRING=38, WS=39;
-	public const int
-		RULE_statement = 0, RULE_create_database_statement = 1, RULE_create_table_statement = 2, 
-		RULE_drop_database_statement = 3, RULE_drop_table_statement = 4, RULE_create_index_statement = 5, 
-		RULE_drop_index_statement = 6, RULE_column_definition_list = 7, RULE_column_definition = 8, 
-		RULE_column_constraint = 9, RULE_data_type = 10, RULE_identifier_list = 11, 
-		RULE_identifier = 12, RULE_insert_statement = 13, RULE_delete_statement = 14, 
-		RULE_value_list = 15, RULE_value = 16, RULE_select_statement = 17, RULE_column_list = 18, 
-		RULE_where_clause = 19, RULE_table_source = 20, RULE_join_clause = 21, 
-		RULE_condition = 22, RULE_expression = 23, RULE_comparison_operator = 24;
-	public static readonly string[] ruleNames = {
-		"statement", "create_database_statement", "create_table_statement", "drop_database_statement", 
-		"drop_table_statement", "create_index_statement", "drop_index_statement", 
-		"column_definition_list", "column_definition", "column_constraint", "data_type", 
-		"identifier_list", "identifier", "insert_statement", "delete_statement", 
-		"value_list", "value", "select_statement", "column_list", "where_clause", 
-		"table_source", "join_clause", "condition", "expression", "comparison_operator"
-	};
-
-	private static readonly string[] _LiteralNames = {
-		null, null, null, null, null, null, null, null, null, null, null, null, 
-		null, null, null, null, null, null, null, null, null, null, "'*'", "'>'", 
-		"'>='", "'<'", "'<='", "'!='", null, null, "'.'", "','", "':'", "'('", 
-		"')'", "'='"
-	};
-	private static readonly string[] _SymbolicNames = {
-		null, "CREATE", "DATABASE", "TABLE", "INDEX", "UNIQUE", "DROP", "ON", 
-		"INT", "VARCHAR", "PRIMARY", "KEY", "FOREIGN", "REFERENCES", "INSERT", 
-		"INTO", "VALUES", "DELETE", "FROM", "WHERE", "SELECT", "AND", "ASTERISK", 
-		"GREATER_THAN", "GREATER_EQUALS", "LESS_THAN", "LESS_EQUALS", "DIFFERS", 
-		"INNER", "JOIN", "DOT", "COMMA", "COLON", "LPAREN", "RPAREN", "EQUALS", 
-		"IDENTIFIER", "NUMBER", "STRING", "WS"
-	};
-	public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
-
-	[NotNull]
-	public override IVocabulary Vocabulary
-	{
-		get
-		{
-			return DefaultVocabulary;
-		}
-	}
-
-	public override string GrammarFileName { get { return "abkr_grammar.g4"; } }
-
-	public override string[] RuleNames { get { return ruleNames; } }
-
-	public override int[] SerializedAtn { get { return _serializedATN; } }
-
-	static abkr_grammarParser() {
-		decisionToDFA = new DFA[_ATN.NumberOfDecisions];
-		for (int i = 0; i < _ATN.NumberOfDecisions; i++) {
-			decisionToDFA[i] = new DFA(_ATN.GetDecisionState(i), i);
-		}
-	}
-
-		public abkr_grammarParser(ITokenStream input) : this(input, Console.Out, Console.Error) { }
-
-		public abkr_grammarParser(ITokenStream input, TextWriter output, TextWriter errorOutput)
-		: base(input, output, errorOutput)
-	{
-		Interpreter = new ParserATNSimulator(this, _ATN, decisionToDFA, sharedContextCache);
-	}
-
-	public partial class StatementContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public Create_database_statementContext create_database_statement() {
-			return GetRuleContext<Create_database_statementContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Create_table_statementContext create_table_statement() {
-			return GetRuleContext<Create_table_statementContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Drop_database_statementContext drop_database_statement() {
-			return GetRuleContext<Drop_database_statementContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Drop_table_statementContext drop_table_statement() {
-			return GetRuleContext<Drop_table_statementContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Create_index_statementContext create_index_statement() {
-			return GetRuleContext<Create_index_statementContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Drop_index_statementContext drop_index_statement() {
-			return GetRuleContext<Drop_index_statementContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Insert_statementContext insert_statement() {
-			return GetRuleContext<Insert_statementContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Delete_statementContext delete_statement() {
-			return GetRuleContext<Delete_statementContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Select_statementContext select_statement() {
-			return GetRuleContext<Select_statementContext>(0);
-		}
-		public StatementContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_statement; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterStatement(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitStatement(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public StatementContext statement() {
-		StatementContext _localctx = new StatementContext(Context, State);
-		EnterRule(_localctx, 0, RULE_statement);
-		try {
-			State = 59;
-			ErrorHandler.Sync(this);
-			switch ( Interpreter.AdaptivePredict(TokenStream,0,Context) ) {
-			case 1:
-				EnterOuterAlt(_localctx, 1);
-				{
-				State = 50;
-				create_database_statement();
-				}
-				break;
-			case 2:
-				EnterOuterAlt(_localctx, 2);
-				{
-				State = 51;
-				create_table_statement();
-				}
-				break;
-			case 3:
-				EnterOuterAlt(_localctx, 3);
-				{
-				State = 52;
-				drop_database_statement();
-				}
-				break;
-			case 4:
-				EnterOuterAlt(_localctx, 4);
-				{
-				State = 53;
-				drop_table_statement();
-				}
-				break;
-			case 5:
-				EnterOuterAlt(_localctx, 5);
-				{
-				State = 54;
-				create_index_statement();
-				}
-				break;
-			case 6:
-				EnterOuterAlt(_localctx, 6);
-				{
-				State = 55;
-				drop_index_statement();
-				}
-				break;
-			case 7:
-				EnterOuterAlt(_localctx, 7);
-				{
-				State = 56;
-				insert_statement();
-				}
-				break;
-			case 8:
-				EnterOuterAlt(_localctx, 8);
-				{
-				State = 57;
-				delete_statement();
-				}
-				break;
-			case 9:
-				EnterOuterAlt(_localctx, 9);
-				{
-				State = 58;
-				select_statement();
-				}
-				break;
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Create_database_statementContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CREATE() { return GetToken(abkr_grammarParser.CREATE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DATABASE() { return GetToken(abkr_grammarParser.DATABASE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier() {
-			return GetRuleContext<IdentifierContext>(0);
-		}
-		public Create_database_statementContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_create_database_statement; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterCreate_database_statement(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitCreate_database_statement(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Create_database_statementContext create_database_statement() {
-		Create_database_statementContext _localctx = new Create_database_statementContext(Context, State);
-		EnterRule(_localctx, 2, RULE_create_database_statement);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 61;
-			Match(CREATE);
-			State = 62;
-			Match(DATABASE);
-			State = 63;
-			identifier();
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Create_table_statementContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CREATE() { return GetToken(abkr_grammarParser.CREATE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode TABLE() { return GetToken(abkr_grammarParser.TABLE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext[] identifier() {
-			return GetRuleContexts<IdentifierContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier(int i) {
-			return GetRuleContext<IdentifierContext>(i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(abkr_grammarParser.DOT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LPAREN() { return GetToken(abkr_grammarParser.LPAREN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public Column_definition_listContext column_definition_list() {
-			return GetRuleContext<Column_definition_listContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RPAREN() { return GetToken(abkr_grammarParser.RPAREN, 0); }
-		public Create_table_statementContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_create_table_statement; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterCreate_table_statement(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitCreate_table_statement(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Create_table_statementContext create_table_statement() {
-		Create_table_statementContext _localctx = new Create_table_statementContext(Context, State);
-		EnterRule(_localctx, 4, RULE_create_table_statement);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 65;
-			Match(CREATE);
-			State = 66;
-			Match(TABLE);
-			State = 67;
-			identifier();
-			State = 68;
-			Match(DOT);
-			State = 69;
-			identifier();
-			State = 70;
-			Match(LPAREN);
-			State = 71;
-			column_definition_list();
-			State = 72;
-			Match(RPAREN);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Drop_database_statementContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DROP() { return GetToken(abkr_grammarParser.DROP, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DATABASE() { return GetToken(abkr_grammarParser.DATABASE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier() {
-			return GetRuleContext<IdentifierContext>(0);
-		}
-		public Drop_database_statementContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_drop_database_statement; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterDrop_database_statement(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitDrop_database_statement(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Drop_database_statementContext drop_database_statement() {
-		Drop_database_statementContext _localctx = new Drop_database_statementContext(Context, State);
-		EnterRule(_localctx, 6, RULE_drop_database_statement);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 74;
-			Match(DROP);
-			State = 75;
-			Match(DATABASE);
-			State = 76;
-			identifier();
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Drop_table_statementContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DROP() { return GetToken(abkr_grammarParser.DROP, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode TABLE() { return GetToken(abkr_grammarParser.TABLE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext[] identifier() {
-			return GetRuleContexts<IdentifierContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier(int i) {
-			return GetRuleContext<IdentifierContext>(i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(abkr_grammarParser.DOT, 0); }
-		public Drop_table_statementContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_drop_table_statement; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterDrop_table_statement(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitDrop_table_statement(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Drop_table_statementContext drop_table_statement() {
-		Drop_table_statementContext _localctx = new Drop_table_statementContext(Context, State);
-		EnterRule(_localctx, 8, RULE_drop_table_statement);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 78;
-			Match(DROP);
-			State = 79;
-			Match(TABLE);
-			State = 80;
-			identifier();
-			State = 81;
-			Match(DOT);
-			State = 82;
-			identifier();
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Create_index_statementContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CREATE() { return GetToken(abkr_grammarParser.CREATE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INDEX() { return GetToken(abkr_grammarParser.INDEX, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext[] identifier() {
-			return GetRuleContexts<IdentifierContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier(int i) {
-			return GetRuleContext<IdentifierContext>(i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ON() { return GetToken(abkr_grammarParser.ON, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LPAREN() { return GetToken(abkr_grammarParser.LPAREN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public Identifier_listContext identifier_list() {
-			return GetRuleContext<Identifier_listContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RPAREN() { return GetToken(abkr_grammarParser.RPAREN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode UNIQUE() { return GetToken(abkr_grammarParser.UNIQUE, 0); }
-		public Create_index_statementContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_create_index_statement; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterCreate_index_statement(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitCreate_index_statement(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Create_index_statementContext create_index_statement() {
-		Create_index_statementContext _localctx = new Create_index_statementContext(Context, State);
-		EnterRule(_localctx, 10, RULE_create_index_statement);
-		int _la;
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 84;
-			Match(CREATE);
-			State = 86;
-			ErrorHandler.Sync(this);
-			_la = TokenStream.LA(1);
-			if (_la==UNIQUE) {
-				{
-				State = 85;
-				Match(UNIQUE);
-				}
-			}
-
-			State = 88;
-			Match(INDEX);
-			State = 89;
-			identifier();
-			State = 90;
-			Match(ON);
-			State = 91;
-			identifier();
-			State = 92;
-			Match(LPAREN);
-			State = 93;
-			identifier_list();
-			State = 94;
-			Match(RPAREN);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Drop_index_statementContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DROP() { return GetToken(abkr_grammarParser.DROP, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INDEX() { return GetToken(abkr_grammarParser.INDEX, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext[] identifier() {
-			return GetRuleContexts<IdentifierContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier(int i) {
-			return GetRuleContext<IdentifierContext>(i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ON() { return GetToken(abkr_grammarParser.ON, 0); }
-		public Drop_index_statementContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_drop_index_statement; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterDrop_index_statement(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitDrop_index_statement(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Drop_index_statementContext drop_index_statement() {
-		Drop_index_statementContext _localctx = new Drop_index_statementContext(Context, State);
-		EnterRule(_localctx, 12, RULE_drop_index_statement);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 96;
-			Match(DROP);
-			State = 97;
-			Match(INDEX);
-			State = 98;
-			identifier();
-			State = 99;
-			Match(ON);
-			State = 100;
-			identifier();
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Column_definition_listContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public Column_definitionContext[] column_definition() {
-			return GetRuleContexts<Column_definitionContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Column_definitionContext column_definition(int i) {
-			return GetRuleContext<Column_definitionContext>(i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] COMMA() { return GetTokens(abkr_grammarParser.COMMA); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COMMA(int i) {
-			return GetToken(abkr_grammarParser.COMMA, i);
-		}
-		public Column_definition_listContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_column_definition_list; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterColumn_definition_list(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitColumn_definition_list(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Column_definition_listContext column_definition_list() {
-		Column_definition_listContext _localctx = new Column_definition_listContext(Context, State);
-		EnterRule(_localctx, 14, RULE_column_definition_list);
-		int _la;
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 102;
-			column_definition();
-			State = 107;
-			ErrorHandler.Sync(this);
-			_la = TokenStream.LA(1);
-			while (_la==COMMA) {
-				{
-				{
-				State = 103;
-				Match(COMMA);
-				State = 104;
-				column_definition();
-				}
-				}
-				State = 109;
-				ErrorHandler.Sync(this);
-				_la = TokenStream.LA(1);
-			}
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Column_definitionContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier() {
-			return GetRuleContext<IdentifierContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Data_typeContext data_type() {
-			return GetRuleContext<Data_typeContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Column_constraintContext[] column_constraint() {
-			return GetRuleContexts<Column_constraintContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Column_constraintContext column_constraint(int i) {
-			return GetRuleContext<Column_constraintContext>(i);
-		}
-		public Column_definitionContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_column_definition; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterColumn_definition(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitColumn_definition(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Column_definitionContext column_definition() {
-		Column_definitionContext _localctx = new Column_definitionContext(Context, State);
-		EnterRule(_localctx, 16, RULE_column_definition);
-		int _la;
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 110;
-			identifier();
-			State = 111;
-			data_type();
-			State = 115;
-			ErrorHandler.Sync(this);
-			_la = TokenStream.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 5152L) != 0)) {
-				{
-				{
-				State = 112;
-				column_constraint();
-				}
-				}
-				State = 117;
-				ErrorHandler.Sync(this);
-				_la = TokenStream.LA(1);
-			}
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Column_constraintContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode PRIMARY() { return GetToken(abkr_grammarParser.PRIMARY, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode KEY() { return GetToken(abkr_grammarParser.KEY, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode UNIQUE() { return GetToken(abkr_grammarParser.UNIQUE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode FOREIGN() { return GetToken(abkr_grammarParser.FOREIGN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode REFERENCES() { return GetToken(abkr_grammarParser.REFERENCES, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext[] identifier() {
-			return GetRuleContexts<IdentifierContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier(int i) {
-			return GetRuleContext<IdentifierContext>(i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(abkr_grammarParser.DOT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COLON() { return GetToken(abkr_grammarParser.COLON, 0); }
-		public Column_constraintContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_column_constraint; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterColumn_constraint(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitColumn_constraint(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Column_constraintContext column_constraint() {
-		Column_constraintContext _localctx = new Column_constraintContext(Context, State);
-		EnterRule(_localctx, 18, RULE_column_constraint);
-		try {
-			State = 130;
-			ErrorHandler.Sync(this);
-			switch (TokenStream.LA(1)) {
-			case PRIMARY:
-				EnterOuterAlt(_localctx, 1);
-				{
-				State = 118;
-				Match(PRIMARY);
-				State = 119;
-				Match(KEY);
-				}
-				break;
-			case UNIQUE:
-				EnterOuterAlt(_localctx, 2);
-				{
-				State = 120;
-				Match(UNIQUE);
-				}
-				break;
-			case FOREIGN:
-				EnterOuterAlt(_localctx, 3);
-				{
-				State = 121;
-				Match(FOREIGN);
-				State = 122;
-				Match(KEY);
-				State = 123;
-				Match(REFERENCES);
-				State = 124;
-				identifier();
-				State = 125;
-				Match(DOT);
-				State = 126;
-				identifier();
-				State = 127;
-				Match(COLON);
-				State = 128;
-				identifier();
-				}
-				break;
-			default:
-				throw new NoViableAltException(this);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Data_typeContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INT() { return GetToken(abkr_grammarParser.INT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode VARCHAR() { return GetToken(abkr_grammarParser.VARCHAR, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LPAREN() { return GetToken(abkr_grammarParser.LPAREN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NUMBER() { return GetToken(abkr_grammarParser.NUMBER, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RPAREN() { return GetToken(abkr_grammarParser.RPAREN, 0); }
-		public Data_typeContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_data_type; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterData_type(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitData_type(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Data_typeContext data_type() {
-		Data_typeContext _localctx = new Data_typeContext(Context, State);
-		EnterRule(_localctx, 20, RULE_data_type);
-		try {
-			State = 137;
-			ErrorHandler.Sync(this);
-			switch (TokenStream.LA(1)) {
-			case INT:
-				EnterOuterAlt(_localctx, 1);
-				{
-				State = 132;
-				Match(INT);
-				}
-				break;
-			case VARCHAR:
-				EnterOuterAlt(_localctx, 2);
-				{
-				State = 133;
-				Match(VARCHAR);
-				State = 134;
-				Match(LPAREN);
-				State = 135;
-				Match(NUMBER);
-				State = 136;
-				Match(RPAREN);
-				}
-				break;
-			default:
-				throw new NoViableAltException(this);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Identifier_listContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext[] identifier() {
-			return GetRuleContexts<IdentifierContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier(int i) {
-			return GetRuleContext<IdentifierContext>(i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] COMMA() { return GetTokens(abkr_grammarParser.COMMA); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COMMA(int i) {
-			return GetToken(abkr_grammarParser.COMMA, i);
-		}
-		public Identifier_listContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_identifier_list; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterIdentifier_list(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitIdentifier_list(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Identifier_listContext identifier_list() {
-		Identifier_listContext _localctx = new Identifier_listContext(Context, State);
-		EnterRule(_localctx, 22, RULE_identifier_list);
-		int _la;
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 139;
-			identifier();
-			State = 144;
-			ErrorHandler.Sync(this);
-			_la = TokenStream.LA(1);
-			while (_la==COMMA) {
-				{
-				{
-				State = 140;
-				Match(COMMA);
-				State = 141;
-				identifier();
-				}
-				}
-				State = 146;
-				ErrorHandler.Sync(this);
-				_la = TokenStream.LA(1);
-			}
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class IdentifierContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER() { return GetToken(abkr_grammarParser.IDENTIFIER, 0); }
-		public IdentifierContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_identifier; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterIdentifier(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitIdentifier(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public IdentifierContext identifier() {
-		IdentifierContext _localctx = new IdentifierContext(Context, State);
-		EnterRule(_localctx, 24, RULE_identifier);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 147;
-			Match(IDENTIFIER);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Insert_statementContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INSERT() { return GetToken(abkr_grammarParser.INSERT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INTO() { return GetToken(abkr_grammarParser.INTO, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext[] identifier() {
-			return GetRuleContexts<IdentifierContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier(int i) {
-			return GetRuleContext<IdentifierContext>(i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(abkr_grammarParser.DOT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode VALUES() { return GetToken(abkr_grammarParser.VALUES, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] LPAREN() { return GetTokens(abkr_grammarParser.LPAREN); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LPAREN(int i) {
-			return GetToken(abkr_grammarParser.LPAREN, i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Value_listContext value_list() {
-			return GetRuleContext<Value_listContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] RPAREN() { return GetTokens(abkr_grammarParser.RPAREN); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RPAREN(int i) {
-			return GetToken(abkr_grammarParser.RPAREN, i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Identifier_listContext identifier_list() {
-			return GetRuleContext<Identifier_listContext>(0);
-		}
-		public Insert_statementContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_insert_statement; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterInsert_statement(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitInsert_statement(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Insert_statementContext insert_statement() {
-		Insert_statementContext _localctx = new Insert_statementContext(Context, State);
-		EnterRule(_localctx, 26, RULE_insert_statement);
-		int _la;
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 149;
-			Match(INSERT);
-			State = 150;
-			Match(INTO);
-			State = 151;
-			identifier();
-			State = 152;
-			Match(DOT);
-			State = 153;
-			identifier();
-			State = 158;
-			ErrorHandler.Sync(this);
-			_la = TokenStream.LA(1);
-			if (_la==LPAREN) {
-				{
-				State = 154;
-				Match(LPAREN);
-				State = 155;
-				identifier_list();
-				State = 156;
-				Match(RPAREN);
-				}
-			}
-
-			State = 160;
-			Match(VALUES);
-			State = 161;
-			Match(LPAREN);
-			State = 162;
-			value_list();
-			State = 163;
-			Match(RPAREN);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Delete_statementContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DELETE() { return GetToken(abkr_grammarParser.DELETE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode FROM() { return GetToken(abkr_grammarParser.FROM, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext[] identifier() {
-			return GetRuleContexts<IdentifierContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier(int i) {
-			return GetRuleContext<IdentifierContext>(i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(abkr_grammarParser.DOT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public Where_clauseContext where_clause() {
-			return GetRuleContext<Where_clauseContext>(0);
-		}
-		public Delete_statementContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_delete_statement; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterDelete_statement(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitDelete_statement(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Delete_statementContext delete_statement() {
-		Delete_statementContext _localctx = new Delete_statementContext(Context, State);
-		EnterRule(_localctx, 28, RULE_delete_statement);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 165;
-			Match(DELETE);
-			State = 166;
-			Match(FROM);
-			State = 167;
-			identifier();
-			State = 168;
-			Match(DOT);
-			State = 169;
-			identifier();
-			State = 170;
-			where_clause();
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Value_listContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ValueContext[] value() {
-			return GetRuleContexts<ValueContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ValueContext value(int i) {
-			return GetRuleContext<ValueContext>(i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] COMMA() { return GetTokens(abkr_grammarParser.COMMA); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COMMA(int i) {
-			return GetToken(abkr_grammarParser.COMMA, i);
-		}
-		public Value_listContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_value_list; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterValue_list(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitValue_list(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Value_listContext value_list() {
-		Value_listContext _localctx = new Value_listContext(Context, State);
-		EnterRule(_localctx, 30, RULE_value_list);
-		int _la;
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 172;
-			value();
-			State = 177;
-			ErrorHandler.Sync(this);
-			_la = TokenStream.LA(1);
-			while (_la==COMMA) {
-				{
-				{
-				State = 173;
-				Match(COMMA);
-				State = 174;
-				value();
-				}
-				}
-				State = 179;
-				ErrorHandler.Sync(this);
-				_la = TokenStream.LA(1);
-			}
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class ValueContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode STRING() { return GetToken(abkr_grammarParser.STRING, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NUMBER() { return GetToken(abkr_grammarParser.NUMBER, 0); }
-		public ValueContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_value; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterValue(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitValue(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public ValueContext value() {
-		ValueContext _localctx = new ValueContext(Context, State);
-		EnterRule(_localctx, 32, RULE_value);
-		int _la;
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 180;
-			_la = TokenStream.LA(1);
-			if ( !(_la==NUMBER || _la==STRING) ) {
-			ErrorHandler.RecoverInline(this);
-			}
-			else {
-				ErrorHandler.ReportMatch(this);
-			    Consume();
-			}
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Select_statementContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SELECT() { return GetToken(abkr_grammarParser.SELECT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public Column_listContext column_list() {
-			return GetRuleContext<Column_listContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode FROM() { return GetToken(abkr_grammarParser.FROM, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public Table_sourceContext table_source() {
-			return GetRuleContext<Table_sourceContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Where_clauseContext where_clause() {
-			return GetRuleContext<Where_clauseContext>(0);
-		}
-		public Select_statementContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_select_statement; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterSelect_statement(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitSelect_statement(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Select_statementContext select_statement() {
-		Select_statementContext _localctx = new Select_statementContext(Context, State);
-		EnterRule(_localctx, 34, RULE_select_statement);
-		int _la;
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 182;
-			Match(SELECT);
-			State = 183;
-			column_list();
-			State = 184;
-			Match(FROM);
-			State = 185;
-			table_source();
-			State = 187;
-			ErrorHandler.Sync(this);
-			_la = TokenStream.LA(1);
-			if (_la==WHERE) {
-				{
-				State = 186;
-				where_clause();
-				}
-			}
-
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Column_listContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ASTERISK() { return GetToken(abkr_grammarParser.ASTERISK, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public Identifier_listContext identifier_list() {
-			return GetRuleContext<Identifier_listContext>(0);
-		}
-		public Column_listContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_column_list; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterColumn_list(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitColumn_list(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Column_listContext column_list() {
-		Column_listContext _localctx = new Column_listContext(Context, State);
-		EnterRule(_localctx, 36, RULE_column_list);
-		try {
-			State = 191;
-			ErrorHandler.Sync(this);
-			switch (TokenStream.LA(1)) {
-			case ASTERISK:
-				EnterOuterAlt(_localctx, 1);
-				{
-				State = 189;
-				Match(ASTERISK);
-				}
-				break;
-			case IDENTIFIER:
-				EnterOuterAlt(_localctx, 2);
-				{
-				State = 190;
-				identifier_list();
-				}
-				break;
-			default:
-				throw new NoViableAltException(this);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Where_clauseContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode WHERE() { return GetToken(abkr_grammarParser.WHERE, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ConditionContext condition() {
-			return GetRuleContext<ConditionContext>(0);
-		}
-		public Where_clauseContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_where_clause; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterWhere_clause(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitWhere_clause(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Where_clauseContext where_clause() {
-		Where_clauseContext _localctx = new Where_clauseContext(Context, State);
-		EnterRule(_localctx, 38, RULE_where_clause);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 193;
-			Match(WHERE);
-			State = 194;
-			condition();
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Table_sourceContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext[] identifier() {
-			return GetRuleContexts<IdentifierContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier(int i) {
-			return GetRuleContext<IdentifierContext>(i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(abkr_grammarParser.DOT, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public Join_clauseContext[] join_clause() {
-			return GetRuleContexts<Join_clauseContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Join_clauseContext join_clause(int i) {
-			return GetRuleContext<Join_clauseContext>(i);
-		}
-		public Table_sourceContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_table_source; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterTable_source(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitTable_source(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Table_sourceContext table_source() {
-		Table_sourceContext _localctx = new Table_sourceContext(Context, State);
-		EnterRule(_localctx, 40, RULE_table_source);
-		int _la;
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 196;
-			identifier();
-			State = 199;
-			ErrorHandler.Sync(this);
-			_la = TokenStream.LA(1);
-			if (_la==DOT) {
-				{
-				State = 197;
-				Match(DOT);
-				State = 198;
-				identifier();
-				}
-			}
-
-			State = 204;
-			ErrorHandler.Sync(this);
-			_la = TokenStream.LA(1);
-			while (_la==INNER) {
-				{
-				{
-				State = 201;
-				join_clause();
-				}
-				}
-				State = 206;
-				ErrorHandler.Sync(this);
-				_la = TokenStream.LA(1);
-			}
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class Join_clauseContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INNER() { return GetToken(abkr_grammarParser.INNER, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode JOIN() { return GetToken(abkr_grammarParser.JOIN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext[] identifier() {
-			return GetRuleContexts<IdentifierContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier(int i) {
-			return GetRuleContext<IdentifierContext>(i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ON() { return GetToken(abkr_grammarParser.ON, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ConditionContext condition() {
-			return GetRuleContext<ConditionContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(abkr_grammarParser.DOT, 0); }
-		public Join_clauseContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_join_clause; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterJoin_clause(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitJoin_clause(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Join_clauseContext join_clause() {
-		Join_clauseContext _localctx = new Join_clauseContext(Context, State);
-		EnterRule(_localctx, 42, RULE_join_clause);
-		int _la;
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 207;
-			Match(INNER);
-			State = 208;
-			Match(JOIN);
-			State = 209;
-			identifier();
-			State = 212;
-			ErrorHandler.Sync(this);
-			_la = TokenStream.LA(1);
-			if (_la==DOT) {
-				{
-				State = 210;
-				Match(DOT);
-				State = 211;
-				identifier();
-				}
-			}
-
-			State = 214;
-			Match(ON);
-			State = 215;
-			condition();
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class ConditionContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression() {
-			return GetRuleContext<ExpressionContext>(0);
-		}
-		public ConditionContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_condition; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterCondition(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitCondition(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public ConditionContext condition() {
-		ConditionContext _localctx = new ConditionContext(Context, State);
-		EnterRule(_localctx, 44, RULE_condition);
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 217;
-			expression(0);
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public partial class ExpressionContext : ParserRuleContext {
-		public ExpressionContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_expression; } }
-	 
-		public ExpressionContext() { }
-		public virtual void CopyFrom(ExpressionContext context) {
-			base.CopyFrom(context);
-		}
-	}
-	public partial class SimpleConditionContext : ExpressionContext {
-		[System.Diagnostics.DebuggerNonUserCode] public IdentifierContext identifier() {
-			return GetRuleContext<IdentifierContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public Comparison_operatorContext comparison_operator() {
-			return GetRuleContext<Comparison_operatorContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ValueContext value() {
-			return GetRuleContext<ValueContext>(0);
-		}
-		public SimpleConditionContext(ExpressionContext context) { CopyFrom(context); }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterSimpleCondition(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitSimpleCondition(this);
-		}
-	}
-	public partial class AndExpressionContext : ExpressionContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext[] expression() {
-			return GetRuleContexts<ExpressionContext>();
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression(int i) {
-			return GetRuleContext<ExpressionContext>(i);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode AND() { return GetToken(abkr_grammarParser.AND, 0); }
-		public AndExpressionContext(ExpressionContext context) { CopyFrom(context); }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterAndExpression(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitAndExpression(this);
-		}
-	}
-	public partial class ParenExpressionContext : ExpressionContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LPAREN() { return GetToken(abkr_grammarParser.LPAREN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ExpressionContext expression() {
-			return GetRuleContext<ExpressionContext>(0);
-		}
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RPAREN() { return GetToken(abkr_grammarParser.RPAREN, 0); }
-		public ParenExpressionContext(ExpressionContext context) { CopyFrom(context); }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterParenExpression(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitParenExpression(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public ExpressionContext expression() {
-		return expression(0);
-	}
-
-	private ExpressionContext expression(int _p) {
-		ParserRuleContext _parentctx = Context;
-		int _parentState = State;
-		ExpressionContext _localctx = new ExpressionContext(Context, _parentState);
-		ExpressionContext _prevctx = _localctx;
-		int _startState = 46;
-		EnterRecursionRule(_localctx, 46, RULE_expression, _p);
-		try {
-			int _alt;
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 228;
-			ErrorHandler.Sync(this);
-			switch (TokenStream.LA(1)) {
-			case IDENTIFIER:
-				{
-				_localctx = new SimpleConditionContext(_localctx);
-				Context = _localctx;
-				_prevctx = _localctx;
-
-				State = 220;
-				identifier();
-				State = 221;
-				comparison_operator();
-				State = 222;
-				value();
-				}
-				break;
-			case LPAREN:
-				{
-				_localctx = new ParenExpressionContext(_localctx);
-				Context = _localctx;
-				_prevctx = _localctx;
-				State = 224;
-				Match(LPAREN);
-				State = 225;
-				expression(0);
-				State = 226;
-				Match(RPAREN);
-				}
-				break;
-			default:
-				throw new NoViableAltException(this);
-			}
-			Context.Stop = TokenStream.LT(-1);
-			State = 235;
-			ErrorHandler.Sync(this);
-			_alt = Interpreter.AdaptivePredict(TokenStream,15,Context);
-			while ( _alt!=2 && _alt!=global::Antlr4.Runtime.Atn.ATN.INVALID_ALT_NUMBER ) {
-				if ( _alt==1 ) {
-					if ( ParseListeners!=null )
-						TriggerExitRuleEvent();
-					_prevctx = _localctx;
-					{
-					{
-					_localctx = new AndExpressionContext(new ExpressionContext(_parentctx, _parentState));
-					PushNewRecursionContext(_localctx, _startState, RULE_expression);
-					State = 230;
-					if (!(Precpred(Context, 2))) throw new FailedPredicateException(this, "Precpred(Context, 2)");
-					State = 231;
-					Match(AND);
-					State = 232;
-					expression(3);
-					}
-					} 
-				}
-				State = 237;
-				ErrorHandler.Sync(this);
-				_alt = Interpreter.AdaptivePredict(TokenStream,15,Context);
-			}
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			UnrollRecursionContexts(_parentctx);
-		}
-		return _localctx;
-	}
-
-	public partial class Comparison_operatorContext : ParserRuleContext {
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode EQUALS() { return GetToken(abkr_grammarParser.EQUALS, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode GREATER_THAN() { return GetToken(abkr_grammarParser.GREATER_THAN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode GREATER_EQUALS() { return GetToken(abkr_grammarParser.GREATER_EQUALS, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LESS_THAN() { return GetToken(abkr_grammarParser.LESS_THAN, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LESS_EQUALS() { return GetToken(abkr_grammarParser.LESS_EQUALS, 0); }
-		[System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DIFFERS() { return GetToken(abkr_grammarParser.DIFFERS, 0); }
-		public Comparison_operatorContext(ParserRuleContext parent, int invokingState)
-			: base(parent, invokingState)
-		{
-		}
-		public override int RuleIndex { get { return RULE_comparison_operator; } }
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void EnterRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.EnterComparison_operator(this);
-		}
-		[System.Diagnostics.DebuggerNonUserCode]
-		public override void ExitRule(IParseTreeListener listener) {
-			Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
-			if (typedListener != null) typedListener.ExitComparison_operator(this);
-		}
-	}
-
-	[RuleVersion(0)]
-	public Comparison_operatorContext comparison_operator() {
-		Comparison_operatorContext _localctx = new Comparison_operatorContext(Context, State);
-		EnterRule(_localctx, 48, RULE_comparison_operator);
-		int _la;
-		try {
-			EnterOuterAlt(_localctx, 1);
-			{
-			State = 238;
-			_la = TokenStream.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & 34619785216L) != 0)) ) {
-			ErrorHandler.RecoverInline(this);
-			}
-			else {
-				ErrorHandler.ReportMatch(this);
-			    Consume();
-			}
-			}
-		}
-		catch (RecognitionException re) {
-			_localctx.exception = re;
-			ErrorHandler.ReportError(this, re);
-			ErrorHandler.Recover(this, re);
-		}
-		finally {
-			ExitRule();
-		}
-		return _localctx;
-	}
-
-	public override bool Sempred(RuleContext _localctx, int ruleIndex, int predIndex) {
-		switch (ruleIndex) {
-		case 23: return expression_sempred((ExpressionContext)_localctx, predIndex);
-		}
-		return true;
-	}
-	private bool expression_sempred(ExpressionContext _localctx, int predIndex) {
-		switch (predIndex) {
-		case 0: return Precpred(Context, 2);
-		}
-		return true;
-	}
-
-	private static int[] _serializedATN = {
-		4,1,39,241,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,7,
-		7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,14,
-		2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,7,20,2,21,7,21,
-		2,22,7,22,2,23,7,23,2,24,7,24,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,3,0,
-		60,8,0,1,1,1,1,1,1,1,1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,3,1,3,1,3,
-		1,3,1,4,1,4,1,4,1,4,1,4,1,4,1,5,1,5,3,5,87,8,5,1,5,1,5,1,5,1,5,1,5,1,5,
-		1,5,1,5,1,6,1,6,1,6,1,6,1,6,1,6,1,7,1,7,1,7,5,7,106,8,7,10,7,12,7,109,
-		9,7,1,8,1,8,1,8,5,8,114,8,8,10,8,12,8,117,9,8,1,9,1,9,1,9,1,9,1,9,1,9,
-		1,9,1,9,1,9,1,9,1,9,1,9,3,9,131,8,9,1,10,1,10,1,10,1,10,1,10,3,10,138,
-		8,10,1,11,1,11,1,11,5,11,143,8,11,10,11,12,11,146,9,11,1,12,1,12,1,13,
-		1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,3,13,159,8,13,1,13,1,13,1,13,1,
-		13,1,13,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,15,1,15,1,15,5,15,176,8,15,
-		10,15,12,15,179,9,15,1,16,1,16,1,17,1,17,1,17,1,17,1,17,3,17,188,8,17,
-		1,18,1,18,3,18,192,8,18,1,19,1,19,1,19,1,20,1,20,1,20,3,20,200,8,20,1,
-		20,5,20,203,8,20,10,20,12,20,206,9,20,1,21,1,21,1,21,1,21,1,21,3,21,213,
-		8,21,1,21,1,21,1,21,1,22,1,22,1,23,1,23,1,23,1,23,1,23,1,23,1,23,1,23,
-		1,23,3,23,229,8,23,1,23,1,23,1,23,5,23,234,8,23,10,23,12,23,237,9,23,1,
-		24,1,24,1,24,0,1,46,25,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,
-		36,38,40,42,44,46,48,0,2,1,0,37,38,2,0,23,27,35,35,239,0,59,1,0,0,0,2,
-		61,1,0,0,0,4,65,1,0,0,0,6,74,1,0,0,0,8,78,1,0,0,0,10,84,1,0,0,0,12,96,
-		1,0,0,0,14,102,1,0,0,0,16,110,1,0,0,0,18,130,1,0,0,0,20,137,1,0,0,0,22,
-		139,1,0,0,0,24,147,1,0,0,0,26,149,1,0,0,0,28,165,1,0,0,0,30,172,1,0,0,
-		0,32,180,1,0,0,0,34,182,1,0,0,0,36,191,1,0,0,0,38,193,1,0,0,0,40,196,1,
-		0,0,0,42,207,1,0,0,0,44,217,1,0,0,0,46,228,1,0,0,0,48,238,1,0,0,0,50,60,
-		3,2,1,0,51,60,3,4,2,0,52,60,3,6,3,0,53,60,3,8,4,0,54,60,3,10,5,0,55,60,
-		3,12,6,0,56,60,3,26,13,0,57,60,3,28,14,0,58,60,3,34,17,0,59,50,1,0,0,0,
-		59,51,1,0,0,0,59,52,1,0,0,0,59,53,1,0,0,0,59,54,1,0,0,0,59,55,1,0,0,0,
-		59,56,1,0,0,0,59,57,1,0,0,0,59,58,1,0,0,0,60,1,1,0,0,0,61,62,5,1,0,0,62,
-		63,5,2,0,0,63,64,3,24,12,0,64,3,1,0,0,0,65,66,5,1,0,0,66,67,5,3,0,0,67,
-		68,3,24,12,0,68,69,5,30,0,0,69,70,3,24,12,0,70,71,5,33,0,0,71,72,3,14,
-		7,0,72,73,5,34,0,0,73,5,1,0,0,0,74,75,5,6,0,0,75,76,5,2,0,0,76,77,3,24,
-		12,0,77,7,1,0,0,0,78,79,5,6,0,0,79,80,5,3,0,0,80,81,3,24,12,0,81,82,5,
-		30,0,0,82,83,3,24,12,0,83,9,1,0,0,0,84,86,5,1,0,0,85,87,5,5,0,0,86,85,
-		1,0,0,0,86,87,1,0,0,0,87,88,1,0,0,0,88,89,5,4,0,0,89,90,3,24,12,0,90,91,
-		5,7,0,0,91,92,3,24,12,0,92,93,5,33,0,0,93,94,3,22,11,0,94,95,5,34,0,0,
-		95,11,1,0,0,0,96,97,5,6,0,0,97,98,5,4,0,0,98,99,3,24,12,0,99,100,5,7,0,
-		0,100,101,3,24,12,0,101,13,1,0,0,0,102,107,3,16,8,0,103,104,5,31,0,0,104,
-		106,3,16,8,0,105,103,1,0,0,0,106,109,1,0,0,0,107,105,1,0,0,0,107,108,1,
-		0,0,0,108,15,1,0,0,0,109,107,1,0,0,0,110,111,3,24,12,0,111,115,3,20,10,
-		0,112,114,3,18,9,0,113,112,1,0,0,0,114,117,1,0,0,0,115,113,1,0,0,0,115,
-		116,1,0,0,0,116,17,1,0,0,0,117,115,1,0,0,0,118,119,5,10,0,0,119,131,5,
-		11,0,0,120,131,5,5,0,0,121,122,5,12,0,0,122,123,5,11,0,0,123,124,5,13,
-		0,0,124,125,3,24,12,0,125,126,5,30,0,0,126,127,3,24,12,0,127,128,5,32,
-		0,0,128,129,3,24,12,0,129,131,1,0,0,0,130,118,1,0,0,0,130,120,1,0,0,0,
-		130,121,1,0,0,0,131,19,1,0,0,0,132,138,5,8,0,0,133,134,5,9,0,0,134,135,
-		5,33,0,0,135,136,5,37,0,0,136,138,5,34,0,0,137,132,1,0,0,0,137,133,1,0,
-		0,0,138,21,1,0,0,0,139,144,3,24,12,0,140,141,5,31,0,0,141,143,3,24,12,
-		0,142,140,1,0,0,0,143,146,1,0,0,0,144,142,1,0,0,0,144,145,1,0,0,0,145,
-		23,1,0,0,0,146,144,1,0,0,0,147,148,5,36,0,0,148,25,1,0,0,0,149,150,5,14,
-		0,0,150,151,5,15,0,0,151,152,3,24,12,0,152,153,5,30,0,0,153,158,3,24,12,
-		0,154,155,5,33,0,0,155,156,3,22,11,0,156,157,5,34,0,0,157,159,1,0,0,0,
-		158,154,1,0,0,0,158,159,1,0,0,0,159,160,1,0,0,0,160,161,5,16,0,0,161,162,
-		5,33,0,0,162,163,3,30,15,0,163,164,5,34,0,0,164,27,1,0,0,0,165,166,5,17,
-		0,0,166,167,5,18,0,0,167,168,3,24,12,0,168,169,5,30,0,0,169,170,3,24,12,
-		0,170,171,3,38,19,0,171,29,1,0,0,0,172,177,3,32,16,0,173,174,5,31,0,0,
-		174,176,3,32,16,0,175,173,1,0,0,0,176,179,1,0,0,0,177,175,1,0,0,0,177,
-		178,1,0,0,0,178,31,1,0,0,0,179,177,1,0,0,0,180,181,7,0,0,0,181,33,1,0,
-		0,0,182,183,5,20,0,0,183,184,3,36,18,0,184,185,5,18,0,0,185,187,3,40,20,
-		0,186,188,3,38,19,0,187,186,1,0,0,0,187,188,1,0,0,0,188,35,1,0,0,0,189,
-		192,5,22,0,0,190,192,3,22,11,0,191,189,1,0,0,0,191,190,1,0,0,0,192,37,
-		1,0,0,0,193,194,5,19,0,0,194,195,3,44,22,0,195,39,1,0,0,0,196,199,3,24,
-		12,0,197,198,5,30,0,0,198,200,3,24,12,0,199,197,1,0,0,0,199,200,1,0,0,
-		0,200,204,1,0,0,0,201,203,3,42,21,0,202,201,1,0,0,0,203,206,1,0,0,0,204,
-		202,1,0,0,0,204,205,1,0,0,0,205,41,1,0,0,0,206,204,1,0,0,0,207,208,5,28,
-		0,0,208,209,5,29,0,0,209,212,3,24,12,0,210,211,5,30,0,0,211,213,3,24,12,
-		0,212,210,1,0,0,0,212,213,1,0,0,0,213,214,1,0,0,0,214,215,5,7,0,0,215,
-		216,3,44,22,0,216,43,1,0,0,0,217,218,3,46,23,0,218,45,1,0,0,0,219,220,
-		6,23,-1,0,220,221,3,24,12,0,221,222,3,48,24,0,222,223,3,32,16,0,223,229,
-		1,0,0,0,224,225,5,33,0,0,225,226,3,46,23,0,226,227,5,34,0,0,227,229,1,
-		0,0,0,228,219,1,0,0,0,228,224,1,0,0,0,229,235,1,0,0,0,230,231,10,2,0,0,
-		231,232,5,21,0,0,232,234,3,46,23,3,233,230,1,0,0,0,234,237,1,0,0,0,235,
-		233,1,0,0,0,235,236,1,0,0,0,236,47,1,0,0,0,237,235,1,0,0,0,238,239,7,1,
-		0,0,239,49,1,0,0,0,16,59,86,107,115,130,137,144,158,177,187,191,199,204,
-		212,228,235
-	};
-
-	public static readonly ATN _ATN =
-		new ATNDeserializer().Deserialize(_serializedATN);
+public partial class abkr_grammarParser : Parser
+{
+    protected static DFA[] decisionToDFA;
+    protected static PredictionContextCache sharedContextCache = new PredictionContextCache();
+    public const int
+        CREATE = 1, DATABASE = 2, TABLE = 3, INDEX = 4, UNIQUE = 5, DROP = 6, ON = 7, INT = 8,
+        VARCHAR = 9, PRIMARY = 10, KEY = 11, FOREIGN = 12, REFERENCES = 13, INSERT = 14, INTO = 15,
+        VALUES = 16, DELETE = 17, FROM = 18, WHERE = 19, SELECT = 20, AND = 21, ASTERISK = 22,
+        GREATER_THAN = 23, GREATER_EQUALS = 24, LESS_THAN = 25, LESS_EQUALS = 26, DIFFERS = 27,
+        INNER = 28, JOIN = 29, DOT = 30, COMMA = 31, COLON = 32, LPAREN = 33, RPAREN = 34, EQUALS = 35,
+        IDENTIFIER = 36, NUMBER = 37, STRING = 38, WS = 39;
+    public const int
+        RULE_statement = 0, RULE_create_database_statement = 1, RULE_create_table_statement = 2,
+        RULE_drop_database_statement = 3, RULE_drop_table_statement = 4, RULE_create_index_statement = 5,
+        RULE_drop_index_statement = 6, RULE_column_definition_list = 7, RULE_column_definition = 8,
+        RULE_column_constraint = 9, RULE_data_type = 10, RULE_identifier_list = 11,
+        RULE_identifier = 12, RULE_insert_statement = 13, RULE_delete_statement = 14,
+        RULE_value_list = 15, RULE_value = 16, RULE_select_statement = 17, RULE_column_list = 18,
+        RULE_where_clause = 19, RULE_table_source = 20, RULE_join_clause = 21,
+        RULE_condition = 22, RULE_expression = 23, RULE_comparison_operator = 24;
+    public static readonly string[] ruleNames = {
+        "statement", "create_database_statement", "create_table_statement", "drop_database_statement",
+        "drop_table_statement", "create_index_statement", "drop_index_statement",
+        "column_definition_list", "column_definition", "column_constraint", "data_type",
+        "identifier_list", "identifier", "insert_statement", "delete_statement",
+        "value_list", "value", "select_statement", "column_list", "where_clause",
+        "table_source", "join_clause", "condition", "expression", "comparison_operator"
+    };
+
+    private static readonly string[] _LiteralNames = {
+        null, null, null, null, null, null, null, null, null, null, null, null,
+        null, null, null, null, null, null, null, null, null, null, "'*'", "'>'",
+        "'>='", "'<'", "'<='", "'!='", null, null, "'.'", "','", "':'", "'('",
+        "')'", "'='"
+    };
+    private static readonly string[] _SymbolicNames = {
+        null, "CREATE", "DATABASE", "TABLE", "INDEX", "UNIQUE", "DROP", "ON",
+        "INT", "VARCHAR", "PRIMARY", "KEY", "FOREIGN", "REFERENCES", "INSERT",
+        "INTO", "VALUES", "DELETE", "FROM", "WHERE", "SELECT", "AND", "ASTERISK",
+        "GREATER_THAN", "GREATER_EQUALS", "LESS_THAN", "LESS_EQUALS", "DIFFERS",
+        "INNER", "JOIN", "DOT", "COMMA", "COLON", "LPAREN", "RPAREN", "EQUALS",
+        "IDENTIFIER", "NUMBER", "STRING", "WS"
+    };
+    public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
+
+    [NotNull]
+    public override IVocabulary Vocabulary
+    {
+        get
+        {
+            return DefaultVocabulary;
+        }
+    }
+
+    public override string GrammarFileName { get { return "abkr_grammar.g4"; } }
+
+    public override string[] RuleNames { get { return ruleNames; } }
+
+    public override int[] SerializedAtn { get { return _serializedATN; } }
+
+    static abkr_grammarParser()
+    {
+        decisionToDFA = new DFA[_ATN.NumberOfDecisions];
+        for (int i = 0; i < _ATN.NumberOfDecisions; i++)
+        {
+            decisionToDFA[i] = new DFA(_ATN.GetDecisionState(i), i);
+        }
+    }
+
+    public abkr_grammarParser(ITokenStream input) : this(input, Console.Out, Console.Error) { }
+
+    public abkr_grammarParser(ITokenStream input, TextWriter output, TextWriter errorOutput)
+    : base(input, output, errorOutput)
+    {
+        Interpreter = new ParserATNSimulator(this, _ATN, decisionToDFA, sharedContextCache);
+    }
+
+    public partial class StatementContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Create_database_statementContext create_database_statement()
+        {
+            return GetRuleContext<Create_database_statementContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Create_table_statementContext create_table_statement()
+        {
+            return GetRuleContext<Create_table_statementContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Drop_database_statementContext drop_database_statement()
+        {
+            return GetRuleContext<Drop_database_statementContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Drop_table_statementContext drop_table_statement()
+        {
+            return GetRuleContext<Drop_table_statementContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Create_index_statementContext create_index_statement()
+        {
+            return GetRuleContext<Create_index_statementContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Drop_index_statementContext drop_index_statement()
+        {
+            return GetRuleContext<Drop_index_statementContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Insert_statementContext insert_statement()
+        {
+            return GetRuleContext<Insert_statementContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Delete_statementContext delete_statement()
+        {
+            return GetRuleContext<Delete_statementContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Select_statementContext select_statement()
+        {
+            return GetRuleContext<Select_statementContext>(0);
+        }
+        public StatementContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_statement; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterStatement(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitStatement(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public StatementContext statement()
+    {
+        StatementContext _localctx = new StatementContext(Context, State);
+        EnterRule(_localctx, 0, RULE_statement);
+        try
+        {
+            State = 59;
+            ErrorHandler.Sync(this);
+            switch (Interpreter.AdaptivePredict(TokenStream, 0, Context))
+            {
+                case 1:
+                    EnterOuterAlt(_localctx, 1);
+                    {
+                        State = 50;
+                        create_database_statement();
+                    }
+                    break;
+                case 2:
+                    EnterOuterAlt(_localctx, 2);
+                    {
+                        State = 51;
+                        create_table_statement();
+                    }
+                    break;
+                case 3:
+                    EnterOuterAlt(_localctx, 3);
+                    {
+                        State = 52;
+                        drop_database_statement();
+                    }
+                    break;
+                case 4:
+                    EnterOuterAlt(_localctx, 4);
+                    {
+                        State = 53;
+                        drop_table_statement();
+                    }
+                    break;
+                case 5:
+                    EnterOuterAlt(_localctx, 5);
+                    {
+                        State = 54;
+                        create_index_statement();
+                    }
+                    break;
+                case 6:
+                    EnterOuterAlt(_localctx, 6);
+                    {
+                        State = 55;
+                        drop_index_statement();
+                    }
+                    break;
+                case 7:
+                    EnterOuterAlt(_localctx, 7);
+                    {
+                        State = 56;
+                        insert_statement();
+                    }
+                    break;
+                case 8:
+                    EnterOuterAlt(_localctx, 8);
+                    {
+                        State = 57;
+                        delete_statement();
+                    }
+                    break;
+                case 9:
+                    EnterOuterAlt(_localctx, 9);
+                    {
+                        State = 58;
+                        select_statement();
+                    }
+                    break;
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Create_database_statementContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CREATE() { return GetToken(abkr_grammarParser.CREATE, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DATABASE() { return GetToken(abkr_grammarParser.DATABASE, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext identifier()
+        {
+            return GetRuleContext<IdentifierContext>(0);
+        }
+        public Create_database_statementContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_create_database_statement; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterCreate_database_statement(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitCreate_database_statement(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Create_database_statementContext create_database_statement()
+    {
+        Create_database_statementContext _localctx = new Create_database_statementContext(Context, State);
+        EnterRule(_localctx, 2, RULE_create_database_statement);
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 61;
+                Match(CREATE);
+                State = 62;
+                Match(DATABASE);
+                State = 63;
+                identifier();
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Create_table_statementContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CREATE() { return GetToken(abkr_grammarParser.CREATE, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode TABLE() { return GetToken(abkr_grammarParser.TABLE, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext[] identifier()
+        {
+            return GetRuleContexts<IdentifierContext>();
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext identifier(int i)
+        {
+            return GetRuleContext<IdentifierContext>(i);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(abkr_grammarParser.DOT, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LPAREN() { return GetToken(abkr_grammarParser.LPAREN, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Column_definition_listContext column_definition_list()
+        {
+            return GetRuleContext<Column_definition_listContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RPAREN() { return GetToken(abkr_grammarParser.RPAREN, 0); }
+        public Create_table_statementContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_create_table_statement; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterCreate_table_statement(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitCreate_table_statement(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Create_table_statementContext create_table_statement()
+    {
+        Create_table_statementContext _localctx = new Create_table_statementContext(Context, State);
+        EnterRule(_localctx, 4, RULE_create_table_statement);
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 65;
+                Match(CREATE);
+                State = 66;
+                Match(TABLE);
+                State = 67;
+                identifier();
+                State = 68;
+                Match(DOT);
+                State = 69;
+                identifier();
+                State = 70;
+                Match(LPAREN);
+                State = 71;
+                column_definition_list();
+                State = 72;
+                Match(RPAREN);
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Drop_database_statementContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DROP() { return GetToken(abkr_grammarParser.DROP, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DATABASE() { return GetToken(abkr_grammarParser.DATABASE, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext identifier()
+        {
+            return GetRuleContext<IdentifierContext>(0);
+        }
+        public Drop_database_statementContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_drop_database_statement; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterDrop_database_statement(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitDrop_database_statement(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Drop_database_statementContext drop_database_statement()
+    {
+        Drop_database_statementContext _localctx = new Drop_database_statementContext(Context, State);
+        EnterRule(_localctx, 6, RULE_drop_database_statement);
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 74;
+                Match(DROP);
+                State = 75;
+                Match(DATABASE);
+                State = 76;
+                identifier();
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Drop_table_statementContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DROP() { return GetToken(abkr_grammarParser.DROP, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode TABLE() { return GetToken(abkr_grammarParser.TABLE, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext[] identifier()
+        {
+            return GetRuleContexts<IdentifierContext>();
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext identifier(int i)
+        {
+            return GetRuleContext<IdentifierContext>(i);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(abkr_grammarParser.DOT, 0); }
+        public Drop_table_statementContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_drop_table_statement; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterDrop_table_statement(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitDrop_table_statement(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Drop_table_statementContext drop_table_statement()
+    {
+        Drop_table_statementContext _localctx = new Drop_table_statementContext(Context, State);
+        EnterRule(_localctx, 8, RULE_drop_table_statement);
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 78;
+                Match(DROP);
+                State = 79;
+                Match(TABLE);
+                State = 80;
+                identifier();
+                State = 81;
+                Match(DOT);
+                State = 82;
+                identifier();
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Create_index_statementContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode CREATE() { return GetToken(abkr_grammarParser.CREATE, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INDEX() { return GetToken(abkr_grammarParser.INDEX, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext[] identifier()
+        {
+            return GetRuleContexts<IdentifierContext>();
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext identifier(int i)
+        {
+            return GetRuleContext<IdentifierContext>(i);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ON() { return GetToken(abkr_grammarParser.ON, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LPAREN() { return GetToken(abkr_grammarParser.LPAREN, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Identifier_listContext identifier_list()
+        {
+            return GetRuleContext<Identifier_listContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RPAREN() { return GetToken(abkr_grammarParser.RPAREN, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode UNIQUE() { return GetToken(abkr_grammarParser.UNIQUE, 0); }
+        public Create_index_statementContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_create_index_statement; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterCreate_index_statement(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitCreate_index_statement(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Create_index_statementContext create_index_statement()
+    {
+        Create_index_statementContext _localctx = new Create_index_statementContext(Context, State);
+        EnterRule(_localctx, 10, RULE_create_index_statement);
+        int _la;
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 84;
+                Match(CREATE);
+                State = 86;
+                ErrorHandler.Sync(this);
+                _la = TokenStream.LA(1);
+                if (_la == UNIQUE)
+                {
+                    {
+                        State = 85;
+                        Match(UNIQUE);
+                    }
+                }
+
+                State = 88;
+                Match(INDEX);
+                State = 89;
+                identifier();
+                State = 90;
+                Match(ON);
+                State = 91;
+                identifier();
+                State = 92;
+                Match(LPAREN);
+                State = 93;
+                identifier_list();
+                State = 94;
+                Match(RPAREN);
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Drop_index_statementContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DROP() { return GetToken(abkr_grammarParser.DROP, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INDEX() { return GetToken(abkr_grammarParser.INDEX, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext[] identifier()
+        {
+            return GetRuleContexts<IdentifierContext>();
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext identifier(int i)
+        {
+            return GetRuleContext<IdentifierContext>(i);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ON() { return GetToken(abkr_grammarParser.ON, 0); }
+        public Drop_index_statementContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_drop_index_statement; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterDrop_index_statement(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitDrop_index_statement(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Drop_index_statementContext drop_index_statement()
+    {
+        Drop_index_statementContext _localctx = new Drop_index_statementContext(Context, State);
+        EnterRule(_localctx, 12, RULE_drop_index_statement);
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 96;
+                Match(DROP);
+                State = 97;
+                Match(INDEX);
+                State = 98;
+                identifier();
+                State = 99;
+                Match(ON);
+                State = 100;
+                identifier();
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Column_definition_listContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Column_definitionContext[] column_definition()
+        {
+            return GetRuleContexts<Column_definitionContext>();
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Column_definitionContext column_definition(int i)
+        {
+            return GetRuleContext<Column_definitionContext>(i);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] COMMA() { return GetTokens(abkr_grammarParser.COMMA); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public ITerminalNode COMMA(int i)
+        {
+            return GetToken(abkr_grammarParser.COMMA, i);
+        }
+        public Column_definition_listContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_column_definition_list; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterColumn_definition_list(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitColumn_definition_list(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Column_definition_listContext column_definition_list()
+    {
+        Column_definition_listContext _localctx = new Column_definition_listContext(Context, State);
+        EnterRule(_localctx, 14, RULE_column_definition_list);
+        int _la;
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 102;
+                column_definition();
+                State = 107;
+                ErrorHandler.Sync(this);
+                _la = TokenStream.LA(1);
+                while (_la == COMMA)
+                {
+                    {
+                        {
+                            State = 103;
+                            Match(COMMA);
+                            State = 104;
+                            column_definition();
+                        }
+                    }
+                    State = 109;
+                    ErrorHandler.Sync(this);
+                    _la = TokenStream.LA(1);
+                }
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Column_definitionContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext identifier()
+        {
+            return GetRuleContext<IdentifierContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Data_typeContext data_type()
+        {
+            return GetRuleContext<Data_typeContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Column_constraintContext[] column_constraint()
+        {
+            return GetRuleContexts<Column_constraintContext>();
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Column_constraintContext column_constraint(int i)
+        {
+            return GetRuleContext<Column_constraintContext>(i);
+        }
+        public Column_definitionContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_column_definition; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterColumn_definition(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitColumn_definition(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Column_definitionContext column_definition()
+    {
+        Column_definitionContext _localctx = new Column_definitionContext(Context, State);
+        EnterRule(_localctx, 16, RULE_column_definition);
+        int _la;
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 110;
+                identifier();
+                State = 111;
+                data_type();
+                State = 115;
+                ErrorHandler.Sync(this);
+                _la = TokenStream.LA(1);
+                while ((((_la) & ~0x3f) == 0 && ((1L << _la) & 5152L) != 0))
+                {
+                    {
+                        {
+                            State = 112;
+                            column_constraint();
+                        }
+                    }
+                    State = 117;
+                    ErrorHandler.Sync(this);
+                    _la = TokenStream.LA(1);
+                }
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Column_constraintContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode PRIMARY() { return GetToken(abkr_grammarParser.PRIMARY, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode KEY() { return GetToken(abkr_grammarParser.KEY, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode UNIQUE() { return GetToken(abkr_grammarParser.UNIQUE, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode FOREIGN() { return GetToken(abkr_grammarParser.FOREIGN, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode REFERENCES() { return GetToken(abkr_grammarParser.REFERENCES, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext[] identifier()
+        {
+            return GetRuleContexts<IdentifierContext>();
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext identifier(int i)
+        {
+            return GetRuleContext<IdentifierContext>(i);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(abkr_grammarParser.DOT, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode COLON() { return GetToken(abkr_grammarParser.COLON, 0); }
+        public Column_constraintContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_column_constraint; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterColumn_constraint(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitColumn_constraint(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Column_constraintContext column_constraint()
+    {
+        Column_constraintContext _localctx = new Column_constraintContext(Context, State);
+        EnterRule(_localctx, 18, RULE_column_constraint);
+        try
+        {
+            State = 130;
+            ErrorHandler.Sync(this);
+            switch (TokenStream.LA(1))
+            {
+                case PRIMARY:
+                    EnterOuterAlt(_localctx, 1);
+                    {
+                        State = 118;
+                        Match(PRIMARY);
+                        State = 119;
+                        Match(KEY);
+                    }
+                    break;
+                case UNIQUE:
+                    EnterOuterAlt(_localctx, 2);
+                    {
+                        State = 120;
+                        Match(UNIQUE);
+                    }
+                    break;
+                case FOREIGN:
+                    EnterOuterAlt(_localctx, 3);
+                    {
+                        State = 121;
+                        Match(FOREIGN);
+                        State = 122;
+                        Match(KEY);
+                        State = 123;
+                        Match(REFERENCES);
+                        State = 124;
+                        identifier();
+                        State = 125;
+                        Match(DOT);
+                        State = 126;
+                        identifier();
+                        State = 127;
+                        Match(COLON);
+                        State = 128;
+                        identifier();
+                    }
+                    break;
+                default:
+                    throw new NoViableAltException(this);
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Data_typeContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INT() { return GetToken(abkr_grammarParser.INT, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode VARCHAR() { return GetToken(abkr_grammarParser.VARCHAR, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LPAREN() { return GetToken(abkr_grammarParser.LPAREN, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NUMBER() { return GetToken(abkr_grammarParser.NUMBER, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RPAREN() { return GetToken(abkr_grammarParser.RPAREN, 0); }
+        public Data_typeContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_data_type; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterData_type(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitData_type(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Data_typeContext data_type()
+    {
+        Data_typeContext _localctx = new Data_typeContext(Context, State);
+        EnterRule(_localctx, 20, RULE_data_type);
+        try
+        {
+            State = 137;
+            ErrorHandler.Sync(this);
+            switch (TokenStream.LA(1))
+            {
+                case INT:
+                    EnterOuterAlt(_localctx, 1);
+                    {
+                        State = 132;
+                        Match(INT);
+                    }
+                    break;
+                case VARCHAR:
+                    EnterOuterAlt(_localctx, 2);
+                    {
+                        State = 133;
+                        Match(VARCHAR);
+                        State = 134;
+                        Match(LPAREN);
+                        State = 135;
+                        Match(NUMBER);
+                        State = 136;
+                        Match(RPAREN);
+                    }
+                    break;
+                default:
+                    throw new NoViableAltException(this);
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Identifier_listContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext[] identifier()
+        {
+            return GetRuleContexts<IdentifierContext>();
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext identifier(int i)
+        {
+            return GetRuleContext<IdentifierContext>(i);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] COMMA() { return GetTokens(abkr_grammarParser.COMMA); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public ITerminalNode COMMA(int i)
+        {
+            return GetToken(abkr_grammarParser.COMMA, i);
+        }
+        public Identifier_listContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_identifier_list; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterIdentifier_list(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitIdentifier_list(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Identifier_listContext identifier_list()
+    {
+        Identifier_listContext _localctx = new Identifier_listContext(Context, State);
+        EnterRule(_localctx, 22, RULE_identifier_list);
+        int _la;
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 139;
+                identifier();
+                State = 144;
+                ErrorHandler.Sync(this);
+                _la = TokenStream.LA(1);
+                while (_la == COMMA)
+                {
+                    {
+                        {
+                            State = 140;
+                            Match(COMMA);
+                            State = 141;
+                            identifier();
+                        }
+                    }
+                    State = 146;
+                    ErrorHandler.Sync(this);
+                    _la = TokenStream.LA(1);
+                }
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class IdentifierContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode IDENTIFIER() { return GetToken(abkr_grammarParser.IDENTIFIER, 0); }
+        public IdentifierContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_identifier; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterIdentifier(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitIdentifier(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public IdentifierContext identifier()
+    {
+        IdentifierContext _localctx = new IdentifierContext(Context, State);
+        EnterRule(_localctx, 24, RULE_identifier);
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 147;
+                Match(IDENTIFIER);
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Insert_statementContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INSERT() { return GetToken(abkr_grammarParser.INSERT, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INTO() { return GetToken(abkr_grammarParser.INTO, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext[] identifier()
+        {
+            return GetRuleContexts<IdentifierContext>();
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext identifier(int i)
+        {
+            return GetRuleContext<IdentifierContext>(i);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(abkr_grammarParser.DOT, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode VALUES() { return GetToken(abkr_grammarParser.VALUES, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] LPAREN() { return GetTokens(abkr_grammarParser.LPAREN); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public ITerminalNode LPAREN(int i)
+        {
+            return GetToken(abkr_grammarParser.LPAREN, i);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Value_listContext value_list()
+        {
+            return GetRuleContext<Value_listContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] RPAREN() { return GetTokens(abkr_grammarParser.RPAREN); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public ITerminalNode RPAREN(int i)
+        {
+            return GetToken(abkr_grammarParser.RPAREN, i);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Identifier_listContext identifier_list()
+        {
+            return GetRuleContext<Identifier_listContext>(0);
+        }
+        public Insert_statementContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_insert_statement; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterInsert_statement(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitInsert_statement(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Insert_statementContext insert_statement()
+    {
+        Insert_statementContext _localctx = new Insert_statementContext(Context, State);
+        EnterRule(_localctx, 26, RULE_insert_statement);
+        int _la;
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 149;
+                Match(INSERT);
+                State = 150;
+                Match(INTO);
+                State = 151;
+                identifier();
+                State = 152;
+                Match(DOT);
+                State = 153;
+                identifier();
+                State = 158;
+                ErrorHandler.Sync(this);
+                _la = TokenStream.LA(1);
+                if (_la == LPAREN)
+                {
+                    {
+                        State = 154;
+                        Match(LPAREN);
+                        State = 155;
+                        identifier_list();
+                        State = 156;
+                        Match(RPAREN);
+                    }
+                }
+
+                State = 160;
+                Match(VALUES);
+                State = 161;
+                Match(LPAREN);
+                State = 162;
+                value_list();
+                State = 163;
+                Match(RPAREN);
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Delete_statementContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DELETE() { return GetToken(abkr_grammarParser.DELETE, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode FROM() { return GetToken(abkr_grammarParser.FROM, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext[] identifier()
+        {
+            return GetRuleContexts<IdentifierContext>();
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext identifier(int i)
+        {
+            return GetRuleContext<IdentifierContext>(i);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(abkr_grammarParser.DOT, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Where_clauseContext where_clause()
+        {
+            return GetRuleContext<Where_clauseContext>(0);
+        }
+        public Delete_statementContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_delete_statement; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterDelete_statement(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitDelete_statement(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Delete_statementContext delete_statement()
+    {
+        Delete_statementContext _localctx = new Delete_statementContext(Context, State);
+        EnterRule(_localctx, 28, RULE_delete_statement);
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 165;
+                Match(DELETE);
+                State = 166;
+                Match(FROM);
+                State = 167;
+                identifier();
+                State = 168;
+                Match(DOT);
+                State = 169;
+                identifier();
+                State = 170;
+                where_clause();
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Value_listContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode]
+        public ValueContext[] value()
+        {
+            return GetRuleContexts<ValueContext>();
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public ValueContext value(int i)
+        {
+            return GetRuleContext<ValueContext>(i);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode[] COMMA() { return GetTokens(abkr_grammarParser.COMMA); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public ITerminalNode COMMA(int i)
+        {
+            return GetToken(abkr_grammarParser.COMMA, i);
+        }
+        public Value_listContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_value_list; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterValue_list(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitValue_list(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Value_listContext value_list()
+    {
+        Value_listContext _localctx = new Value_listContext(Context, State);
+        EnterRule(_localctx, 30, RULE_value_list);
+        int _la;
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 172;
+                value();
+                State = 177;
+                ErrorHandler.Sync(this);
+                _la = TokenStream.LA(1);
+                while (_la == COMMA)
+                {
+                    {
+                        {
+                            State = 173;
+                            Match(COMMA);
+                            State = 174;
+                            value();
+                        }
+                    }
+                    State = 179;
+                    ErrorHandler.Sync(this);
+                    _la = TokenStream.LA(1);
+                }
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class ValueContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode STRING() { return GetToken(abkr_grammarParser.STRING, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode NUMBER() { return GetToken(abkr_grammarParser.NUMBER, 0); }
+        public ValueContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_value; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterValue(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitValue(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public ValueContext value()
+    {
+        ValueContext _localctx = new ValueContext(Context, State);
+        EnterRule(_localctx, 32, RULE_value);
+        int _la;
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 180;
+                _la = TokenStream.LA(1);
+                if (!(_la == NUMBER || _la == STRING))
+                {
+                    ErrorHandler.RecoverInline(this);
+                }
+                else
+                {
+                    ErrorHandler.ReportMatch(this);
+                    Consume();
+                }
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Select_statementContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode SELECT() { return GetToken(abkr_grammarParser.SELECT, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Column_listContext column_list()
+        {
+            return GetRuleContext<Column_listContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode FROM() { return GetToken(abkr_grammarParser.FROM, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Table_sourceContext table_source()
+        {
+            return GetRuleContext<Table_sourceContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Where_clauseContext where_clause()
+        {
+            return GetRuleContext<Where_clauseContext>(0);
+        }
+        public Select_statementContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_select_statement; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterSelect_statement(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitSelect_statement(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Select_statementContext select_statement()
+    {
+        Select_statementContext _localctx = new Select_statementContext(Context, State);
+        EnterRule(_localctx, 34, RULE_select_statement);
+        int _la;
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 182;
+                Match(SELECT);
+                State = 183;
+                column_list();
+                State = 184;
+                Match(FROM);
+                State = 185;
+                table_source();
+                State = 187;
+                ErrorHandler.Sync(this);
+                _la = TokenStream.LA(1);
+                if (_la == WHERE)
+                {
+                    {
+                        State = 186;
+                        where_clause();
+                    }
+                }
+
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Column_listContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ASTERISK() { return GetToken(abkr_grammarParser.ASTERISK, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Identifier_listContext identifier_list()
+        {
+            return GetRuleContext<Identifier_listContext>(0);
+        }
+        public Column_listContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_column_list; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterColumn_list(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitColumn_list(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Column_listContext column_list()
+    {
+        Column_listContext _localctx = new Column_listContext(Context, State);
+        EnterRule(_localctx, 36, RULE_column_list);
+        try
+        {
+            State = 191;
+            ErrorHandler.Sync(this);
+            switch (TokenStream.LA(1))
+            {
+                case ASTERISK:
+                    EnterOuterAlt(_localctx, 1);
+                    {
+                        State = 189;
+                        Match(ASTERISK);
+                    }
+                    break;
+                case IDENTIFIER:
+                    EnterOuterAlt(_localctx, 2);
+                    {
+                        State = 190;
+                        identifier_list();
+                    }
+                    break;
+                default:
+                    throw new NoViableAltException(this);
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Where_clauseContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode WHERE() { return GetToken(abkr_grammarParser.WHERE, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public ConditionContext condition()
+        {
+            return GetRuleContext<ConditionContext>(0);
+        }
+        public Where_clauseContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_where_clause; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterWhere_clause(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitWhere_clause(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Where_clauseContext where_clause()
+    {
+        Where_clauseContext _localctx = new Where_clauseContext(Context, State);
+        EnterRule(_localctx, 38, RULE_where_clause);
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 193;
+                Match(WHERE);
+                State = 194;
+                condition();
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Table_sourceContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext[] identifier()
+        {
+            return GetRuleContexts<IdentifierContext>();
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext identifier(int i)
+        {
+            return GetRuleContext<IdentifierContext>(i);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(abkr_grammarParser.DOT, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Join_clauseContext[] join_clause()
+        {
+            return GetRuleContexts<Join_clauseContext>();
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Join_clauseContext join_clause(int i)
+        {
+            return GetRuleContext<Join_clauseContext>(i);
+        }
+        public Table_sourceContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_table_source; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterTable_source(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitTable_source(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Table_sourceContext table_source()
+    {
+        Table_sourceContext _localctx = new Table_sourceContext(Context, State);
+        EnterRule(_localctx, 40, RULE_table_source);
+        int _la;
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 196;
+                identifier();
+                State = 199;
+                ErrorHandler.Sync(this);
+                _la = TokenStream.LA(1);
+                if (_la == DOT)
+                {
+                    {
+                        State = 197;
+                        Match(DOT);
+                        State = 198;
+                        identifier();
+                    }
+                }
+
+                State = 204;
+                ErrorHandler.Sync(this);
+                _la = TokenStream.LA(1);
+                while (_la == INNER)
+                {
+                    {
+                        {
+                            State = 201;
+                            join_clause();
+                        }
+                    }
+                    State = 206;
+                    ErrorHandler.Sync(this);
+                    _la = TokenStream.LA(1);
+                }
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class Join_clauseContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode INNER() { return GetToken(abkr_grammarParser.INNER, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode JOIN() { return GetToken(abkr_grammarParser.JOIN, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext[] identifier()
+        {
+            return GetRuleContexts<IdentifierContext>();
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext identifier(int i)
+        {
+            return GetRuleContext<IdentifierContext>(i);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode ON() { return GetToken(abkr_grammarParser.ON, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode EQUALS() { return GetToken(abkr_grammarParser.EQUALS, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DOT() { return GetToken(abkr_grammarParser.DOT, 0); }
+        public Join_clauseContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_join_clause; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterJoin_clause(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitJoin_clause(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Join_clauseContext join_clause()
+    {
+        Join_clauseContext _localctx = new Join_clauseContext(Context, State);
+        EnterRule(_localctx, 42, RULE_join_clause);
+        int _la;
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 207;
+                Match(INNER);
+                State = 208;
+                Match(JOIN);
+                State = 209;
+                identifier();
+                State = 212;
+                ErrorHandler.Sync(this);
+                _la = TokenStream.LA(1);
+                if (_la == DOT)
+                {
+                    {
+                        State = 210;
+                        Match(DOT);
+                        State = 211;
+                        identifier();
+                    }
+                }
+
+                State = 214;
+                Match(ON);
+                State = 215;
+                identifier();
+                State = 216;
+                Match(EQUALS);
+                State = 217;
+                identifier();
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class ConditionContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode]
+        public ExpressionContext expression()
+        {
+            return GetRuleContext<ExpressionContext>(0);
+        }
+        public ConditionContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_condition; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterCondition(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitCondition(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public ConditionContext condition()
+    {
+        ConditionContext _localctx = new ConditionContext(Context, State);
+        EnterRule(_localctx, 44, RULE_condition);
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 219;
+                expression(0);
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public partial class ExpressionContext : ParserRuleContext
+    {
+        public ExpressionContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_expression; } }
+
+        public ExpressionContext() { }
+        public virtual void CopyFrom(ExpressionContext context)
+        {
+            base.CopyFrom(context);
+        }
+    }
+    public partial class SimpleConditionContext : ExpressionContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode]
+        public IdentifierContext identifier()
+        {
+            return GetRuleContext<IdentifierContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public Comparison_operatorContext comparison_operator()
+        {
+            return GetRuleContext<Comparison_operatorContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public ValueContext value()
+        {
+            return GetRuleContext<ValueContext>(0);
+        }
+        public SimpleConditionContext(ExpressionContext context) { CopyFrom(context); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterSimpleCondition(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitSimpleCondition(this);
+        }
+    }
+    public partial class AndExpressionContext : ExpressionContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode]
+        public ExpressionContext[] expression()
+        {
+            return GetRuleContexts<ExpressionContext>();
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public ExpressionContext expression(int i)
+        {
+            return GetRuleContext<ExpressionContext>(i);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode AND() { return GetToken(abkr_grammarParser.AND, 0); }
+        public AndExpressionContext(ExpressionContext context) { CopyFrom(context); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterAndExpression(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitAndExpression(this);
+        }
+    }
+    public partial class ParenExpressionContext : ExpressionContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LPAREN() { return GetToken(abkr_grammarParser.LPAREN, 0); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public ExpressionContext expression()
+        {
+            return GetRuleContext<ExpressionContext>(0);
+        }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode RPAREN() { return GetToken(abkr_grammarParser.RPAREN, 0); }
+        public ParenExpressionContext(ExpressionContext context) { CopyFrom(context); }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterParenExpression(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitParenExpression(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public ExpressionContext expression()
+    {
+        return expression(0);
+    }
+
+    private ExpressionContext expression(int _p)
+    {
+        ParserRuleContext _parentctx = Context;
+        int _parentState = State;
+        ExpressionContext _localctx = new ExpressionContext(Context, _parentState);
+        ExpressionContext _prevctx = _localctx;
+        int _startState = 46;
+        EnterRecursionRule(_localctx, 46, RULE_expression, _p);
+        try
+        {
+            int _alt;
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 230;
+                ErrorHandler.Sync(this);
+                switch (TokenStream.LA(1))
+                {
+                    case IDENTIFIER:
+                        {
+                            _localctx = new SimpleConditionContext(_localctx);
+                            Context = _localctx;
+                            _prevctx = _localctx;
+
+                            State = 222;
+                            identifier();
+                            State = 223;
+                            comparison_operator();
+                            State = 224;
+                            value();
+                        }
+                        break;
+                    case LPAREN:
+                        {
+                            _localctx = new ParenExpressionContext(_localctx);
+                            Context = _localctx;
+                            _prevctx = _localctx;
+                            State = 226;
+                            Match(LPAREN);
+                            State = 227;
+                            expression(0);
+                            State = 228;
+                            Match(RPAREN);
+                        }
+                        break;
+                    default:
+                        throw new NoViableAltException(this);
+                }
+                Context.Stop = TokenStream.LT(-1);
+                State = 237;
+                ErrorHandler.Sync(this);
+                _alt = Interpreter.AdaptivePredict(TokenStream, 15, Context);
+                while (_alt != 2 && _alt != global::Antlr4.Runtime.Atn.ATN.INVALID_ALT_NUMBER)
+                {
+                    if (_alt == 1)
+                    {
+                        if (ParseListeners != null)
+                            TriggerExitRuleEvent();
+                        _prevctx = _localctx;
+                        {
+                            {
+                                _localctx = new AndExpressionContext(new ExpressionContext(_parentctx, _parentState));
+                                PushNewRecursionContext(_localctx, _startState, RULE_expression);
+                                State = 232;
+                                if (!(Precpred(Context, 2))) throw new FailedPredicateException(this, "Precpred(Context, 2)");
+                                State = 233;
+                                Match(AND);
+                                State = 234;
+                                expression(3);
+                            }
+                        }
+                    }
+                    State = 239;
+                    ErrorHandler.Sync(this);
+                    _alt = Interpreter.AdaptivePredict(TokenStream, 15, Context);
+                }
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            UnrollRecursionContexts(_parentctx);
+        }
+        return _localctx;
+    }
+
+    public partial class Comparison_operatorContext : ParserRuleContext
+    {
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode EQUALS() { return GetToken(abkr_grammarParser.EQUALS, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode GREATER_THAN() { return GetToken(abkr_grammarParser.GREATER_THAN, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode GREATER_EQUALS() { return GetToken(abkr_grammarParser.GREATER_EQUALS, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LESS_THAN() { return GetToken(abkr_grammarParser.LESS_THAN, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode LESS_EQUALS() { return GetToken(abkr_grammarParser.LESS_EQUALS, 0); }
+        [System.Diagnostics.DebuggerNonUserCode] public ITerminalNode DIFFERS() { return GetToken(abkr_grammarParser.DIFFERS, 0); }
+        public Comparison_operatorContext(ParserRuleContext parent, int invokingState)
+            : base(parent, invokingState)
+        {
+        }
+        public override int RuleIndex { get { return RULE_comparison_operator; } }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void EnterRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.EnterComparison_operator(this);
+        }
+        [System.Diagnostics.DebuggerNonUserCode]
+        public override void ExitRule(IParseTreeListener listener)
+        {
+            Iabkr_grammarListener typedListener = listener as Iabkr_grammarListener;
+            if (typedListener != null) typedListener.ExitComparison_operator(this);
+        }
+    }
+
+    [RuleVersion(0)]
+    public Comparison_operatorContext comparison_operator()
+    {
+        Comparison_operatorContext _localctx = new Comparison_operatorContext(Context, State);
+        EnterRule(_localctx, 48, RULE_comparison_operator);
+        int _la;
+        try
+        {
+            EnterOuterAlt(_localctx, 1);
+            {
+                State = 240;
+                _la = TokenStream.LA(1);
+                if (!((((_la) & ~0x3f) == 0 && ((1L << _la) & 34619785216L) != 0)))
+                {
+                    ErrorHandler.RecoverInline(this);
+                }
+                else
+                {
+                    ErrorHandler.ReportMatch(this);
+                    Consume();
+                }
+            }
+        }
+        catch (RecognitionException re)
+        {
+            _localctx.exception = re;
+            ErrorHandler.ReportError(this, re);
+            ErrorHandler.Recover(this, re);
+        }
+        finally
+        {
+            ExitRule();
+        }
+        return _localctx;
+    }
+
+    public override bool Sempred(RuleContext _localctx, int ruleIndex, int predIndex)
+    {
+        switch (ruleIndex)
+        {
+            case 23: return expression_sempred((ExpressionContext)_localctx, predIndex);
+        }
+        return true;
+    }
+    private bool expression_sempred(ExpressionContext _localctx, int predIndex)
+    {
+        switch (predIndex)
+        {
+            case 0: return Precpred(Context, 2);
+        }
+        return true;
+    }
+
+    private static int[] _serializedATN = {
+        4,1,39,243,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,7,
+        7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,14,
+        2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,7,20,2,21,7,21,
+        2,22,7,22,2,23,7,23,2,24,7,24,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,3,0,
+        60,8,0,1,1,1,1,1,1,1,1,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,2,1,3,1,3,1,3,
+        1,3,1,4,1,4,1,4,1,4,1,4,1,4,1,5,1,5,3,5,87,8,5,1,5,1,5,1,5,1,5,1,5,1,5,
+        1,5,1,5,1,6,1,6,1,6,1,6,1,6,1,6,1,7,1,7,1,7,5,7,106,8,7,10,7,12,7,109,
+        9,7,1,8,1,8,1,8,5,8,114,8,8,10,8,12,8,117,9,8,1,9,1,9,1,9,1,9,1,9,1,9,
+        1,9,1,9,1,9,1,9,1,9,1,9,3,9,131,8,9,1,10,1,10,1,10,1,10,1,10,3,10,138,
+        8,10,1,11,1,11,1,11,5,11,143,8,11,10,11,12,11,146,9,11,1,12,1,12,1,13,
+        1,13,1,13,1,13,1,13,1,13,1,13,1,13,1,13,3,13,159,8,13,1,13,1,13,1,13,1,
+        13,1,13,1,14,1,14,1,14,1,14,1,14,1,14,1,14,1,15,1,15,1,15,5,15,176,8,15,
+        10,15,12,15,179,9,15,1,16,1,16,1,17,1,17,1,17,1,17,1,17,3,17,188,8,17,
+        1,18,1,18,3,18,192,8,18,1,19,1,19,1,19,1,20,1,20,1,20,3,20,200,8,20,1,
+        20,5,20,203,8,20,10,20,12,20,206,9,20,1,21,1,21,1,21,1,21,1,21,3,21,213,
+        8,21,1,21,1,21,1,21,1,21,1,21,1,22,1,22,1,23,1,23,1,23,1,23,1,23,1,23,
+        1,23,1,23,1,23,3,23,231,8,23,1,23,1,23,1,23,5,23,236,8,23,10,23,12,23,
+        239,9,23,1,24,1,24,1,24,0,1,46,25,0,2,4,6,8,10,12,14,16,18,20,22,24,26,
+        28,30,32,34,36,38,40,42,44,46,48,0,2,1,0,37,38,2,0,23,27,35,35,241,0,59,
+        1,0,0,0,2,61,1,0,0,0,4,65,1,0,0,0,6,74,1,0,0,0,8,78,1,0,0,0,10,84,1,0,
+        0,0,12,96,1,0,0,0,14,102,1,0,0,0,16,110,1,0,0,0,18,130,1,0,0,0,20,137,
+        1,0,0,0,22,139,1,0,0,0,24,147,1,0,0,0,26,149,1,0,0,0,28,165,1,0,0,0,30,
+        172,1,0,0,0,32,180,1,0,0,0,34,182,1,0,0,0,36,191,1,0,0,0,38,193,1,0,0,
+        0,40,196,1,0,0,0,42,207,1,0,0,0,44,219,1,0,0,0,46,230,1,0,0,0,48,240,1,
+        0,0,0,50,60,3,2,1,0,51,60,3,4,2,0,52,60,3,6,3,0,53,60,3,8,4,0,54,60,3,
+        10,5,0,55,60,3,12,6,0,56,60,3,26,13,0,57,60,3,28,14,0,58,60,3,34,17,0,
+        59,50,1,0,0,0,59,51,1,0,0,0,59,52,1,0,0,0,59,53,1,0,0,0,59,54,1,0,0,0,
+        59,55,1,0,0,0,59,56,1,0,0,0,59,57,1,0,0,0,59,58,1,0,0,0,60,1,1,0,0,0,61,
+        62,5,1,0,0,62,63,5,2,0,0,63,64,3,24,12,0,64,3,1,0,0,0,65,66,5,1,0,0,66,
+        67,5,3,0,0,67,68,3,24,12,0,68,69,5,30,0,0,69,70,3,24,12,0,70,71,5,33,0,
+        0,71,72,3,14,7,0,72,73,5,34,0,0,73,5,1,0,0,0,74,75,5,6,0,0,75,76,5,2,0,
+        0,76,77,3,24,12,0,77,7,1,0,0,0,78,79,5,6,0,0,79,80,5,3,0,0,80,81,3,24,
+        12,0,81,82,5,30,0,0,82,83,3,24,12,0,83,9,1,0,0,0,84,86,5,1,0,0,85,87,5,
+        5,0,0,86,85,1,0,0,0,86,87,1,0,0,0,87,88,1,0,0,0,88,89,5,4,0,0,89,90,3,
+        24,12,0,90,91,5,7,0,0,91,92,3,24,12,0,92,93,5,33,0,0,93,94,3,22,11,0,94,
+        95,5,34,0,0,95,11,1,0,0,0,96,97,5,6,0,0,97,98,5,4,0,0,98,99,3,24,12,0,
+        99,100,5,7,0,0,100,101,3,24,12,0,101,13,1,0,0,0,102,107,3,16,8,0,103,104,
+        5,31,0,0,104,106,3,16,8,0,105,103,1,0,0,0,106,109,1,0,0,0,107,105,1,0,
+        0,0,107,108,1,0,0,0,108,15,1,0,0,0,109,107,1,0,0,0,110,111,3,24,12,0,111,
+        115,3,20,10,0,112,114,3,18,9,0,113,112,1,0,0,0,114,117,1,0,0,0,115,113,
+        1,0,0,0,115,116,1,0,0,0,116,17,1,0,0,0,117,115,1,0,0,0,118,119,5,10,0,
+        0,119,131,5,11,0,0,120,131,5,5,0,0,121,122,5,12,0,0,122,123,5,11,0,0,123,
+        124,5,13,0,0,124,125,3,24,12,0,125,126,5,30,0,0,126,127,3,24,12,0,127,
+        128,5,32,0,0,128,129,3,24,12,0,129,131,1,0,0,0,130,118,1,0,0,0,130,120,
+        1,0,0,0,130,121,1,0,0,0,131,19,1,0,0,0,132,138,5,8,0,0,133,134,5,9,0,0,
+        134,135,5,33,0,0,135,136,5,37,0,0,136,138,5,34,0,0,137,132,1,0,0,0,137,
+        133,1,0,0,0,138,21,1,0,0,0,139,144,3,24,12,0,140,141,5,31,0,0,141,143,
+        3,24,12,0,142,140,1,0,0,0,143,146,1,0,0,0,144,142,1,0,0,0,144,145,1,0,
+        0,0,145,23,1,0,0,0,146,144,1,0,0,0,147,148,5,36,0,0,148,25,1,0,0,0,149,
+        150,5,14,0,0,150,151,5,15,0,0,151,152,3,24,12,0,152,153,5,30,0,0,153,158,
+        3,24,12,0,154,155,5,33,0,0,155,156,3,22,11,0,156,157,5,34,0,0,157,159,
+        1,0,0,0,158,154,1,0,0,0,158,159,1,0,0,0,159,160,1,0,0,0,160,161,5,16,0,
+        0,161,162,5,33,0,0,162,163,3,30,15,0,163,164,5,34,0,0,164,27,1,0,0,0,165,
+        166,5,17,0,0,166,167,5,18,0,0,167,168,3,24,12,0,168,169,5,30,0,0,169,170,
+        3,24,12,0,170,171,3,38,19,0,171,29,1,0,0,0,172,177,3,32,16,0,173,174,5,
+        31,0,0,174,176,3,32,16,0,175,173,1,0,0,0,176,179,1,0,0,0,177,175,1,0,0,
+        0,177,178,1,0,0,0,178,31,1,0,0,0,179,177,1,0,0,0,180,181,7,0,0,0,181,33,
+        1,0,0,0,182,183,5,20,0,0,183,184,3,36,18,0,184,185,5,18,0,0,185,187,3,
+        40,20,0,186,188,3,38,19,0,187,186,1,0,0,0,187,188,1,0,0,0,188,35,1,0,0,
+        0,189,192,5,22,0,0,190,192,3,22,11,0,191,189,1,0,0,0,191,190,1,0,0,0,192,
+        37,1,0,0,0,193,194,5,19,0,0,194,195,3,44,22,0,195,39,1,0,0,0,196,199,3,
+        24,12,0,197,198,5,30,0,0,198,200,3,24,12,0,199,197,1,0,0,0,199,200,1,0,
+        0,0,200,204,1,0,0,0,201,203,3,42,21,0,202,201,1,0,0,0,203,206,1,0,0,0,
+        204,202,1,0,0,0,204,205,1,0,0,0,205,41,1,0,0,0,206,204,1,0,0,0,207,208,
+        5,28,0,0,208,209,5,29,0,0,209,212,3,24,12,0,210,211,5,30,0,0,211,213,3,
+        24,12,0,212,210,1,0,0,0,212,213,1,0,0,0,213,214,1,0,0,0,214,215,5,7,0,
+        0,215,216,3,24,12,0,216,217,5,35,0,0,217,218,3,24,12,0,218,43,1,0,0,0,
+        219,220,3,46,23,0,220,45,1,0,0,0,221,222,6,23,-1,0,222,223,3,24,12,0,223,
+        224,3,48,24,0,224,225,3,32,16,0,225,231,1,0,0,0,226,227,5,33,0,0,227,228,
+        3,46,23,0,228,229,5,34,0,0,229,231,1,0,0,0,230,221,1,0,0,0,230,226,1,0,
+        0,0,231,237,1,0,0,0,232,233,10,2,0,0,233,234,5,21,0,0,234,236,3,46,23,
+        3,235,232,1,0,0,0,236,239,1,0,0,0,237,235,1,0,0,0,237,238,1,0,0,0,238,
+        47,1,0,0,0,239,237,1,0,0,0,240,241,7,1,0,0,241,49,1,0,0,0,16,59,86,107,
+        115,130,137,144,158,177,187,191,199,204,212,230,237
+    };
+
+    public static readonly ATN _ATN =
+        new ATNDeserializer().Deserialize(_serializedATN);
 
 
 }

@@ -14,12 +14,12 @@ namespace abkrServer.Parser.Listener
         public string Operator { get; set; }
         public string ConditionValue { get; set; }
 
-        public JoinCondition(string databaseName,string tableAlias, string conditionColumnName, string op, string conditionValue)
+        public JoinCondition(string databaseName, string tableAlias, string conditionColumnName, string conditionValue)
         {
             DatabaseName = databaseName;
             TableAlias = tableAlias;
             ConditionColumnName = conditionColumnName;
-            Operator = op;
+            Operator = "=";
             ConditionValue = conditionValue;
         }
     }

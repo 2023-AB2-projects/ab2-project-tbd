@@ -100,7 +100,7 @@ namespace abkr.CatalogManager
 
         public static void DropTable(string databaseName, string tableName, IMongoClient _client, CatalogManager _catalogManager)
         {
-            logger.LogMessage($"Dropping table: {databaseName}.{tableName}");
+            //logger.LogMessage($"Dropping table: {databaseName}.{tableName}");
             var database = _client.GetDatabase(databaseName);
             database.DropCollection(tableName);
             database.DropCollection(tableName + "_index");
@@ -140,7 +140,7 @@ namespace abkr.CatalogManager
         {
             var referencedTable = foreignKey.ReferencedTable;
             var foreignKeyValue = row[foreignKey.ColumnName];
-            logger.LogMessage($"RecordManager.CheckForeignKey: foreignKeyValue is {foreignKeyValue} for column {foreignKey.ColumnName}");
+            //logger.LogMessage($"RecordManager.CheckForeignKey: foreignKeyValue is {foreignKeyValue} for column {foreignKey.ColumnName}");
 
             if (foreignKey.ReferencedColumn.Item2)
             {
@@ -154,7 +154,7 @@ namespace abkr.CatalogManager
                 var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(referencedTable + "_index");
                 var filter = Builders<BsonDocument>.Filter.Eq("_id", foreignKey.ReferencedColumn.Item1);
                 var count = indexCollection.Find(filter).FirstOrDefault().GetValue("value").AsString.Split('#');
-                logger.LogMessage($"Count: {count.Length}");
+               //logger.LogMessage($"Count: {count.Length}");
                 if (!count.Contains(foreignKeyValue.ToString()))
                 {
                     throw new Exception($"RecordManager.CheckForeignKey failed. Foreign key constraint violated on column '{foreignKey.ColumnName}' in table '{foreignKey.TableName}' in database '{databaseName}'. Referenced record not found in table '{referencedTable}' for column '{foreignKey.ReferencedColumn}'.");
@@ -224,7 +224,7 @@ namespace abkr.CatalogManager
                 {
                     var filter = Builders<BsonDocument>.Filter.Eq("_id", index.Name);
                     var indexDocument = indexCollection.Find(filter).FirstOrDefault();
-                    logger.LogMessage($"RecordManager.CheckUnique: indexDocument is {indexDocument} for index {index.Name}");
+                    //logger.LogMessage($"RecordManager.CheckUnique: indexDocument is {indexDocument} for index {index.Name}");
 
                     var indexValues = index.Columns.Select(columnName => row[columnName].ToString());
                     var indexValue = string.Join("&", indexValues);
@@ -246,7 +246,7 @@ namespace abkr.CatalogManager
             var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");
             var primaryKey = _catalogManager.GetPrimaryKeyColumn(databaseName, tableName);
 
-            logger.LogMessage($"RecordManager.Delete: Deleting from table {tableName} in database {databaseName} with conditions {string.Join(",", conditions.Select(c=>$"{c.ColumnName} {c.Operator} {c.Value}"))}");
+            //logger.LogMessage($"RecordManager.Delete: Deleting from table {tableName} in database {databaseName} with conditions {string.Join(",", conditions.Select(c=>$"{c.ColumnName} {c.Operator} {c.Value}"))}");
 
             // Step 1: Retrieve documents from the main collection that satisfy the conditions
             var documents = GetDocumentsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
@@ -271,7 +271,7 @@ namespace abkr.CatalogManager
                 }
             }
 
-            logger.LogMessage($"RecordManager.Delete: Deleting documents {string.Join(",", documents)}!!! from table {tableName} in database {databaseName}");
+            //logger.LogMessage($"RecordManager.Delete: Deleting documents {string.Join(",", documents)}!!! from table {tableName} in database {databaseName}");
 
             // Step 3: Delete records from main and index collections
             foreach (var document in documents)
@@ -285,7 +285,7 @@ namespace abkr.CatalogManager
         {
             // Delete from main collection
             var filter = Builders<BsonDocument>.Filter.Eq("_id", doc["_id"]);
-            logger.LogMessage($"RecordManager.DeleteDoc: Deleted from main collection: {collection.DeleteOne(doc)}");
+            //logger.LogMessage($"RecordManager.DeleteDoc: Deleted from main collection: {collection.DeleteOne(doc)}");
 
             // Delete from index collections
             var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_index");

@@ -1,25 +1,37 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Controls;
 using abkr.ClientLogger;
+using Microsoft.Win32;
+using Newtonsoft.Json;
 
 namespace abkr.Client.GUI
 {
+    public class DatabaseData
+    {
+        public string? Name { get; set; }
+        public ObservableCollection<string> Tables { get; set; } = new ObservableCollection<string>();
+    }
+
     public partial class MainWindow : Window
     {
-        private TcpClient _client;
-        private NetworkStream _stream;
-        private StreamReader _reader;
-        private StreamWriter _writer;
+        private TcpClient? _client;
+        private NetworkStream? _stream;
+        private StreamReader? _reader;
+        private StreamWriter? _writer;
         private SemaphoreSlim _readerSemaphore; // Add semaphore
         private SemaphoreSlim _writerSemaphore; // Add semaphore
-        private static Logger clientLogger = new Logger("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkr.Client.GUI/client_logger.log");
-        private static Logger serverLogger = new Logger("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/server_logger.log");
+        private static Logger clientLogger = new Logger("C:/Users/Simon Zoltán/Desktop/ab2-project-tbd/abkr.Client.GUI/client_logger.log");
+        private static Logger serverLogger = new Logger("C:/Users/Simon Zoltán/Desktop/ab2-project-tbd/abkrServer/server_logger.log");
 
 
         public MainWindow()
@@ -44,49 +56,159 @@ namespace abkr.Client.GUI
             string logMessage = "Connected to server. Enter SQL statements or type 'exit' to quit:";
             clientLogger.LogMessage(logMessage);
             UpdateConsole(logMessage); // Update the console
+
+            await ObjectExplorerAsync();
         }
 
-
-
-
-        private async void btnSend_Click(object sender, RoutedEventArgs e)
+        private void OpenFileButton_Click(object sender, RoutedEventArgs e)
         {
-            string sqlStatement = txtInput.Text.Trim();
-
-            if (string.IsNullOrWhiteSpace(sqlStatement))
+            // Open a file dialog
+            var openFileDialog = new OpenFileDialog();
+            openFileDialog.Filter = "SQL files (*.sql)|*.sql|All files (*.*)|*.*";
+            if (openFileDialog.ShowDialog() == true)
             {
-                return;
+                // Load the file into the query editor
+                QueryEditor.Text = File.ReadAllText(openFileDialog.FileName);
+            }
+        }
+        private async Task ObjectExplorerAsync()
+        {
+            await _writer.WriteLineAsync("list-structure");
+
+            StringBuilder structureResponseBuilder = new StringBuilder();
+            string structureLine;
+            while ((structureLine = await _reader.ReadLineAsync()) != null)
+            {
+                if (structureLine == "end")  // Stop when an empty line is encountered
+                {
+                    break;
+                }
+                structureResponseBuilder.AppendLine(structureLine);
             }
 
-            if (sqlStatement.ToLower() == "exit")
+            string structureResponse = structureResponseBuilder.ToString();
+
+            // Deserialize the response
+            var structure = JsonConvert.DeserializeObject<List<DatabaseData>>(structureResponse);
+
+            // Update the Object Explorer
+            ObjExplorer.ItemsSource = structure;
+        }
+
+        private void SaveFileButton_Click(object sender, RoutedEventArgs e)
+        {
+            // Open a save file dialog
+            var saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "SQL files (*.sql)|*.sql|All files (*.*)|*.*";
+            if (saveFileDialog.ShowDialog() == true)
             {
-                Disconnect();
-                return;
+                // Save the content of the query editor to the file
+                File.WriteAllText(saveFileDialog.FileName, QueryEditor.Text);
+            }
+        }
+
+        private void ObjExpButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (ObjExplorer.Visibility == Visibility.Visible)
+            {
+                ObjExplorer.Visibility = Visibility.Collapsed;
+            }
+            else
+            {
+                ObjExplorer.Visibility = Visibility.Visible;
+            }
+        }
+     
+        private async void ExecuteButton_Click(object sender, RoutedEventArgs e)
+        {
+            string fullSqlStatements = QueryEditor.Text;
+
+            var sqlStatements = new List<string>();
+            var currentStatement = new StringBuilder();
+            bool isInText = false;
+
+            foreach (char c in fullSqlStatements)
+            {
+                if (c == ';' && !isInText)
+                {
+                    sqlStatements.Add(currentStatement.ToString().Trim());
+                    currentStatement.Clear();
+                }
+                else
+                {
+                    if (c == '\'' || c == '"')
+                    {
+                        isInText = !isInText;
+                    }
+                    currentStatement.Append(c);
+                }
             }
 
-            // Send SQL statement to server
-            await _writerSemaphore.WaitAsync(); // Acquire semaphore before writing
-            await _writer.WriteLineAsync(sqlStatement);
-            _writerSemaphore.Release(); // Release semaphore after writing
+            // Add the last SQL statement if there's any
+            var lastStatement = currentStatement.ToString().Trim();
+            if (!string.IsNullOrWhiteSpace(lastStatement))
+            {
+                sqlStatements.Add(lastStatement);
+            }
 
-            string logMessage = $"Sent: {sqlStatement}";
-            clientLogger.LogMessage(logMessage);
-            UpdateConsole(logMessage); // Update the console
-            txtInput.Clear();
+            foreach (string sqlStatement in sqlStatements)
+            {
+                // Send SQL statement to the server
+                await _writer.WriteLineAsync(sqlStatement);
+
+                // Receive response from server
+                StringBuilder responseBuilder = new StringBuilder();
+                string line;
+                while ((line = await _reader.ReadLineAsync()) != null)
+                {
+                    if (line == "end")  // Stop when an empty line is encountered
+                    {
+                        break;
+                    }
+                    responseBuilder.AppendLine(line);
+                }
+
+                string response = responseBuilder.ToString();
+
+                // Log the response
+                UpdateConsole(response);
+
+                // If the statement was a SELECT statement, display the result in a new window
+                if (sqlStatement.Trim().ToLower().StartsWith("select"))
+                {
+                    var rawData = JsonConvert.DeserializeObject<List<Dictionary<string, object>>>(response);
+
+                    var selectWindow = new SelectWindow();
+                    selectWindow.SetData(rawData);
+                    selectWindow.Show();
+                }
+            }
+
+            await ObjectExplorerAsync();
+
+        }
+
+        private void OpenEditWindow(List<Dictionary<string, object>> data)
+        {
+            var editWindow = new EditWindow();
+            editWindow.SetData(data);
+            editWindow.Show();
         }
 
         private void UpdateConsole(string message)
         {
-            txtConsole.AppendText(message + Environment.NewLine);
-            txtConsole.ScrollToEnd();
+            LogPanel.AppendText(message + Environment.NewLine);
+            LogPanel.ScrollToEnd();
         }
 
 
-        private void Disconnect()
+        private async void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
         {
+            // Send "exit" to the server
+            await _writer.WriteLineAsync("exit");
+
+            // Close the connection
             _client.Close();
-            clientLogger.LogMessage("Disconnected from server.");
-            btnSend.IsEnabled = false;
         }
     }
 }

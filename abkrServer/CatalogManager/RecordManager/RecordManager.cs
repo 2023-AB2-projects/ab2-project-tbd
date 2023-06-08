@@ -14,7 +14,7 @@ namespace abkr.CatalogManager
 {
     internal class RecordManager
     {
-        public static Logger logger = new("C:/Users/Simon Zoltán/Desktop/ab2-project-tbd/abkrServer/server_logger.log");
+        public static Logger logger = new("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/server_logger.log");
 
 
         public static void CreateDatabase(string databaseName, IMongoClient _client, CatalogManager _catalogManager)
@@ -68,8 +68,6 @@ namespace abkr.CatalogManager
             var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
             var indexCollection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_" + columns[0] + "_index");
 
-            logger.LogMessage($"Creating index: {databaseName}.{tableName}.{indexName}");
-
             if(collection == null)
             {
                 throw new Exception($"RecordManager.Createindex: collection does not exist for table {tableName} in database {databaseName}");
@@ -92,9 +90,6 @@ namespace abkr.CatalogManager
 
             var kvp = new Dictionary<string, string>();
 
-            logger.LogMessage($"RecordManager.CreateIndex: nr of docs {docs.Count}");
-            logger.LogMessage($"RecordManager.CreateIndex: pos {pos}");
-            logger.LogMessage($"RecordManager.CreateIndex: kvp values: ");
             foreach (var doc in docs)
             {
                 //logger.LogMessage($"doc: {doc.ToJson()}");
@@ -116,14 +111,11 @@ namespace abkr.CatalogManager
                 {
                     kvp[value] += "#" + pkValue;
                 }
-                logger.LogMessage($"{kvp[value]}");
             }
 
             var indexDocs = CreateIndexDocumentsFromRow(kvp);
-            logger.LogMessage($"RecordManager.CreateIndex: nr of indexDocs {indexDocs.Count}");
             foreach(var doc in indexDocs)
             {
-                logger.LogMessage($"RecordManager.CreateIndex: indexDoc: {doc.ToJson()}");
                 indexCollection.InsertOne(doc);
             }
 
@@ -140,7 +132,6 @@ namespace abkr.CatalogManager
                     ["_id"] = kvp.Key,
                     ["value"] = kvp.Value
                 };
-                logger.LogMessage($"CreateIndexDocumentsFromRow: {document.ToJson()}");
                 documents.Add(document);
             }
 
@@ -177,7 +168,7 @@ namespace abkr.CatalogManager
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
 
             CheckUniqueAlias(databaseName, tableName, row, _client, _catalogManager);
-            CheckForeignKeys(databaseName, tableName, row, _client, _catalogManager);
+            //CheckForeignKeys(databaseName, tableName, row, _client, _catalogManager);
 
             InsertIntoMainCollection(databaseName, tableName, row, collection);
             InsertIntoIndexCollections(databaseName, tableName, row, _client, _catalogManager);
@@ -321,12 +312,10 @@ namespace abkr.CatalogManager
             }
 
             var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_" + index.Columns[0] + "_index");
+
             var indexDocument = new BsonDocument();
             indexDocument["_id"] = row[index.Columns[0]].ToString();
             indexDocument["value"]=row[row.Keys.First()].ToString();
-
-            logger.LogMessage($"InsertIntoIndexCollection: indexDocument is {indexDocument.ToJson()}");
-            logger.LogMessage($"InsertIntoIndexCollection: pkValue is {index.Columns[0]} = {row[index.Columns[0]]}");
 
             var filter = Builders<BsonDocument>.Filter.Eq("_id", row[index.Columns[0]].ToString());
             var prevDoc = indexCollection.Find(filter).FirstOrDefault();
@@ -542,7 +531,7 @@ namespace abkr.CatalogManager
             foreach (var condition in conditions)
             {
 
-                logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Checking condition {condition.ColumnName} {condition.Operator} {condition.Value} from table {tableName} in database {databaseName}");
+                //logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Checking condition {condition.ColumnName} {condition.Operator} {condition.Value} from table {tableName} in database {databaseName}");
                 var index = indexes.FirstOrDefault(i => i.Columns.Contains(condition.ColumnName));
                 if (index != null) // index exists
                 {
@@ -565,17 +554,17 @@ namespace abkr.CatalogManager
                     // Retrieve the documents in the index that satisfy the condition.
                     var filteredDocuments = indexCollection.Find(filter).ToList();
 
-                    logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Found {filteredDocuments.Count} documents satisfying condition {condition.ColumnName} {condition.Operator} {condition.Value} from table {tableName} in database {databaseName}");
+                    //logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Found {filteredDocuments.Count} documents satisfying condition {condition.ColumnName} {condition.Operator} {condition.Value} from table {tableName} in database {databaseName}");
 
                     // Extract the primary keys from the filtered documents.
                     HashSet<string> filteredPrimaryKeys = new(filteredDocuments.Select(doc => doc["value"].AsString));
 
-                    logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Found {filteredPrimaryKeys.Count} primary keys satisfying condition {condition.ColumnName} {condition.Operator} {condition.Value} from table {tableName} in database {databaseName}");
+                    //logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Found {filteredPrimaryKeys.Count} primary keys satisfying condition {condition.ColumnName} {condition.Operator} {condition.Value} from table {tableName} in database {databaseName}");
 
                     // Update primaryKeys to be the intersection of itself and filteredPrimaryKeys
                     primaryKeys.IntersectWith(filteredPrimaryKeys);
 
-                    logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Found {primaryKeys.Count} primary keys satisfying condition {condition.ColumnName} {condition.Operator} {condition.Value} from table {tableName} in database {databaseName}");
+                    //logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Found {primaryKeys.Count} primary keys satisfying condition {condition.ColumnName} {condition.Operator} {condition.Value} from table {tableName} in database {databaseName}");
                 }
             }
 
@@ -583,13 +572,13 @@ namespace abkr.CatalogManager
 
             // Use the remaining primary keys to retrieve the corresponding documents from the main collection.
 
-            logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Found {primaryKeys.Count} primary keys satisfying conditions: {string.Join(',', primaryKeys.Select(pk=>pk))}.");
+            //logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Found {primaryKeys.Count} primary keys satisfying conditions: {string.Join(',', primaryKeys.Select(pk=>pk))}.");
             var filterBuilder = Builders<BsonDocument>.Filter;
             var intValues = primaryKeys.Select(pk => Convert.ToInt32(pk));
             var primaryKeysFilter = filterBuilder.In("_id", intValues);
             var finalDocuments = collection.Find(primaryKeysFilter).ToList();
 
-            logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Found {finalDocuments.Count} documents satisfying conditions.");
+            //logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Found {finalDocuments.Count} documents satisfying conditions.");
 
             // Convert the final documents to rows and return them.
             var finalRows = GetRowsSatisfyingConditionsAfterIndexCheck(databaseName, tableName,conditions,_catalogManager, finalDocuments);

@@ -31,7 +31,7 @@ column_definition: identifier data_type column_constraint*;
 column_constraint
     : PRIMARY KEY
     | UNIQUE
-    | FOREIGN KEY REFERENCES identifier DOT identifier COLON identifier
+    | FOREIGN KEY REFERENCES identifier DOT identifier LPAREN identifier RPAREN
     ;
 
 data_type: INT | VARCHAR LPAREN NUMBER RPAREN;

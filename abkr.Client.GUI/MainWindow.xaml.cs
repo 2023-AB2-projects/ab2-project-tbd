@@ -30,8 +30,8 @@ namespace abkr.Client.GUI
         private StreamWriter? _writer;
         private SemaphoreSlim _readerSemaphore; // Add semaphore
         private SemaphoreSlim _writerSemaphore; // Add semaphore
-        private static Logger clientLogger = new Logger("C:/Users/Simon Zoltán/Desktop/ab2-project-tbd/abkr.Client.GUI/client_logger.log");
-        private static Logger serverLogger = new Logger("C:/Users/Simon Zoltán/Desktop/ab2-project-tbd/abkrServer/server_logger.log");
+        private static Logger clientLogger = new Logger("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkr.client.GUI/client_logger.log");
+        private static Logger serverLogger = new Logger("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/server_logger.log");
 
 
         public MainWindow()

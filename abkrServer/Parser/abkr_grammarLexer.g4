@@ -68,3 +68,12 @@ IDENTIFIER: [a-zA-Z][a-zA-Z0-9_]*;
 NUMBER: [0-9]+;
 STRING: '\'' (~'\'' | '\'\'' | '\\\'')* '\'';
 WS: [ \t\r\n]+ -> skip;
+
+COMMENT
+    :   '/*' .*? '*/' -> skip
+    ;
+
+LINE_COMMENT
+    :   '//' .*? '\n' -> skip
+    ;
+

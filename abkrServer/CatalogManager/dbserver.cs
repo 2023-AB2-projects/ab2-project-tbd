@@ -48,8 +48,6 @@ namespace abkr.CatalogManager
 
         public static Task ExecuteStatementAsync(string sql)
         {
-            logger.LogMessage("ExecuteStatementAsync called");
-
             // Create a new instance of the ANTLR input stream with the SQL statement
             var inputStream = new AntlrInputStream(sql);
 
@@ -125,32 +123,20 @@ namespace abkr.CatalogManager
             else if (listener.StatementType == StatementType.Insert)
             {
                 Dictionary<string, object> rowData = new Dictionary<string, object>();
-                //string? primaryKeyColumn = null;
-
-                //logger.LogMessage("Before calling Insert method...");
-                //logger.LogMessage("Columns: " + string.Join(", ", listener.Columns.Keys));
-                //logger.LogMessage("Values: " + string.Join(", ", listener.Columns.Values));
-
-                //primaryKeyColumn = _catalogManager?.GetPrimaryKeyColumn(listener.DatabaseName, listener.TableName)
-                //        ?? throw new Exception("ERROR: Primary key not found!");
-
-                // Iterate through the listener.Columns dictionary
+                
                 foreach (var column in listener.Columns)
                 {
                     rowData[column.Key] = column.Value;
                 }
 
-                //logger.LogMessage("Row data: " + string.Join(", ", rowData.Select(kv => $"{kv.Key}={kv.Value}")));
 
                 RecordManager.Insert(listener.DatabaseName, listener.TableName, rowData, _client, _catalogManager);
 
-                //Query(listener.DatabaseName, listener.TableName);
             }
             else if (listener.StatementType == StatementType.Delete)
             {
                 var conditions = listener.Conditions;
                 RecordManager.Delete(listener.DatabaseName, listener.TableName,conditions, _client, _catalogManager);
-                //PrintAllDocuments(listener.DatabaseName, listener.TableName);
             }
             else if (listener.StatementType == StatementType.Select)
             {
@@ -356,34 +342,6 @@ namespace abkr.CatalogManager
 
             resultStringBuilder.AppendLine("+" + new string('-', resultStringBuilder.ToString().Split('\n')[0].Length - 2) + "+");
             return resultStringBuilder.ToString();
-        }
-
-        public static void Query(string databaseName, string tableName)
-        {
-            logger.LogMessage($"Querying {databaseName}.{tableName}");
-            var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName)
-                ?? throw new Exception("ERROR: Table not found! Null ref");
-
-            var filter = Builders<BsonDocument>.Filter.Empty;
-            var documents = collection.Find(filter).ToList();
-
-            logger.LogMessage("Results:");
-            foreach (var document in documents)
-            {
-                logger.LogMessage(document.ToString());
-            }
-        }
-
-        public static void PrintAllDocuments(string databaseName, string tableName)
-        {
-            var collection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-            var documents = collection.Find(Builders<BsonDocument>.Filter.Empty).ToList();
-
-            logger.LogMessage($"Documents in {databaseName}.{tableName}:");
-            foreach (var document in documents)
-            {
-                logger.LogMessage(document.ToString());
-            }
         }
     }
 }

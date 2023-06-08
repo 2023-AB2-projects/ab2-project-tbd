@@ -350,8 +350,10 @@ namespace abkr.CatalogManager
         private static void DeleteDoc(string databaseName, string tableName, IMongoClient _client, IMongoCollection<BsonDocument> collection, BsonDocument doc,CatalogManager catalogManager)
         {
             // Delete from main collection
-            var filter = Builders<BsonDocument>.Filter.Eq("_id", doc["_id"]);
-            var result = collection.DeleteOne(filter);
+            //var filter = Builders<BsonDocument>.Filter.Eq("_id", doc["_id"]);
+            //var pkValue=doc.GetValue("_id").ToString();
+            //var values = doc.GetValue("value").AsString.Split('#');
+            var result = collection.DeleteOne(doc);
             logger.LogMessage($"RecordManager.DeleteDoc: Deleted from main collection: {result}");
 
             // Delete from index collections
@@ -362,7 +364,7 @@ namespace abkr.CatalogManager
                 foreach (var index in indexes)
                 {
                     var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_" + index.Columns[0] + "_index");
-                    if(indexCollection != null) { continue; }
+                    if(indexCollection == null) { continue; }
                     var row = ConvertDocumentToRow(doc, catalogManager, databaseName, tableName);
                     if (index.Columns[0] == catalogManager.GetPrimaryKeyColumn(databaseName, tableName))
                     {
@@ -371,22 +373,6 @@ namespace abkr.CatalogManager
 
                     var indexDocumentFilter = Builders<BsonDocument>.Filter.Eq("_id", row[index.Columns[0]]);
                     var indexDocument = indexCollection.DeleteMany(indexDocumentFilter);
-
-                    //logger.LogMessage($"RecordManager.DeleteDoc: indexDocument is {indexDocument} for index {index.Name}");
-
-                    //if (indexDocument != null)
-                    //{
-                    //    var indexValues = indexDocument["value"].AsString.Split('#').ToList();
-                    //    var rowIndexValues = index.Columns.Select(columnName => row[columnName].ToString());
-                    //    var rowIndexValue = string.Join("&", rowIndexValues);
-                    //    indexValues.Remove(rowIndexValue);
-                    //    indexDocument["value"] = string.Join("#", indexValues);
-                    //    indexCollection.ReplaceOne(indexDocumentFilter, indexDocument, new ReplaceOptions { IsUpsert = true });
-                    //}
-                    //else
-                    //{
-                    //    throw new Exception($"RecordManager.DeleteDoc: Delete failed. Index document not found for index {index.Name} in table {tableName} in database {databaseName}.");
-                    //}
                 }
             }
         }
@@ -462,51 +448,58 @@ namespace abkr.CatalogManager
 
         public static List<Dictionary<string, object>> GetRowsSatisfyingConditions(string databaseName, string tableName, List<FilterCondition> conditions, IMongoClient _client, CatalogManager _catalogManager)
         {
+            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+
+            // Start with all primary keys.
+            HashSet<string> primaryKeys = new HashSet<string>(collection.AsQueryable().Select(doc => doc["_id"].AsString));
+
+            // Get the indexes associated with the table.
             var indexes = _catalogManager.GetIndexes(databaseName, tableName);
-            var conditionIndexes = GetIntersectedIndexes(indexes, conditions);
-            var documents = new List<BsonDocument>();
-            if (conditionIndexes != null)
+
+            // Iterate over each condition
+            foreach (var condition in conditions)
             {
-                foreach (var index in conditionIndexes)
+                var index = indexes.FirstOrDefault(i => i.Columns.Contains(condition.ColumnName));
+                if (index != null) // index exists
                 {
-                    var sortedconditions = conditions.Where(c => c.ColumnName == index.Columns[0]);
-                    foreach (var condition in sortedconditions)
+                    var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_" + condition.ColumnName + "_index");
+
+                    // Determine the MongoDB filter based on the operator in the condition.
+                    FilterDefinition<BsonDocument> filter = condition.Operator switch
                     {
-                        conditions.Remove(condition);
-                        var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_" + index.Columns[0] + "_index");
+                        "=" => Builders<BsonDocument>.Filter.Eq("_id", condition.Value),
+                        ">" => Builders<BsonDocument>.Filter.Gt("_id", condition.Value),
+                        ">=" => Builders<BsonDocument>.Filter.Gte("_id", condition.Value),
+                        "<" => Builders<BsonDocument>.Filter.Lt("_id", condition.Value),
+                        "<=" => Builders<BsonDocument>.Filter.Lte("_id", condition.Value),
+                        "!=" => Builders<BsonDocument>.Filter.Ne("_id", condition.Value),
+                        _ => throw new ArgumentException($"Unsupported operator: {condition.Operator}"),
+                    };
 
-                        if (condition != null)
-                        {
-                            FilterDefinition<BsonDocument> filter = condition.Operator switch
-                            {
-                                "=" => Builders<BsonDocument>.Filter.Eq("_id", condition.Value),
-                                ">" => Builders<BsonDocument>.Filter.Gt("_id", condition.Value),
-                                ">=" => Builders<BsonDocument>.Filter.Gte("_id", condition.Value),
-                                "<" => Builders<BsonDocument>.Filter.Lt("_id", condition.Value),
-                                "<=" => Builders<BsonDocument>.Filter.Lte("_id", condition.Value),
-                                "!=" => Builders<BsonDocument>.Filter.Ne("_id", condition.Value),
-                                _ => throw new ArgumentException($"Unsupported operator: {condition.Operator}"),
-                            };
-                            documents = indexCollection.Find(filter).ToList();
-                        }
-                    }
+                    // Retrieve the documents in the index that satisfy the condition.
+                    var filteredDocuments = indexCollection.Find(filter).ToList();
 
+                    // Extract the primary keys from the filtered documents.
+                    HashSet<string> filteredPrimaryKeys = new(filteredDocuments.Select(doc => doc["value"].AsString));
+
+                    // Update primaryKeys to be the intersection of itself and filteredPrimaryKeys
+                    primaryKeys.IntersectWith(filteredPrimaryKeys);
                 }
             }
 
+            // At this point, primaryKeys contains the keys of the documents that satisfy all conditions.
 
-            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-            documents = collection.Find(new BsonDocument()).ToList();
+            // Use the remaining primary keys to retrieve the corresponding documents from the main collection.
+            var filterBuilder = Builders<BsonDocument>.Filter;
+            var primaryKeysFilter = filterBuilder.In("_id", primaryKeys);
+            var finalDocuments = collection.Find(primaryKeysFilter).ToList();
 
-            var result = new List<Dictionary<string, object>>();
-            foreach (var document in documents)
-            {
-                var row = ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
-                if (!SatisfiesConditions(row, conditions)) continue;
-                result.Add(row);
-            }
-            return result;
+            // Convert the final documents to rows and return them.
+            var finalRows = finalDocuments.Select(doc => ConvertDocumentToRow(doc, _catalogManager, databaseName, tableName)).ToList();
+
+            return finalRows;
         }
+
 
         // Function to convert a document to a row
         public static Dictionary<string, object> ConvertDocumentToRow(BsonDocument document, CatalogManager catalogManager, string databasName, string tableName)
@@ -515,11 +508,6 @@ namespace abkr.CatalogManager
             var values = document["value"].AsString.Split('#');
 
             var columns = catalogManager.GetColumnNames(databasName, tableName);
-            //logger.LogMessage($"RecordManager.ConvertDocumentToRow: columns are: ");
-            //foreach (var column in columns)
-            //{
-            //    logger.LogMessage(column);
-            //}
 
             var pk = catalogManager.GetPrimaryKeyColumn(databasName, tableName);
             row[pk] = document["_id"];
@@ -534,16 +522,12 @@ namespace abkr.CatalogManager
                 row[column] = values[i++];
             }
 
-            //logger.LogMessage($"RecordManager.ConvertDocumentToRow: Converted document {document.ToJson()} to row {string.Join(",", row)}");
-
             return row;
         }
 
         // Function to check if a row violates a foreign key constraint
         private static bool CheckForeignKeyForDelete(string databaseName, ForeignKey reference, Dictionary<string, object> row, IMongoClient _client, CatalogManager catalogManager)
         {
-            //logger.LogMessage($"RecordManager.CheckForeignKeyForDelete: Checking foreign key constraint {reference.ColumnName} in table {reference.TableName} referencing {reference.ReferencedColumn} in table {reference.ReferencedTable} for row {string.Join(",", row)}");
-
             if (!row.ContainsKey(reference.ColumnName))
             {
                 return true;

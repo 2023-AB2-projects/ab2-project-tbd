@@ -80,7 +80,8 @@ namespace abkr.CatalogManager
                 indexCollection = _client?.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_" + columns[0] + "_index");
             }
 
-            var pos = _catalogManager.GetColumnPosition(databaseName, tableName, columns[0]);
+            var pos = _catalogManager.GetColumnPosition(databaseName, tableName, columns[0])
+                ??throw new Exception($"RecordManager.Createindex: column {columns[0]} not found in table {tableName} in database {databaseName}");
 
             var docs = collection.Find(new BsonDocument()).ToList();
             if(!docs.Any())
@@ -91,29 +92,65 @@ namespace abkr.CatalogManager
 
             var kvp = new Dictionary<string, string>();
 
-
+            logger.LogMessage($"RecordManager.CreateIndex: nr of docs {docs.Count}");
+            logger.LogMessage($"RecordManager.CreateIndex: pos {pos}");
+            logger.LogMessage($"RecordManager.CreateIndex: kvp values: ");
             foreach (var doc in docs)
             {
+                //logger.LogMessage($"doc: {doc.ToJson()}");
                 var values= doc.GetValue("value").AsString.Split("#");
-                var value = values[(int)pos-1];
-                var pk = doc["_id"].AsString;
-                if (kvp[value]==null)
+                //logger.LogMessage($"values: ");
+
+                //foreach (var v in values)
+                //{
+                //    logger.LogMessage($"{v}");
+                //}
+                var value = values[(int)pos-2];
+                //logger.LogMessage($"value: {value}");
+                var pkValue = doc["_id"].ToString();
+                if (!kvp.ContainsKey(value))
                 {
-                    kvp[value] = pk;
+                    kvp[value] = pkValue;
                 }
-                kvp[value] += "#"+pk;
+                else
+                {
+                    kvp[value] += "#" + pkValue;
+                }
+                logger.LogMessage($"{kvp[value]}");
             }
 
             var indexDocs = CreateIndexDocumentsFromRow(kvp);
-            indexCollection.InsertMany(indexDocs);
+            logger.LogMessage($"RecordManager.CreateIndex: nr of indexDocs {indexDocs.Count}");
+            foreach(var doc in indexDocs)
+            {
+                logger.LogMessage($"RecordManager.CreateIndex: indexDoc: {doc.ToJson()}");
+                indexCollection.InsertOne(doc);
+            }
 
             _catalogManager?.CreateIndex(databaseName, tableName, indexName, columns, isUnique);
+        }
+
+        private static List<BsonDocument> CreateIndexDocumentsFromRow(Dictionary<string, string> row)
+        {
+            List<BsonDocument> documents = new();
+            foreach (var kvp in row)
+            {
+                var document = new BsonDocument
+                {
+                    ["_id"] = kvp.Key,
+                    ["value"] = kvp.Value
+                };
+                logger.LogMessage($"CreateIndexDocumentsFromRow: {document.ToJson()}");
+                documents.Add(document);
+            }
+
+            return documents;
         }
 
 
         public static void DropIndex(string databaseName, string tableName, string indexName, IMongoClient _client, CatalogManager _catalogManager)
         {
-            _client?.GetDatabase(databaseName).DropCollection(tableName + "_" + indexName + "_index");
+            _client?.GetDatabase(databaseName).DropCollection(tableName + "_" + indexName);
 
             _catalogManager?.DropIndex(databaseName, tableName, indexName);
         }
@@ -213,20 +250,6 @@ namespace abkr.CatalogManager
             return document;
         }
 
-        private static List<BsonDocument> CreateIndexDocumentsFromRow(Dictionary<string, string> row)
-        {
-            List<BsonDocument > documents = new();
-            var document = new BsonDocument();
-            foreach (var kvp in row)
-            {
-                document["_id"] = kvp.Key;
-                document["value"] = kvp.Value;
-            }
-            documents.Add(document);
-            
-            return documents;
-        }
-
         private static void InsertIntoIndexCollections(string databaseName, string tableName, Dictionary<string, object> row, IMongoClient _client, CatalogManager _catalogManager)
         {
             var indexes = _catalogManager.GetIndexes(databaseName, tableName);
@@ -247,15 +270,16 @@ namespace abkr.CatalogManager
             var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_" + index.Columns[0] + "_index");
             var indexDocument = new BsonDocument();
             indexDocument["_id"] = row[index.Columns[0]].ToString();
-            indexDocument["value"]=row.Keys.First();
+            indexDocument["value"]=row[row.Keys.First()].ToString();
 
             logger.LogMessage($"InsertIntoIndexCollection: indexDocument is {indexDocument.ToJson()}");
+            logger.LogMessage($"InsertIntoIndexCollection: pkValue is {index.Columns[0]} = {row[index.Columns[0]]}");
 
             var filter = Builders<BsonDocument>.Filter.Eq("_id", row[index.Columns[0]].ToString());
             var prevDoc = indexCollection.Find(filter).FirstOrDefault();
             if (prevDoc != null)
             {
-                prevDoc["value"] += "#" + row.Keys.First();
+                prevDoc["value"] += "#" + row[row.Keys.First()];
                 indexCollection.InsertOne(prevDoc);
             }
             else
@@ -448,10 +472,13 @@ namespace abkr.CatalogManager
 
         public static List<Dictionary<string, object>> GetRowsSatisfyingConditions(string databaseName, string tableName, List<FilterCondition> conditions, IMongoClient _client, CatalogManager _catalogManager)
         {
+            //logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Getting rows satisfying conditions {string.Join(",", conditions)} from table {tableName} in database {databaseName}");
+            //IDE ELJUT!!!!!!!!!!!!!!!!!!!!
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
 
             // Start with all primary keys.
-            HashSet<string> primaryKeys = new HashSet<string>(collection.AsQueryable().Select(doc => doc["_id"].AsString));
+            HashSet<string> primaryKeys = new HashSet<string>(collection.AsQueryable().Select(doc => doc["_id"].ToString()));
+
 
             // Get the indexes associated with the table.
             var indexes = _catalogManager.GetIndexes(databaseName, tableName);
@@ -459,10 +486,15 @@ namespace abkr.CatalogManager
             // Iterate over each condition
             foreach (var condition in conditions)
             {
+                logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Checking condition {condition.ColumnName} {condition.Operator} {condition.Value} from table {tableName} in database {databaseName}");
                 var index = indexes.FirstOrDefault(i => i.Columns.Contains(condition.ColumnName));
                 if (index != null) // index exists
                 {
                     var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_" + condition.ColumnName + "_index");
+
+                    if(indexCollection == null) { continue; }
+                    
+                    conditions.Remove(condition);
 
                     // Determine the MongoDB filter based on the operator in the condition.
                     FilterDefinition<BsonDocument> filter = condition.Operator switch
@@ -490,14 +522,34 @@ namespace abkr.CatalogManager
             // At this point, primaryKeys contains the keys of the documents that satisfy all conditions.
 
             // Use the remaining primary keys to retrieve the corresponding documents from the main collection.
+
+            logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Found {primaryKeys.Count} primary keys satisfying conditions: {string.Join(',', primaryKeys.Select(pk=>pk))}.");
             var filterBuilder = Builders<BsonDocument>.Filter;
-            var primaryKeysFilter = filterBuilder.In("_id", primaryKeys);
+            var intValues = primaryKeys.Select(pk => Convert.ToInt32(pk));
+            var primaryKeysFilter = filterBuilder.In("_id", intValues);
             var finalDocuments = collection.Find(primaryKeysFilter).ToList();
 
+            logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Found {finalDocuments.Count} documents satisfying conditions.");
+
             // Convert the final documents to rows and return them.
-            var finalRows = finalDocuments.Select(doc => ConvertDocumentToRow(doc, _catalogManager, databaseName, tableName)).ToList();
+            var finalRows = GetRowsSatisfyingConditionsAfterIndexCheck(databaseName, tableName,conditions,_catalogManager, finalDocuments);
 
             return finalRows;
+        }
+
+        public static List<Dictionary<string, object>> GetRowsSatisfyingConditionsAfterIndexCheck(string databaseName, string tableName, List<FilterCondition> conditions, CatalogManager _catalogManager, List<BsonDocument> documents)
+        {
+            //var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+            //var documents = collection.Find(new BsonDocument()).ToList();
+
+            var result = new List<Dictionary<string, object>>();
+            foreach (var document in documents)
+            {
+                var row = ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
+                if (!SatisfiesConditions(row, conditions)) continue;
+                result.Add(row);
+            }
+            return result;
         }
 
 

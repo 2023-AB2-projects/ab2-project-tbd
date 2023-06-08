@@ -22,7 +22,7 @@ drop_table_statement: DROP TABLE identifier DOT identifier;
 
 create_index_statement: CREATE (UNIQUE)? INDEX identifier ON identifier DOT identifier LPAREN identifier_list RPAREN;
 
-drop_index_statement: DROP INDEX identifier ON identifier;
+drop_index_statement: DROP INDEX identifier ON identifier DOT identifier;
 
 column_definition_list: column_definition (COMMA column_definition)*;
 

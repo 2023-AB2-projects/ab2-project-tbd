@@ -250,9 +250,9 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public override void EnterDrop_index_statement(abkr_grammarParser.Drop_index_statementContext context)
     {
         StatementType = StatementType.DropIndex;
-        DatabaseName = context.identifier(0).GetText();
-        TableName = context.identifier(1).GetText();
-        IndexName = context.identifier(2).GetText();
+        IndexName = context.identifier(0).GetText();
+        DatabaseName = context.identifier(1).GetText();
+        TableName = context.identifier(2).GetText();
     }
 
     public override void EnterDelete_statement(abkr_grammarParser.Delete_statementContext context)
@@ -291,6 +291,8 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         {
             SelectedColumns = columnListContext.identifier_list().identifier().Select(c => c.GetText()).ToArray();
         }
+
+        Logger.LogMessage("[Select] Columns: " + string.Join(", ", SelectedColumns));
 
         // Handle the JOIN clauses
         JoinConditions.Clear();  // Clear the join conditions for a new statement

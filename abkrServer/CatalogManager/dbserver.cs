@@ -105,9 +105,6 @@ namespace abkr.CatalogManager
                 RecordManager.CreateTable(listener.DatabaseName, listener.TableName, columns, _catalogManager, _client);
             }
 
-                RecordManager.CreateTable(listener.DatabaseName, listener.TableName, columns, _catalogManager, _client);
-            }
-
             else if (listener.StatementType == StatementType.DropDatabase)
             {
                 RecordManager.DropDatabase(listener.DatabaseName, _client, _catalogManager);

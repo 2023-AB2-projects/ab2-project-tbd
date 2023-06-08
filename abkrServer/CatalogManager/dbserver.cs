@@ -279,7 +279,7 @@ namespace abkr.CatalogManager
                 else
                 {
                     // Log the message and continue with an empty row for this key
-                    logger.LogMessage($"The key '{outerColumnValue}' was not present in the indexedInnerRows dictionary for the table {innerTableName}. Outer row: {JsonConvert.SerializeObject(outerRow)}");
+                    //logger.LogMessage($"The key '{outerColumnValue}' was not present in the indexedInnerRows dictionary for the table {innerTableName}. Outer row: {JsonConvert.SerializeObject(outerRow)}");
                     var mergedRow = new Dictionary<string, object>(outerRow);
                     mergedRows.Add(mergedRow);
                 }

@@ -7,12 +7,19 @@ using System.Diagnostics.CodeAnalysis;
 using abkrServer.CatalogManager.RecordManager;
 using abkr.ServerLogger;
 using System.Text;
-using abkrServer.Parser.Listener;
+
 using MongoDB.Bson.Serialization.IdGenerators;
+using Newtonsoft.Json;
+using abkrServer.Parser.Listener;
+using System.Collections.ObjectModel;
 
 namespace abkr.CatalogManager
 {
-
+    public class DatabaseData
+    {
+        public string? Name { get; set; }
+        public ObservableCollection<string>? Tables { get; set; }
+    }
     public class DatabaseServer
     {
         static private IMongoClient _client;
@@ -56,7 +63,7 @@ namespace abkr.CatalogManager
             // Invoke the parser's entry rule (statement) and get the parse tree
             var parseTree = parser.statement();
 
-            var listener = new MyAbkrGrammarListener("C:/Users/bfcsa/source/repos/abkr/abkrServer/Parser/example.xml",_catalogManager, logger);
+            var listener = new MyAbkrGrammarListener("C:/Users/Simon Zoltán/Desktop/ab2-project-tbd/abkrServer/Parser/example.xml", _catalogManager, logger);
             ParseTreeWalker.Default.Walk(listener, parseTree);
 
             // Perform actions based on the parsed statement
@@ -94,6 +101,9 @@ namespace abkr.CatalogManager
 
                     columns.Add(newColumn);
                 }
+
+                RecordManager.CreateTable(listener.DatabaseName, listener.TableName, columns, _catalogManager, _client);
+            }
 
                 RecordManager.CreateTable(listener.DatabaseName, listener.TableName, columns, _catalogManager, _client);
             }
@@ -136,13 +146,10 @@ namespace abkr.CatalogManager
 
                 RecordManager.Insert(listener.DatabaseName, listener.TableName, rowData, _client, _catalogManager);
 
-                //logger.LogMessage("After calling Insert method...");
-
                 //Query(listener.DatabaseName, listener.TableName);
             }
             else if (listener.StatementType == StatementType.Delete)
             {
-                //PrintAllDocuments(listener.DatabaseName, listener.TableName);
                 var conditions = listener.Conditions;
                 RecordManager.Delete(listener.DatabaseName, listener.TableName,conditions, _client, _catalogManager);
                 //PrintAllDocuments(listener.DatabaseName, listener.TableName);
@@ -168,6 +175,7 @@ namespace abkr.CatalogManager
                         listener.TableName
                     };
                     HandleSelectStatement(listener.DatabaseName, tableNames, listener.Conditions, listener.SelectedColumns);
+
                 }
             }
             else
@@ -218,6 +226,22 @@ namespace abkr.CatalogManager
             }
         }
 
+        public List<DatabaseData> GetDatabasesAndTables()
+        {
+            var databaseList = _client?.ListDatabaseNames().ToList()
+             ?? throw new Exception("No Databases present.");
+
+            var databases = new List<DatabaseData>();
+
+            foreach (var databaseName in databaseList)
+            {
+                var database = _client.GetDatabase(databaseName);
+                var tables = new ObservableCollection<string>(database.ListCollectionNames().ToList());
+                databases.Add(new DatabaseData { Name = databaseName, Tables = tables });
+            }
+
+            return databases;
+        }
 
         private static void HandleSelectStatement(string databaseName, List<string >tableName, List<FilterCondition> conditions, string[] selectedColumns)
         {
@@ -277,6 +301,7 @@ namespace abkr.CatalogManager
                     }
 
                     mergedRows.Add(mergedRow);
+
                 }
             }
             return mergedRows;
@@ -316,6 +341,7 @@ namespace abkr.CatalogManager
         {
             return RecordManager.GetRowsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
         }
+
 
         private static string FormatOutput(List<Dictionary<string, object>> rows, string[] selectedColumns, string databaseName, string tableName)
         {

@@ -7,11 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using abkr.CatalogManager;
 using abkr.ServerLogger;
-
+using Newtonsoft.Json;
 class Server
 {
     private static CancellationTokenSource cts = new CancellationTokenSource();
-    private static Logger logger = new Logger("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/server_logger.log");
+    private static Logger logger = new Logger("C:/Users/Simon Zoltán/Desktop/ab2-project-tbd/abkrServer/server_logger.log");
 
     public static async Task Main()
     {
@@ -31,7 +31,7 @@ class Server
 
 
         // Initialize the DatabaseServer instance
-        var databaseServer = new DatabaseServer("mongodb://localhost:27017/", "C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrServer/Parser/example.xml", logger);  
+        var databaseServer = new DatabaseServer("mongodb://localhost:27017/", "C:/Users/Simon Zoltán/Desktop/ab2-project-tbd/abkrServer/Parser/example.xml", logger);  
 
         while (!cts.Token.IsCancellationRequested)
         {
@@ -107,14 +107,22 @@ class Server
                 string response;
                 try
                 {
-                    await DatabaseServer.ExecuteStatementAsync(data);
-                    if (data.Trim().ToLower().StartsWith("select"))
+                    if (data.Trim().ToLower() == "list-structure")
                     {
-                        response = "Success\n" + DatabaseServer.LastQueryResult;
+                        var structure = databaseServer.GetDatabasesAndTables();
+                        response = JsonConvert.SerializeObject(structure);
                     }
                     else
                     {
-                        response = "Success";
+                        await DatabaseServer.ExecuteStatementAsync(data);
+                        if (data.Trim().ToLower().StartsWith("select"))
+                        {
+                            response = DatabaseServer.LastQueryResult;
+                        }
+                        else
+                        {
+                            response = "Success";
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -125,6 +133,7 @@ class Server
                 logger.LogMessage($"Server is sending: {response}");
                 await writer.WriteLineAsync(response);
                 await writer.WriteLineAsync("end");  
+
             }
         }
         catch (IOException ex)

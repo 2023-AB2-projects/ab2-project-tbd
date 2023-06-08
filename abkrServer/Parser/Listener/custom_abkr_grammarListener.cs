@@ -1,4 +1,4 @@
-﻿using abkr.CatalogManager;
+using abkr.CatalogManager;
 using abkr.ServerLogger;
 using abkrServer.CatalogManager.RecordManager;
 using abkrServer.Parser.Listener;

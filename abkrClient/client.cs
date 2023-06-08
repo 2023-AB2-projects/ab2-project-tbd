@@ -11,7 +11,7 @@ namespace abkr.Client
 {
     class Client
     {
-        private static Logger logger = new Logger("C:/Users/bfcsa/github-classroom/2023-AB2-projects/ab2-project-tbd/abkrClient/client_logger.log");
+        private static Logger logger = new Logger("C:/Users/Simon Zoltán/Desktop/ab2-project-tbd/abkrClient/client_logger.log");
         static async Task Main(string[] args)
         {
             bool isSelectStatement = false;

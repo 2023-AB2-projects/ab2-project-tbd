@@ -1,4 +1,4 @@
-﻿using abkr.CatalogManager;
+using abkr.CatalogManager;
 using abkr.ServerLogger;
 using abkrServer.CatalogManager.RecordManager;
 using abkrServer.Parser.Listener;
@@ -29,7 +29,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public string? TableName { get; private set; }
     public string? IndexName { get; private set; }
     public Dictionary<string, object> Columns { get; private set; } = new Dictionary<string, object>();
-    public BsonArray IndexColumns { get; private set; } = new BsonArray();
+    public List<string> IndexColumns { get; private set; } = new List<string>();
     public List<object> Values { get; private set; } = new List<object>();
     public string? ColumnName { get; private set; }
     public object ColumnValue { get; private set; }
@@ -219,8 +219,8 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
             Columns[context.identifier_list().identifier(i).GetText()] = context.value_list().value(i).GetText();
         }
 
-    //    Logger.LogMessage("[Insert] Columns: " + string.Join(", ", Columns.Keys));
-    //    Logger.LogMessage("[Insert] Values: " + string.Join(", ", Columns.Values));
+        //Logger.LogMessage("[Insert] Columns: " + string.Join(", ", Columns.Keys));
+        //Logger.LogMessage("[Insert] Values: " + string.Join(", ", Columns.Values));
     }
 
 
@@ -236,9 +236,9 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public override void EnterCreate_index_statement(abkr_grammarParser.Create_index_statementContext context)
     {
         StatementType = StatementType.CreateIndex;
-        DatabaseName = context.identifier(0).GetText();
-        TableName = context.identifier(1).GetText();
-        IndexName = context.identifier(2).GetText();
+        DatabaseName = context.identifier(1).GetText();
+        TableName = context.identifier(2).GetText();
+        IndexName = context.identifier(0).GetText();
 
         var columnIdentifiers = context.identifier_list().identifier();
         foreach (var columnIdentifier in columnIdentifiers)
@@ -250,9 +250,9 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public override void EnterDrop_index_statement(abkr_grammarParser.Drop_index_statementContext context)
     {
         StatementType = StatementType.DropIndex;
-        DatabaseName = context.identifier(0).GetText();
-        TableName = context.identifier(1).GetText();
-        IndexName = context.identifier(2).GetText();
+        IndexName = context.identifier(0).GetText();
+        DatabaseName = context.identifier(1).GetText();
+        TableName = context.identifier(2).GetText();
     }
 
     public override void EnterDelete_statement(abkr_grammarParser.Delete_statementContext context)
@@ -272,6 +272,9 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
 
         JoinConditions.Add(new JoinCondition(databaseName, tableName, columnName1, columnName2));
     }
+
+
+
     public override void EnterSelect_statement(abkr_grammarParser.Select_statementContext context)
     {
         StatementType = StatementType.Select;
@@ -288,6 +291,8 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
         {
             SelectedColumns = columnListContext.identifier_list().identifier().Select(c => c.GetText()).ToArray();
         }
+
+        Logger.LogMessage("[Select] Columns: " + string.Join(", ", SelectedColumns));
 
         // Handle the JOIN clauses
         JoinConditions.Clear();  // Clear the join conditions for a new statement

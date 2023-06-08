@@ -174,7 +174,7 @@ namespace abkr.CatalogManager
                 ?? throw new Exception($"ERROR: Primary key column name not found in table {tableName}!");
         }
 
-        public int? GetColumnLineNumber(string databaseName, string tableName, string columnName)
+        public int? GetColumnPosition(string databaseName, string tableName, string columnName)
         {
             // Load the existing metadata
             var metadata = LoadMetadata();
@@ -358,6 +358,34 @@ namespace abkr.CatalogManager
             return columnNames;
         }
 
+        public bool HasIndex(string databaseName, string tableName, string columnName)
+        {
+            // Load the existing metadata
+            var metadata = LoadMetadata();
+
+            // Select the database
+            var databaseElement = metadata.Elements("DataBase").FirstOrDefault(e => e.Attribute("dataBaseName")?.Value == databaseName)
+                ?? throw new ArgumentException($"Database '{databaseName}' does not exist.");
+
+            // Select the table
+            var tableElement = databaseElement.Elements("Table").FirstOrDefault(e => e.Attribute("tableName")?.Value == tableName)
+                ?? throw new ArgumentException($"Table '{tableName}' does not exist in database '{databaseName}'.");
+
+            // Select the IndexFiles
+            var indexFilesElement = tableElement.Element("IndexFiles");
+
+            // If there are no index files, return false
+            if (indexFilesElement == null)
+            {
+                return false;
+            }
+
+            // Check all IndexFiles for the existence of the specified column
+            var hasIndex = indexFilesElement.Elements("IndexFile")
+                .Any(indexFile => indexFile.Element("IndexAttributes").Elements("IAttribute").Any(attribute => attribute.Value == columnName));
+
+            return hasIndex;
+        }
 
 
 

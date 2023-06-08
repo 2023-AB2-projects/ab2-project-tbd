@@ -425,10 +425,24 @@ namespace abkr.CatalogManager
             return true;
         }
 
+        public static List<Index> GetIntersectedIndexes(List<Index> indexes, List<FilterCondition> conditions)
+        {
+            var intersectedIndexes = indexes
+                .Where(index => index.Columns.Count > 0)
+                .Where(index => conditions.Any(condition => condition.ColumnName == index.Columns[0]))
+                .ToList();
+
+            return intersectedIndexes;
+        }
+
+
 
         // Function to retrieve documents that satisfy conditions
         public static List<BsonDocument> GetDocumentsSatisfyingConditions(string databaseName, string tableName, List<FilterCondition> conditions, IMongoClient _client, CatalogManager _catalogManager)
         {
+            //var indexes = _catalogManager.GetIndexes(databaseName, tableName);
+            //List<string> conditionIndexes = GetIntersectedIndexes(indexes, conditions);
+           
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
             var documents = collection.Find(new BsonDocument()).ToList();
 
@@ -448,8 +462,41 @@ namespace abkr.CatalogManager
 
         public static List<Dictionary<string, object>> GetRowsSatisfyingConditions(string databaseName, string tableName, List<FilterCondition> conditions, IMongoClient _client, CatalogManager _catalogManager)
         {
+            var indexes = _catalogManager.GetIndexes(databaseName, tableName);
+            var conditionIndexes = GetIntersectedIndexes(indexes, conditions);
+            var documents = new List<BsonDocument>();
+            if (conditionIndexes != null)
+            {
+                foreach (var index in conditionIndexes)
+                {
+                    var sortedconditions = conditions.Where(c => c.ColumnName == index.Columns[0]);
+                    foreach (var condition in sortedconditions)
+                    {
+                        conditions.Remove(condition);
+                        var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_" + index.Columns[0] + "_index");
+
+                        if (condition != null)
+                        {
+                            FilterDefinition<BsonDocument> filter = condition.Operator switch
+                            {
+                                "=" => Builders<BsonDocument>.Filter.Eq("_id", condition.Value),
+                                ">" => Builders<BsonDocument>.Filter.Gt("_id", condition.Value),
+                                ">=" => Builders<BsonDocument>.Filter.Gte("_id", condition.Value),
+                                "<" => Builders<BsonDocument>.Filter.Lt("_id", condition.Value),
+                                "<=" => Builders<BsonDocument>.Filter.Lte("_id", condition.Value),
+                                "!=" => Builders<BsonDocument>.Filter.Ne("_id", condition.Value),
+                                _ => throw new ArgumentException($"Unsupported operator: {condition.Operator}"),
+                            };
+                            documents = indexCollection.Find(filter).ToList();
+                        }
+                    }
+
+                }
+            }
+
+
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
-            var documents = collection.Find(new BsonDocument()).ToList();
+            documents = collection.Find(new BsonDocument()).ToList();
 
             var result = new List<Dictionary<string, object>>();
             foreach (var document in documents)

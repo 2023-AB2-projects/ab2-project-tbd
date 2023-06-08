@@ -486,6 +486,7 @@ namespace abkr.CatalogManager
             // Iterate over each condition
             foreach (var condition in conditions)
             {
+
                 logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Checking condition {condition.ColumnName} {condition.Operator} {condition.Value} from table {tableName} in database {databaseName}");
                 var index = indexes.FirstOrDefault(i => i.Columns.Contains(condition.ColumnName));
                 if (index != null) // index exists
@@ -493,8 +494,6 @@ namespace abkr.CatalogManager
                     var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName + "_" + condition.ColumnName + "_index");
 
                     if(indexCollection == null) { continue; }
-                    
-                    conditions.Remove(condition);
 
                     // Determine the MongoDB filter based on the operator in the condition.
                     FilterDefinition<BsonDocument> filter = condition.Operator switch
@@ -511,11 +510,17 @@ namespace abkr.CatalogManager
                     // Retrieve the documents in the index that satisfy the condition.
                     var filteredDocuments = indexCollection.Find(filter).ToList();
 
+                    logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Found {filteredDocuments.Count} documents satisfying condition {condition.ColumnName} {condition.Operator} {condition.Value} from table {tableName} in database {databaseName}");
+
                     // Extract the primary keys from the filtered documents.
                     HashSet<string> filteredPrimaryKeys = new(filteredDocuments.Select(doc => doc["value"].AsString));
 
+                    logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Found {filteredPrimaryKeys.Count} primary keys satisfying condition {condition.ColumnName} {condition.Operator} {condition.Value} from table {tableName} in database {databaseName}");
+
                     // Update primaryKeys to be the intersection of itself and filteredPrimaryKeys
                     primaryKeys.IntersectWith(filteredPrimaryKeys);
+
+                    logger.LogMessage($"RecordManager.GetRowsSatisfyingConditions: Found {primaryKeys.Count} primary keys satisfying condition {condition.ColumnName} {condition.Operator} {condition.Value} from table {tableName} in database {databaseName}");
                 }
             }
 

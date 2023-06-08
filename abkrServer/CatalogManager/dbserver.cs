@@ -224,6 +224,7 @@ namespace abkr.CatalogManager
             ValidateDatabaseAndTable(databaseName, tableName);
             var tName = tableName[0];
             var rows = GetRows(databaseName, tName, conditions);
+            logger.LogMessage($"Rows: {rows.Count}");
             var formattedResult = FormatOutput(rows, selectedColumns, databaseName, tName);
             LastQueryResult = formattedResult;
         }

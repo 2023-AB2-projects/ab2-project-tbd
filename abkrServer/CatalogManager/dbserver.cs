@@ -8,6 +8,7 @@ using abkrServer.CatalogManager.RecordManager;
 using abkr.ServerLogger;
 using System.Text;
 using abkrServer.Parser.Listener;
+using MongoDB.Bson.Serialization.IdGenerators;
 
 namespace abkr.CatalogManager
 {
@@ -107,7 +108,7 @@ namespace abkr.CatalogManager
             }
             else if (listener.StatementType == StatementType.CreateIndex)
             {
-                RecordManager.CreateIndex(listener.DatabaseName, listener.TableName, listener.IndexName, listener.IndexColumns, _catalogManager.IsUniqueKey(listener.DatabaseName, listener.TableName, listener.ColumnName), _client, _catalogManager);
+                RecordManager.CreateIndex(listener.DatabaseName, listener.TableName, listener.IndexName, listener.IndexColumns, _catalogManager.IsUniqueKey(listener.DatabaseName, listener.TableName, listener.IndexColumns[0]), _client, _catalogManager);
             }
             else if (listener.StatementType == StatementType.DropIndex)
             {
@@ -150,15 +151,28 @@ namespace abkr.CatalogManager
             {
                 if (listener.JoinConditions.Count > 0)
                 {
-                    foreach (var joinCondition in listener.JoinConditions)
+                    var tableNames = new List<string>
                     {
-                        HandleSelectStatementWithJoin(listener.DatabaseName, listener.TableName, joinCondition.TableAlias, joinCondition, listener.Conditions, listener.SelectedColumns);
+                        listener.TableName
+                    };
+                    foreach (var condition in listener.JoinConditions)
+                    {
+                        tableNames.Add(condition.TableAlias);
                     }
+                    HandleSelectStatementWithJoin(listener.DatabaseName, tableNames, listener.JoinConditions,listener.Conditions ,listener.SelectedColumns);
                 }
                 else
                 {
-                    HandleSelectStatement(listener.DatabaseName, listener.TableName, listener.Conditions, listener.SelectedColumns);
+                    var tableNames = new List<string>
+                    {
+                        listener.TableName
+                    };
+                    HandleSelectStatement(listener.DatabaseName, tableNames, listener.Conditions, listener.SelectedColumns);
                 }
+            }
+            else
+            {
+                throw new Exception("ERROR: Unknown command type!");
             }
 
 
@@ -205,31 +219,72 @@ namespace abkr.CatalogManager
         }
 
 
-        private static void HandleSelectStatement(string databaseName, string tableName, List<FilterCondition> conditions, string[] selectedColumns)
+        private static void HandleSelectStatement(string databaseName, List<string >tableName, List<FilterCondition> conditions, string[] selectedColumns)
         {
             ValidateDatabaseAndTable(databaseName, tableName);
-            var rows = GetRows(databaseName, tableName, conditions);
-            var formattedResult = FormatOutput(rows, selectedColumns, databaseName, tableName);
+            var tName = tableName[0];
+            var rows = GetRows(databaseName, tName, conditions);
+            var formattedResult = FormatOutput(rows, selectedColumns, databaseName, tName);
             LastQueryResult = formattedResult;
         }
 
-        private static void HandleSelectStatementWithJoin(string databaseName, string tableName, string joinedTableName, JoinCondition joinCondition, List<FilterCondition> conditions, string[] selectedColumns)
+        private static void HandleSelectStatementWithJoin(string databaseName, List<string> tableNames, List<JoinCondition> joinConditions, List<FilterCondition> conditions, string[] selectedColumns)
         {
-            ValidateDatabaseAndTable(databaseName, tableName, joinedTableName);
-            var rows = GetRows(databaseName, tableName, conditions);
-            var joinConditions = new List<FilterCondition>
-    {
-        new FilterCondition(joinCondition.ConditionColumnName, "=", joinCondition.ConditionValue)
-    };
-            var joinRows = GetRows(databaseName, joinedTableName, joinConditions);
-            var mergedRows = MergeRows(rows, joinRows, joinCondition.ConditionColumnName, joinedTableName);
-            var formattedResult = FormatOutput(mergedRows, selectedColumns, databaseName, tableName);
-            LastQueryResult = formattedResult;
+            //if (tableNames.Count < 2 || joinConditions.Count != tableNames.Count - 1)
+            //    throw new Exception("Incorrect number of tables or join conditions provided");
+
+            //ValidateDatabaseAndTable(databaseName, tableNames);
+
+            //// Assume the first table is the outer table
+            //var rows = GetRows(databaseName, tableNames[0], conditions);
+
+            //for (int i = 1; i < tableNames.Count; i++)
+            //{
+            //    var joinRows = GetIndexedRows(databaseName, tableNames[i], joinConditions[i - 1].Column2);
+
+            //    rows = IndexedNestedLoopJoin(rows, joinRows, joinConditions[i - 1].Column1, joinConditions[i - 1].Column2, tableNames[i]);
+            //}
+
+            //var formattedResult = FormatOutput(rows, selectedColumns, databaseName, tableNames[0]);
+            //LastQueryResult = formattedResult;
         }
 
-        private static void ValidateDatabaseAndTable(params string[] names)
+        //private static Dictionary<object,Dictionary<string, object>> GetIndexedRows()
+        //{
+
+        //}
+
+
+        private static List<Dictionary<string, object>> IndexedNestedLoopJoin(
+    List<Dictionary<string, object>> outerRows,
+    Dictionary<object, Dictionary<string, object>> indexedInnerRows,
+    string outerColumn,
+    string innerColumn,
+    string innerTableName)
         {
-            if (names.Any(string.IsNullOrEmpty))
+            var mergedRows = new List<Dictionary<string, object>>();
+            foreach (var outerRow in outerRows)
+            {
+                if (indexedInnerRows.ContainsKey(outerRow[outerColumn]))
+                {
+                    var innerRow = indexedInnerRows[outerRow[outerColumn]];
+                    var mergedRow = new Dictionary<string, object>(outerRow);
+
+                    foreach (var column in innerRow)
+                    {
+                        mergedRow[$"{innerTableName}.{column.Key}"] = column.Value;
+                    }
+
+                    mergedRows.Add(mergedRow);
+                }
+            }
+            return mergedRows;
+        }
+
+
+        private static void ValidateDatabaseAndTable(string databasename, List<string> tableNames)
+        {
+            if (tableNames.Any(string.IsNullOrEmpty) || databasename == null)
             {
                 throw new Exception("Database or table name missing in statement");
             }
@@ -256,63 +311,9 @@ namespace abkr.CatalogManager
             return mergedRows;
         }
 
-
-        // Additional helper functions
-        private static IMongoDatabase GetDatabase(string databaseName)
-        {
-            return _client?.GetDatabase(databaseName);
-        }
-
-        private static IMongoCollection<BsonDocument> GetCollection(IMongoDatabase database, string tableName)
-        {
-            return database?.GetCollection<BsonDocument>(tableName);
-        }
-
-        private static List<BsonDocument> GetDocuments(string databaseName, string tableName, List<FilterCondition> conditions)
-        {
-            return RecordManager.GetDocumentsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
-        }
-
         private static List<Dictionary<string, object>> GetRows(string databaseName, string tableName, List<FilterCondition> conditions)
         {
             return RecordManager.GetRowsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
-        }
-
-        private static string FormatOutput(List<BsonDocument> documents, string[] selectedColumns, string databaseName, string tableName)
-        {
-            StringBuilder resultStringBuilder = new StringBuilder();
-            int columnWidth = 20; // Define the width of your columns, can be adjusted based on needs
-
-            if (selectedColumns.Length > 0 && !selectedColumns.Contains("*"))
-            {
-                var line = "| " + string.Join(" | ", selectedColumns.Select(column => column.PadRight(columnWidth))) + " |";
-                resultStringBuilder.AppendLine("+" + new string('-', line.Length - 2) + "+");
-                resultStringBuilder.AppendLine(line);
-
-                foreach (BsonDocument document in documents)
-                {
-                    var row = RecordManager.ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
-                    resultStringBuilder.AppendLine("| " + string.Join(" | ", selectedColumns.Select(column => row[column]?.ToString().PadRight(columnWidth))) + " |");
-                }
-                resultStringBuilder.AppendLine("+" + new string('-', line.Length - 2) + "+");
-            }
-            else
-            {
-                var firstRow = RecordManager.ConvertDocumentToRow(documents[0], _catalogManager, databaseName, tableName);
-                var columns = firstRow.Keys.ToList();
-                var line = "| " + string.Join(" | ", columns.Select(column => column.PadRight(columnWidth))) + " |";
-                resultStringBuilder.AppendLine("+" + new string('-', line.Length - 2) + "+");
-                resultStringBuilder.AppendLine(line);
-
-                foreach (BsonDocument document in documents)
-                {
-                    var row = RecordManager.ConvertDocumentToRow(document, _catalogManager, databaseName, tableName);
-                    resultStringBuilder.AppendLine("| " + string.Join(" | ", columns.Select(column => row[column]?.ToString().PadRight(columnWidth))) + " |");
-                }
-                resultStringBuilder.AppendLine("+" + new string('-', line.Length - 2) + "+");
-            }
-
-            return resultStringBuilder.ToString();
         }
 
         private static string FormatOutput(List<Dictionary<string, object>> rows, string[] selectedColumns, string databaseName, string tableName)
@@ -351,5 +352,3 @@ namespace abkr.CatalogManager
 
     }
 }
-
-

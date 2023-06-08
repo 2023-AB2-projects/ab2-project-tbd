@@ -29,7 +29,7 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public string? TableName { get; private set; }
     public string? IndexName { get; private set; }
     public Dictionary<string, object> Columns { get; private set; } = new Dictionary<string, object>();
-    public BsonArray IndexColumns { get; private set; } = new BsonArray();
+    public List<string> IndexColumns { get; private set; } = new List<string>();
     public List<object> Values { get; private set; } = new List<object>();
     public string? ColumnName { get; private set; }
     public object ColumnValue { get; private set; }
@@ -236,9 +236,9 @@ public class MyAbkrGrammarListener : abkr_grammarBaseListener
     public override void EnterCreate_index_statement(abkr_grammarParser.Create_index_statementContext context)
     {
         StatementType = StatementType.CreateIndex;
-        DatabaseName = context.identifier(0).GetText();
-        TableName = context.identifier(1).GetText();
-        IndexName = context.identifier(2).GetText();
+        DatabaseName = context.identifier(1).GetText();
+        TableName = context.identifier(2).GetText();
+        IndexName = context.identifier(0).GetText();
 
         var columnIdentifiers = context.identifier_list().identifier();
         foreach (var columnIdentifier in columnIdentifiers)

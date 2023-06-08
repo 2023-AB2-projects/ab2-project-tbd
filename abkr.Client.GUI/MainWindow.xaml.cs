@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Net;
 using System.Net.Sockets;
@@ -15,6 +16,12 @@ using Newtonsoft.Json;
 
 namespace abkr.Client.GUI
 {
+    public class DatabaseData
+    {
+        public string? Name { get; set; }
+        public ObservableCollection<string> Tables { get; set; } = new ObservableCollection<string>();
+    }
+
     public partial class MainWindow : Window
     {
         private TcpClient? _client;
@@ -49,6 +56,8 @@ namespace abkr.Client.GUI
             string logMessage = "Connected to server. Enter SQL statements or type 'exit' to quit:";
             clientLogger.LogMessage(logMessage);
             UpdateConsole(logMessage); // Update the console
+
+            await ObjectExplorerAsync();
         }
 
         private void OpenFileButton_Click(object sender, RoutedEventArgs e)
@@ -61,6 +70,29 @@ namespace abkr.Client.GUI
                 // Load the file into the query editor
                 QueryEditor.Text = File.ReadAllText(openFileDialog.FileName);
             }
+        }
+        private async Task ObjectExplorerAsync()
+        {
+            await _writer.WriteLineAsync("list-structure");
+
+            StringBuilder structureResponseBuilder = new StringBuilder();
+            string structureLine;
+            while ((structureLine = await _reader.ReadLineAsync()) != null)
+            {
+                if (structureLine == "end")  // Stop when an empty line is encountered
+                {
+                    break;
+                }
+                structureResponseBuilder.AppendLine(structureLine);
+            }
+
+            string structureResponse = structureResponseBuilder.ToString();
+
+            // Deserialize the response
+            var structure = JsonConvert.DeserializeObject<List<DatabaseData>>(structureResponse);
+
+            // Update the Object Explorer
+            ObjExplorer.ItemsSource = structure;
         }
 
         private void SaveFileButton_Click(object sender, RoutedEventArgs e)
@@ -151,8 +183,17 @@ namespace abkr.Client.GUI
                     selectWindow.Show();
                 }
             }
+
+            await ObjectExplorerAsync();
+
         }
 
+        private void OpenEditWindow(List<Dictionary<string, object>> data)
+        {
+            var editWindow = new EditWindow();
+            editWindow.SetData(data);
+            editWindow.Show();
+        }
 
         private void UpdateConsole(string message)
         {

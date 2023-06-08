@@ -9,10 +9,15 @@ using abkr.ServerLogger;
 using System.Text;
 using Newtonsoft.Json;
 using abkrServer.Parser.Listener;
+using System.Collections.ObjectModel;
 
 namespace abkr.CatalogManager
 {
-
+    public class DatabaseData
+    {
+        public string? Name { get; set; }
+        public ObservableCollection<string>? Tables { get; set; }
+    }
     public class DatabaseServer
     {
         static private IMongoClient _client;
@@ -202,6 +207,22 @@ namespace abkr.CatalogManager
             }
         }
 
+        public List<DatabaseData> GetDatabasesAndTables()
+        {
+            var databaseList = _client?.ListDatabaseNames().ToList()
+             ?? throw new Exception("No Databases present.");
+
+            var databases = new List<DatabaseData>();
+
+            foreach (var databaseName in databaseList)
+            {
+                var database = _client.GetDatabase(databaseName);
+                var tables = new ObservableCollection<string>(database.ListCollectionNames().ToList());
+                databases.Add(new DatabaseData { Name = databaseName, Tables = tables });
+            }
+
+            return databases;
+        }
 
         // Refactored function
         private static void HandleSelectStatement(string databaseName, string tableName, List<FilterCondition> conditions, string[] selectedColumns)

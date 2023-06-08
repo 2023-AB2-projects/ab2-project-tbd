@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using abkr.CatalogManager;
 using abkr.ServerLogger;
-
+using Newtonsoft.Json;
 class Server
 {
     private static CancellationTokenSource cts = new CancellationTokenSource();
@@ -107,14 +107,22 @@ class Server
                 string response;
                 try
                 {
-                    await DatabaseServer.ExecuteStatementAsync(data);
-                    if (data.Trim().ToLower().StartsWith("select"))
+                    if (data.Trim().ToLower() == "list-structure")
                     {
-                        response =  DatabaseServer.LastQueryResult;
+                        var structure = databaseServer.GetDatabasesAndTables();
+                        response = JsonConvert.SerializeObject(structure);
                     }
                     else
                     {
-                        response = "Success";
+                        await DatabaseServer.ExecuteStatementAsync(data);
+                        if (data.Trim().ToLower().StartsWith("select"))
+                        {
+                            response = DatabaseServer.LastQueryResult;
+                        }
+                        else
+                        {
+                            response = "Success";
+                        }
                     }
                 }
                 catch (Exception ex)
@@ -125,6 +133,7 @@ class Server
                 logger.LogMessage($"Server is sending: {response}");
                 await writer.WriteLineAsync(response);
                 await writer.WriteLineAsync("end");  
+
             }
         }
         catch (IOException ex)

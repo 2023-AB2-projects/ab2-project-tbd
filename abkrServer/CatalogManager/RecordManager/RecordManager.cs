@@ -118,6 +118,58 @@ namespace abkr.CatalogManager
             InsertIntoIndexCollections(databaseName, tableName, row, _client, _catalogManager);
         }
 
+        public static void Update(string databaseName, string tableName, List<FilterCondition> conditions, Dictionary<string, object> newRow, IMongoClient _client, CatalogManager _catalogManager)
+        {
+            // Check if we're updating a foreign key
+            var foreignKeys = _catalogManager.GetForeignKeyReferences(databaseName, tableName);
+            foreach (var foreignKey in foreignKeys)
+            {
+                if (newRow.ContainsKey(foreignKey.ColumnName))
+                {
+                    throw new Exception($"Update failed. Cannot update a foreign key column '{foreignKey.ColumnName}' in table '{tableName}' in database '{databaseName}'.");
+                }
+            }
+
+            // Get the collection from the database
+            var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
+
+            // Create a filter for the conditions
+            var filterBuilder = Builders<BsonDocument>.Filter;
+            var filters = conditions.Select(c => filterBuilder.Eq(c.ColumnName, c.Value)).ToList();
+            var filter = filterBuilder.And(filters);
+
+            // Get the old document first to fetch its index values
+            var oldDocument = collection.Find(filter).FirstOrDefault();
+            if (oldDocument == null)
+            {
+                throw new Exception($"No row found to update in table '{tableName}' in database '{databaseName}' with the provided conditions.");
+            }
+
+            // Create the update definition for the main data
+            var updateDefinition = Builders<BsonDocument>.Update;
+            var updateDefinitionList = newRow.Select(pair => updateDefinition.Set(pair.Key, pair.Value.ToString())).ToList();
+            var update = updateDefinition.Combine(updateDefinitionList);
+
+            // Update the document
+            collection.UpdateOne(filter, update);
+
+            // Now, update the index
+            var indexCollection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>("IndexTable");
+            var indexes = _catalogManager.GetIndexes(databaseName, tableName);
+            foreach (var updatedValue in newRow)
+            {
+                // Check if the updated field is part of the index
+                if (indexes.Any(index => index.Columns.Contains(updatedValue.Key)))
+                {
+                    // Find the index for the old value and update it
+                    var indexFilter = Builders<BsonDocument>.Filter.Eq("columnName", updatedValue.Key) & Builders<BsonDocument>.Filter.Eq("rowId", oldDocument.GetValue("_id"));
+                    var indexUpdate = Builders<BsonDocument>.Update.Set("indexedValue", updatedValue.Value.ToString());
+
+                    indexCollection.UpdateOne(indexFilter, indexUpdate);
+                }
+            }
+        }
+
         private static void CheckUniqueAlias(string databaseName, string tableName, Dictionary<string, object> row, IMongoClient _client, CatalogManager _catalogManager)
         {
             if (!CheckUnique(databaseName, tableName, row, _client, _catalogManager))

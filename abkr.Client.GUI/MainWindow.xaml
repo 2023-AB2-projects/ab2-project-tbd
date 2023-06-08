@@ -26,9 +26,20 @@
         </StackPanel>
 
         <!-- Sidebar -->
-        <TreeView x:Name="ObjExplorer" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch">
-            <!-- Object Explorer content here -->
-        </TreeView>
+        <ListBox ItemsSource="{Binding Databases}" x:Name="ObjExplorer" Grid.Row="1" Grid.Column="0" HorizontalAlignment="Stretch">
+            <ListBox.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <VirtualizingStackPanel/>
+                </ItemsPanelTemplate>
+            </ListBox.ItemsPanel>
+            <ListBox.ItemTemplate>
+                <DataTemplate>
+                    <Expander Header="{Binding Name}">
+                        <ListBox ItemsSource="{Binding Tables}"/>
+                    </Expander>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
         <GridSplitter Grid.Row="1" Grid.Column="1" Width="5" VerticalAlignment="Stretch" ResizeDirection="Columns"/>
         <!-- Query editor -->
         <TextBox x:Name="QueryEditor" Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" AcceptsReturn="True"/>

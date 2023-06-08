@@ -41,7 +41,8 @@ public partial class abkr_grammarParser : Parser {
 		VALUES=16, DELETE=17, FROM=18, WHERE=19, SELECT=20, AND=21, ASTERISK=22, 
 		GREATER_THAN=23, GREATER_EQUALS=24, LESS_THAN=25, LESS_EQUALS=26, DIFFERS=27, 
 		INNER=28, JOIN=29, DOT=30, COMMA=31, COLON=32, LPAREN=33, RPAREN=34, EQUALS=35, 
-		IDENTIFIER=36, NUMBER=37, STRING=38, WS=39, COMMENT=40, LINE_COMMENT=41;
+		IDENTIFIER=36, NUMBER=37, STRING=38, WS=39, COMMENT=40, LINE_COMMENT=41, 
+		SQL_LINE_COMMENT=42;
 	public const int
 		RULE_statement = 0, RULE_create_database_statement = 1, RULE_create_table_statement = 2, 
 		RULE_drop_database_statement = 3, RULE_drop_table_statement = 4, RULE_create_index_statement = 5, 
@@ -72,7 +73,7 @@ public partial class abkr_grammarParser : Parser {
 		"INTO", "VALUES", "DELETE", "FROM", "WHERE", "SELECT", "AND", "ASTERISK", 
 		"GREATER_THAN", "GREATER_EQUALS", "LESS_THAN", "LESS_EQUALS", "DIFFERS", 
 		"INNER", "JOIN", "DOT", "COMMA", "COLON", "LPAREN", "RPAREN", "EQUALS", 
-		"IDENTIFIER", "NUMBER", "STRING", "WS", "COMMENT", "LINE_COMMENT"
+		"IDENTIFIER", "NUMBER", "STRING", "WS", "COMMENT", "LINE_COMMENT", "SQL_LINE_COMMENT"
 	};
 	public static readonly IVocabulary DefaultVocabulary = new Vocabulary(_LiteralNames, _SymbolicNames);
 
@@ -1881,7 +1882,7 @@ public partial class abkr_grammarParser : Parser {
 	}
 
 	private static int[] _serializedATN = {
-		4,1,41,247,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,7,
+		4,1,42,247,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,6,2,7,
 		7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,2,14,7,14,
 		2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,7,20,2,21,7,21,
 		2,22,7,22,2,23,7,23,2,24,7,24,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,1,0,3,0,

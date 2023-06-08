@@ -77,3 +77,8 @@ LINE_COMMENT
     :   '//' .*? '\n' -> skip
     ;
 
+SQL_LINE_COMMENT
+    :   '--' .*? '\n' -> skip
+    ;
+
+

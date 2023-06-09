@@ -168,7 +168,7 @@ namespace abkr.CatalogManager
             var collection = _client.GetDatabase(databaseName).GetCollection<BsonDocument>(tableName);
 
             CheckUniqueAlias(databaseName, tableName, row, _client, _catalogManager);
-            //CheckForeignKeys(databaseName, tableName, row, _client, _catalogManager);
+            CheckForeignKeys(databaseName, tableName, row, _client, _catalogManager);
 
             InsertIntoMainCollection(databaseName, tableName, row, collection);
             InsertIntoIndexCollections(databaseName, tableName, row, _client, _catalogManager);

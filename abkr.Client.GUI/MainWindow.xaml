@@ -21,8 +21,8 @@
         <StackPanel Orientation="Horizontal" Grid.Row="0" Grid.ColumnSpan="2">
             <Button Content="Open File" Click="OpenFileButton_Click" />
             <Button Content="Save File" Click="SaveFileButton_Click" />
-            <Button Content="Execute" Click="ExecuteButton_Click" />
             <Button x:Name="ObjExpButton" Content="Object Explorer" Click="ObjExpButton_Click"/>
+            <Button Content="Execute" Click="ExecuteButton_Click" />
         </StackPanel>
 
         <!-- Sidebar -->
@@ -35,11 +35,22 @@
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Expander Header="{Binding Name}">
-                        <ListBox ItemsSource="{Binding Tables}"/>
+                        <ListBox ItemsSource="{Binding Tables}">
+                            <ListBox.ItemContainerStyle>
+                                <Style TargetType="ListBoxItem">
+                                    <EventSetter Event="PreviewMouseRightButtonUp" Handler="SelectTopRows"/>
+                                </Style>
+                            </ListBox.ItemContainerStyle>
+                            <ListBox.Tag>
+                                <Binding Path="DataContext.Name" RelativeSource="{RelativeSource AncestorType={x:Type Expander}}"/>
+                            </ListBox.Tag>
+                        </ListBox>
                     </Expander>
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+
+
         <GridSplitter Grid.Row="1" Grid.Column="1" Width="5" VerticalAlignment="Stretch" ResizeDirection="Columns"/>
         <!-- Query editor -->
         <TextBox x:Name="QueryEditor" Grid.Row="1" Grid.Column="1" TextWrapping="Wrap" AcceptsReturn="True"/>

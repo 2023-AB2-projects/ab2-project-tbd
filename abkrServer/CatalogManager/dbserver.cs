@@ -7,11 +7,11 @@ using System.Diagnostics.CodeAnalysis;
 using abkrServer.CatalogManager.RecordManager;
 using abkr.ServerLogger;
 using System.Text;
-
-using MongoDB.Bson.Serialization.IdGenerators;
 using Newtonsoft.Json;
 using abkrServer.Parser.Listener;
 using System.Collections.ObjectModel;
+using static Server;
+using System.Net.Sockets;
 
 namespace abkr.CatalogManager
 {
@@ -19,6 +19,17 @@ namespace abkr.CatalogManager
     {
         public string? Name { get; set; }
         public ObservableCollection<string>? Tables { get; set; }
+    }
+    public class RowEdit
+    {
+        public Dictionary<string, object> OriginalRow { get; set; }
+        public Dictionary<string, object> UpdatedRow { get; set; }
+    }
+    public class UpdateData
+    {
+        public string? DatabaseName { get; set; }
+        public string? TableName { get; set; }
+        public List<RowEdit>? Changes { get; set; }
     }
     public class DatabaseServer
     {
@@ -63,7 +74,7 @@ namespace abkr.CatalogManager
             // Invoke the parser's entry rule (statement) and get the parse tree
             var parseTree = parser.statement();
 
-            var listener = new MyAbkrGrammarListener("C:/Users/Simon Zoltán/Desktop/ab2-project-tbd/abkrServer/Parser/example.xml", _catalogManager, logger);
+            var listener = new MyAbkrGrammarListener("C:/Users/Simon Zoltán/Desktop/ab2-project-tbd/abkrServer/Parser/example.xml",_catalogManager, logger);
             ParseTreeWalker.Default.Walk(listener, parseTree);
 
             // Perform actions based on the parsed statement
@@ -101,9 +112,6 @@ namespace abkr.CatalogManager
 
                     columns.Add(newColumn);
                 }
-
-                RecordManager.CreateTable(listener.DatabaseName, listener.TableName, columns, _catalogManager, _client);
-            }
 
                 RecordManager.CreateTable(listener.DatabaseName, listener.TableName, columns, _catalogManager, _client);
             }
@@ -146,10 +154,13 @@ namespace abkr.CatalogManager
 
                 RecordManager.Insert(listener.DatabaseName, listener.TableName, rowData, _client, _catalogManager);
 
+                //logger.LogMessage("After calling Insert method...");
+
                 //Query(listener.DatabaseName, listener.TableName);
             }
             else if (listener.StatementType == StatementType.Delete)
             {
+                //PrintAllDocuments(listener.DatabaseName, listener.TableName);
                 var conditions = listener.Conditions;
                 RecordManager.Delete(listener.DatabaseName, listener.TableName,conditions, _client, _catalogManager);
                 //PrintAllDocuments(listener.DatabaseName, listener.TableName);
@@ -175,7 +186,6 @@ namespace abkr.CatalogManager
                         listener.TableName
                     };
                     HandleSelectStatement(listener.DatabaseName, tableNames, listener.Conditions, listener.SelectedColumns);
-
                 }
             }
             else
@@ -249,8 +259,7 @@ namespace abkr.CatalogManager
             var tName = tableName[0];
             var rows = GetRows(databaseName, tName, conditions);
             logger.LogMessage($"Rows: {rows.Count}");
-            var formattedResult = FormatOutput(rows, selectedColumns, databaseName, tName);
-            LastQueryResult = formattedResult;
+            LastQueryResult = JsonConvert.SerializeObject(rows, Formatting.Indented);
         }
 
         private static void HandleSelectStatementWithJoin(string databaseName, List<string> tableNames, List<JoinCondition> joinConditions, List<FilterCondition> conditions, string[] selectedColumns)
@@ -280,12 +289,12 @@ namespace abkr.CatalogManager
         //}
 
 
-        private static List<Dictionary<string, object>> IndexedNestedLoopJoin(
-    List<Dictionary<string, object>> outerRows,
-    Dictionary<object, Dictionary<string, object>> indexedInnerRows,
-    string outerColumn,
-    string innerColumn,
-    string innerTableName)
+            private static List<Dictionary<string, object>> IndexedNestedLoopJoin(
+        List<Dictionary<string, object>> outerRows,
+        Dictionary<object, Dictionary<string, object>> indexedInnerRows,
+        string outerColumn,
+        string innerColumn,
+        string innerTableName)
         {
             var mergedRows = new List<Dictionary<string, object>>();
             foreach (var outerRow in outerRows)
@@ -340,6 +349,31 @@ namespace abkr.CatalogManager
         private static List<Dictionary<string, object>> GetRows(string databaseName, string tableName, List<FilterCondition> conditions)
         {
             return RecordManager.GetRowsSatisfyingConditions(databaseName, tableName, conditions, _client, _catalogManager);
+        }
+
+
+        public string ProcessUpdate(string data)
+        {
+
+            UpdateData updateData = JsonConvert.DeserializeObject<UpdateData>(data);
+
+            // Process each edit
+            foreach (var edit in updateData.Changes)
+            {
+                try
+                {
+                    List<FilterCondition> conditions = edit.OriginalRow.Select(kvp => new FilterCondition(kvp.Key, "=", kvp.Value)).ToList();
+                    RecordManager.Update(updateData.DatabaseName, updateData.TableName, conditions, edit.UpdatedRow, _client, _catalogManager);
+                }
+                catch (Exception ex)
+                {
+                    return ex.Message;
+                }
+            }
+
+            // Send a response to the client
+               
+            return "Update Successful";
         }
 
 

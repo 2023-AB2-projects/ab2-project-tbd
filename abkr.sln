@@ -7,7 +7,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "abkrServer", "abkrServer\ab
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "abkrClient", "abkrClient\abkrClient.csproj", "{3D89FBAD-3571-4F53-9DB1-C569BCFE0468}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "abkr.Client.GUI", "abkr.Client.GUI\abkr.Client.GUI.csproj", "{DA4E074D-8DF5-43F0-98C9-1D0D72ADA364}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "abkr.Client.GUI", "abkr.Client.GUI\abkr.Client.GUI.csproj", "{DA4E074D-8DF5-43F0-98C9-1D0D72ADA364}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

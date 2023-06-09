@@ -12,6 +12,11 @@ class Server
 {
     private static CancellationTokenSource cts = new CancellationTokenSource();
     private static Logger logger = new Logger("C:/Users/Simon Zoltán/Desktop/ab2-project-tbd/abkrServer/server_logger.log");
+    public class RowEdit
+    {
+        public List<string>? OriginalRow { get; set; }
+        public List<string>? UpdatedRow { get; set; }
+    }
 
     public static async Task Main()
     {
@@ -107,21 +112,28 @@ class Server
                 string response;
                 try
                 {
-                    if (data.Trim().ToLower() == "list-structure")
+                    if (data.StartsWith("{") && data.EndsWith("}"))
                     {
-                        var structure = databaseServer.GetDatabasesAndTables();
-                        response = JsonConvert.SerializeObject(structure);
+                         response = databaseServer.ProcessUpdate(data);
                     }
                     else
                     {
-                        await DatabaseServer.ExecuteStatementAsync(data);
-                        if (data.Trim().ToLower().StartsWith("select"))
+                        if (data.Trim().ToLower() == "list-structure")
                         {
-                            response = DatabaseServer.LastQueryResult;
+                            var structure = databaseServer.GetDatabasesAndTables();
+                            response = JsonConvert.SerializeObject(structure);
                         }
                         else
                         {
-                            response = "Success";
+                            await DatabaseServer.ExecuteStatementAsync(data);
+                            if (data.Trim().ToLower().StartsWith("select"))
+                            {
+                                response = DatabaseServer.LastQueryResult;
+                            }
+                            else
+                            {
+                                response = "Success";
+                            }
                         }
                     }
                 }

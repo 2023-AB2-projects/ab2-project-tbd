@@ -14,6 +14,8 @@ using System.Windows.Input;
 using abkr.ClientLogger;
 using Microsoft.Win32;
 using Newtonsoft.Json;
+using System.Xml;
+using System.Reflection;
 
 namespace abkr.Client.GUI
 {
@@ -43,7 +45,7 @@ namespace abkr.Client.GUI
             _writerSemaphore = new SemaphoreSlim(1, 1); // Initialize semaphore
 
             ConnectToServerAsync().ConfigureAwait(false);
-
+        
         }
 
         private async Task ConnectToServerAsync()
@@ -173,7 +175,7 @@ namespace abkr.Client.GUI
                 string response = responseBuilder.ToString();
 
                 // Log the response
-                UpdateConsole(response);
+                
 
                 // If the statement was a SELECT statement, display the result in a new window
                 if (sqlStatement.Trim().ToLower().StartsWith("select"))
@@ -183,7 +185,10 @@ namespace abkr.Client.GUI
                     var selectWindow = new SelectWindow();
                     selectWindow.SetData(rawData);
                     selectWindow.Show();
+                    response = sqlStatement + "succeeded";
                 }
+                
+                UpdateConsole(response);
             }
 
             await ObjectExplorerAsync();
